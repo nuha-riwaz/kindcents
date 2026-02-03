@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Eye, Heart } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 const AboutSection = () => {
     return (
@@ -7,7 +8,7 @@ const AboutSection = () => {
             <div className="container" style={styles.container}>
                 <div style={styles.content}>
                     <h2 style={styles.heading}>
-                        About <img src="/src/assets/logo.png" alt="KindCents" style={{ height: '50px', marginLeft: '0.5rem' }} />
+                        About <img src={logo} alt="KindCents" style={{ height: '50px', marginLeft: '0.5rem' }} />
                     </h2>
                     <p style={styles.description}>
                         KindCents is a transparent, AI-powered web application designed to eliminate
@@ -39,7 +40,7 @@ const AboutSection = () => {
 const styles = {
     section: {
         padding: '4rem 0',
-        backgroundColor: '#F1F5F9', // Gray background
+        backgroundColor: '#F1F5F9',
         margin: '4rem 0',
         borderRadius: '24px',
         maxWidth: '1200px',
@@ -64,12 +65,6 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
         gap: '0.5rem',
-    },
-    logoText: {
-        fontFamily: 'var(--font-script)',
-        color: '#4F96FF',
-        fontSize: '2.5rem',
-        fontWeight: 'normal',
     },
     description: {
         color: '#475569',

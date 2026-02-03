@@ -1,24 +1,28 @@
 import React from 'react';
+import statMoney from '../assets/stat-money.png';
+import statDonors from '../assets/stat-donors.png';
+import statHeart from '../assets/stat-heart.png';
+import statChart from '../assets/stat-chart.png';
 
 const StatsSection = () => {
     const stats = [
         {
-            image: "/src/assets/stat-money.png",
+            image: statMoney,
             value: "LKR 2.4M",
             label: "Total Donated"
         },
         {
-            image: "/src/assets/stat-donors.png",
+            image: statDonors,
             value: "5,000",
             label: "Active Donors"
         },
         {
-            image: "/src/assets/stat-heart.png",
+            image: statHeart,
             value: "150",
             label: "Projects Funded"
         },
         {
-            image: "/src/assets/stat-chart.png",
+            image: statChart,
             value: "100%",
             label: "Funds to Cause"
         }
@@ -51,7 +55,7 @@ const styles = {
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: '2rem',
         textAlign: 'center',
-        maxWidth: '1200px', // Reverting to constrained width for the grid
+        maxWidth: '1200px',
         margin: '0 auto',
         padding: '0 1rem',
     },

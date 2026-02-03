@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         return unsubscribe;
     }, []);
 
-    const login = async (method, customName = null, userType = 'donor') => {
+    const login = async (method, customName = null, userType = 'donor', email = null) => {
         if (method === "Google User") {
             try {
                 await signInWithPopup(auth, googleProvider);
@@ -48,12 +48,13 @@ export const AuthProvider = ({ children }) => {
                 }
             }
         } else if (method === "Simulated") {
+            const isAdmin = email === 'admin@kindcents.org' || customName === 'Admin';
             setUser({
-                name: customName || "User",
-                email: "demo@kindcents.org",
+                name: customName || (isAdmin ? "Admin Control" : "User"),
+                email: email || (isAdmin ? "admin@kindcents.org" : "demo@kindcents.org"),
                 photoURL: null,
-                uid: "simulated-123",
-                userType: userType // 'donor', 'nonprofit', or 'individual'
+                uid: isAdmin ? "admin-999" : "simulated-123",
+                userType: isAdmin ? 'admin' : userType
             });
         } else {
             alert("For this demo, please use 'Sign up with Google'. Email login is not yet connected to a backend.");
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             await signOut(auth);
+            setUser(null);
         } catch (error) {
             console.error("Error signing out", error);
         }

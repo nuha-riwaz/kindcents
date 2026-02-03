@@ -2,6 +2,8 @@ import React from 'react';
 import { MessageCircle } from 'lucide-react';
 import ChatBot from './ChatBot';
 import { useAuth } from '../context/AuthContext';
+import heroTextImg from '../assets/hero-text-v2.png';
+import heroBgImg from '../assets/hero-bg-new.jpg';
 
 const HeroSection = () => {
     const { user } = useAuth();
@@ -11,10 +13,13 @@ const HeroSection = () => {
         : "Donate Now";
 
     return (
-        <section style={styles.section}>
+        <section style={{
+            ...styles.section,
+            backgroundImage: `linear-gradient(rgba(224, 242, 254, 0.9), rgba(224, 242, 254, 0.9)), url(${heroBgImg})`
+        }}>
             <div className="container" style={styles.container}>
                 <div style={styles.content}>
-                    <img src="/src/assets/hero-text-v2.png" alt="Kind Cents" style={{ maxWidth: '650px', width: '100%', marginBottom: '0.5rem' }} />
+                    <img src={heroTextImg} alt="Kind Cents" style={{ maxWidth: '650px', width: '100%', marginBottom: '0.5rem' }} />
                     <h2 style={styles.headline}>
                         Transparent donation tracking that shows<br />
                         exactly where your generosity goes.
@@ -33,18 +38,16 @@ const HeroSection = () => {
 
 const styles = {
     section: {
-        paddingTop: '40px', // Reduced closer to navbar to remove gap
+        paddingTop: '40px',
         paddingBottom: '60px',
-        // Using the new hero background image with a light blue overlay to match the brand color
-        backgroundImage: 'linear-gradient(rgba(224, 242, 254, 0.9), rgba(224, 242, 254, 0.9)), url("/src/assets/hero-bg-new.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         textAlign: 'center',
         position: 'relative',
-        minHeight: '60vh', // Reduced height as requested
+        minHeight: '60vh',
         display: 'flex',
-        alignItems: 'flex-start', // Align items to the top vertically
-        justifyContent: 'center', // Center items horizontally
+        alignItems: 'flex-start',
+        justifyContent: 'center',
     },
     container: {
         display: 'flex',
@@ -58,14 +61,6 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-    },
-    logoTitle: {
-        fontFamily: 'var(--font-script)',
-        fontSize: '8rem',
-        color: '#93C5FD', // Light blue
-        marginBottom: '1rem',
-        fontWeight: 'normal',
-        lineHeight: 1,
     },
     headline: {
         fontSize: '2rem',
@@ -83,33 +78,6 @@ const styles = {
         padding: '1rem 3rem',
         boxShadow: '0 4px 6px -1px rgba(79, 150, 255, 0.4)',
     },
-    chatWidget: {
-        position: 'absolute',
-        bottom: '40px',
-        right: '40px',
-    },
-    chatIcon: {
-        width: '64px',
-        height: '64px',
-        borderRadius: '50%',
-        backgroundColor: '#4F96FF',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-        cursor: 'pointer',
-        position: 'relative',
-    },
-    notificationDot: {
-        position: 'absolute',
-        top: '0px',
-        right: '0px',
-        width: '12px',
-        height: '12px',
-        backgroundColor: '#FB923C', // Orange dot
-        borderRadius: '50%',
-        border: '2px solid white',
-    }
 };
 
 export default HeroSection;

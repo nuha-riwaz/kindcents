@@ -55,18 +55,28 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     if (!isOpen) return null;
 
     const handleGoogleLogin = () => {
-        onClose(); // Close modal first
-        login("Google User"); // Triggers Firebase Popup
+        onClose();
+        login("Google User");
     };
 
     const handleEmailClick = () => {
         setMode('email-signup');
     };
 
-    const handleEmailLogin = () => {
-        // This is for the Login mode selection button
-        login("Simulated", "Nuha", "donor");
-        onClose();
+    const handleEmailLoginAction = (e) => {
+        if (e) e.preventDefault();
+        // For demo, check for admin credentials
+        if (formData.email === 'admin@kindcents.org') {
+            login("Simulated", "Admin", "admin", "admin@kindcents.org");
+            onClose();
+            // window.alert("Admin Login Successful! Navigating..."); // Commented out for now, I'll just use console.log
+            console.log("Admin Login Success - Navigating");
+            navigate('/dashboard/admin');
+        } else {
+            login("Simulated", "Nuha", "donor", formData.email);
+            onClose();
+            navigate('/dashboard/donor');
+        }
     };
 
     const toggleMode = () => {
@@ -434,7 +444,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 onClick={() => {
                                                     login("Simulated", formData.firstName, "donor");
                                                     onClose();
-                                                    navigate('/'); // Ensure navigation to home
+                                                    navigate('/dashboard/donor');
                                                 }}
                                                 style={styles.nextBtn}
                                             >
@@ -628,7 +638,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                             } else {
                                                 login("Simulated", formData.firstName || (userType === 'nonprofit' ? 'Nonprofit Admin' : 'Individual'), userType);
                                                 onClose();
-                                                navigate('/');
+                                                navigate(`/dashboard/${userType}`);
                                             }
                                         }}
                                         style={styles.nextBtn}
@@ -673,7 +683,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     onClick={() => {
                                         login("Simulated", formData.firstName || (userType === 'nonprofit' ? 'Nonprofit Admin' : 'Individual'), userType);
                                         onClose();
-                                        navigate('/');
+                                        navigate(`/dashboard/${userType}`);
                                     }}
                                     style={{ ...styles.nextBtn, minWidth: '100px' }}
                                 >
@@ -730,8 +740,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                 <label style={styles.label}>Email*</label>
                                 <input
                                     type="email"
+                                    name="email"
                                     placeholder="Enter your email"
                                     style={styles.input}
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
                             </div>
 
@@ -753,7 +766,10 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                             </div>
 
                             <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-                                <button onClick={handleEmailLogin} style={{ ...styles.nextBtn, width: 'auto', padding: '10px 40px' }}>
+                                <button
+                                    onClick={handleEmailLoginAction}
+                                    style={{ ...styles.nextBtn, width: 'auto', padding: '10px 40px' }}
+                                >
                                     Log in
                                 </button>
                             </div>

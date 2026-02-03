@@ -1,69 +1,66 @@
 import React from 'react';
-import { Facebook, Instagram, Youtube, Linkedin, X } from 'lucide-react';
+import { Instagram, Youtube, Linkedin, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const Footer = () => {
     return (
         <footer style={styles.footer}>
             <div className="container" style={styles.container}>
-                <div style={styles.column}>
-                    <img src="/src/assets/logo.png" alt="KindCents" style={{ height: '40px', marginBottom: '1rem' }} />
-                    <p style={styles.tagline}>Verified donations. Real Impact.</p>
-                    <p style={styles.description}>
-                        A transparent crowdfunding platform connecting verified recipients with trusted donors.
-                    </p>
-                    <div style={styles.socials}>
-                        <X size={20} />
-                        <Instagram size={20} />
-                        <Youtube size={20} />
-                        <Linkedin size={20} />
+                <div style={styles.topSection}>
+                    {/* Logo and Description Column */}
+                    <div style={styles.logoColumn}>
+                        <img src={logo} alt="KindCents" style={styles.logo} />
+                        <p style={styles.tagline}>Verified donations. Real Impact.</p>
+                        <p style={styles.description}>
+                            A transparent crowdfunding platform connecting verified recipients with trusted donors.
+                        </p>
+                        <div style={styles.socials}>
+                            <X size={20} style={styles.socialIcon} />
+                            <Instagram size={20} style={styles.socialIcon} />
+                            <Youtube size={20} style={styles.socialIcon} />
+                            <Linkedin size={20} style={styles.socialIcon} />
+                        </div>
+                    </div>
+
+                    {/* Quick Links Column */}
+                    <div style={styles.linkColumn}>
+                        <h4 style={styles.heading}>Quick Links</h4>
+                        <ul style={styles.list}>
+                            <li><Link to="/about" style={styles.footerLink}>About Us</Link></li>
+                            <li><Link to="/campaigns" style={styles.footerLink}>Dashboard</Link></li>
+                        </ul>
+                    </div>
+
+                    {/* Policy Column */}
+                    <div style={styles.linkColumn}>
+                        <h4 style={styles.heading}>Policy</h4>
+                        <ul style={styles.list}>
+                            <li><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+                            <li><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+                            <li><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+                            <li><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
+                        </ul>
+                    </div>
+
+                    {/* Contact Column */}
+                    <div style={styles.linkColumn}>
+                        <h4 style={styles.heading}>Contact</h4>
+                        <ul style={styles.list}>
+                            <li>support@kindcents.org</li>
+                            <li>3rd Floor, Orion</li>
+                            <li>Business Centre,</li>
+                            <li>Alexandra Place,</li>
+                            <li>Colombo 04,</li>
+                            <li>Sri Lanka.</li>
+                        </ul>
                     </div>
                 </div>
 
-                <div style={styles.column}>
-                    <h4 style={styles.heading}>Quick Links</h4>
-                    <ul style={styles.list}>
-                        <li>
-                            <Link to="/about" style={styles.footerLink}>About Us</Link>
-                        </li>
-                        <li>
-                            <Link to="/campaigns" style={styles.footerLink}>Campaigns</Link>
-                        </li>
-                        <li>Impact Dashboard</li>
-                    </ul>
+                {/* Copyright */}
+                <div style={styles.copyright}>
+                    © 2026 KindCents | All Rights Reserved.
                 </div>
-
-                <div style={styles.column}>
-                    <h4 style={styles.heading}>Policy</h4>
-                    <ul style={styles.list}>
-                        <li>
-                            <Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link>
-                        </li>
-                        <li>
-                            <Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link>
-                        </li>
-                        <li>
-                            <Link to="/verification-process" style={styles.footerLink}>Verification Process</Link>
-                        </li>
-                        <li>
-                            <Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link>
-                        </li>
-                    </ul>
-                </div>
-
-                <div style={styles.column}>
-                    <h4 style={styles.heading}>Contact</h4>
-                    <ul style={styles.list}>
-                        <li>support@kindcents.org</li>
-                        <li>3rd Floor, Orion Business Centre,</li>
-                        <li>Alexandra Place,</li>
-                        <li>Colombo 04,</li>
-                        <li>Sri Lanka.</li>
-                    </ul>
-                </div>
-            </div>
-            <div style={styles.copyright}>
-                © 2026 KindCents | All Rights Reserved.
             </div>
         </footer>
     );
@@ -71,57 +68,79 @@ const Footer = () => {
 
 const styles = {
     footer: {
-        backgroundColor: '#D6E6FF', // Light blue from image
-        padding: '4rem 0 1rem 0',
+        backgroundColor: '#D6E6FF',
+        padding: '3rem 0 1.5rem 0',
         marginTop: '4rem',
         color: '#1e293b',
     },
     container: {
-        display: 'grid',
-        gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr',
-        gap: '2rem',
-        marginBottom: '3rem',
-    },
-    column: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
     },
-    logoText: {
-        fontFamily: 'var(--font-script)',
-        fontSize: '2rem',
-        color: 'var(--color-primary)',
+    topSection: {
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr 1fr 1.2fr',
+        gap: '3rem',
+        marginBottom: '2rem',
+        alignItems: 'start',
+    },
+    logoColumn: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+    },
+    logo: {
+        height: '120px',
+        width: 'auto',
+        objectFit: 'contain',
+        marginBottom: '0.5rem',
     },
     tagline: {
         fontWeight: 600,
+        fontSize: '1rem',
+        margin: 0,
     },
     description: {
-        fontSize: '0.9rem',
+        fontSize: '0.85rem',
         lineHeight: '1.5',
-        maxWidth: '300px',
+        margin: 0,
+        color: '#475569',
     },
     socials: {
         display: 'flex',
         gap: '1rem',
         marginTop: '0.5rem',
     },
+    socialIcon: {
+        cursor: 'pointer',
+        color: '#1e293b',
+    },
+    linkColumn: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+    },
     heading: {
-        fontSize: '1.1rem',
-        marginBottom: '0.5rem',
+        fontSize: '1.05rem',
+        fontWeight: '700',
+        margin: 0,
+        marginBottom: '0.25rem',
     },
     list: {
         listStyle: 'none',
         padding: 0,
+        margin: 0,
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.5rem',
-        fontSize: '0.95rem',
+        gap: '0.4rem',
+        fontSize: '0.9rem',
+        color: '#475569',
     },
     copyright: {
         textAlign: 'center',
-        fontSize: '0.8rem',
-        borderTop: '1px solid rgba(0,0,0,0.05)',
-        paddingTop: '1rem',
+        fontSize: '0.85rem',
+        borderTop: '1px solid rgba(0,0,0,0.08)',
+        paddingTop: '1.5rem',
         color: '#64748b',
     },
     footerLink: {

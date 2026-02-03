@@ -1,25 +1,27 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import projectEmma from '../assets/project-emma.jpg';
+import projectArklow from '../assets/project-arklow.png';
 
 const ProjectsSection = () => {
     const projects = [
         {
             title: "Rebuild Emma's Home",
             status: "Completed",
-            image: "/src/assets/project-emma.jpg",
+            image: projectEmma,
             raised: "LKR 100,000"
         },
         {
             title: "Renovations in Arklow",
             subtitle: "Ireland Boys Home",
             status: "Completed",
-            image: "/src/assets/project-arklow.png",
+            image: projectArklow,
             raised: "LKR 80,000"
         },
         {
             title: "Medical Aid for Mrs. Perera",
             status: "Completed",
-            image: "https://images.unsplash.com/photo-1516574187841-693019054ca1?q=80&w=2670&auto=format&fit=crop", // Keep placeholder for 3rd
+            image: "https://images.unsplash.com/photo-1516574187841-693019054ca1?q=80&w=2670&auto=format&fit=crop",
             raised: "LKR 80,000"
         }
     ];
@@ -136,7 +138,7 @@ const styles = {
         fontSize: '1.1rem',
         fontWeight: '700',
         marginBottom: '1rem',
-        height: '3.5rem', // Fixed height for alignment
+        height: '3.5rem',
         display: 'flex',
         alignItems: 'center',
         textAlign: 'center',

@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { ChevronDown, LayoutDashboard, LogOut } from 'lucide-react';
 import '../index.css';
+import logo from '../assets/logo.png';
 
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 
-const Navbar = () => {
+const Navbar = ({ minimal = false }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signup');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const openAuthModal = (mode) => {
     setAuthMode(mode);
     setIsAuthModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsDropdownOpen(false);
+    navigate('/');
+  };
+
+  const getUserDashboardPath = () => {
+    if (!user) return '/';
+    if (user.userType === 'admin') return '/dashboard/admin';
+    return `/dashboard/${user.userType || 'donor'}`;
   };
 
   return (
@@ -21,20 +36,46 @@ const Navbar = () => {
       <nav style={styles.nav}>
         <div className="container" style={styles.container}>
           <div style={styles.logo}>
-            <img src="/src/assets/logo.png" alt="KindCents" style={{ height: '50px' }} />
+            <img src={logo} alt="KindCents" style={{ height: '50px' }} />
           </div>
 
           <div style={styles.links}>
-            <NavLink to="/" style={styles.link}>Home</NavLink>
-            {user?.userType === 'donor' && <NavLink to="/campaigns" style={styles.link}>Campaigns</NavLink>}
-            <NavLink to="/about" style={styles.link}>About Us</NavLink>
-            <NavLink to="/contact" style={styles.link}>Contact</NavLink>
+            {!minimal && (
+              <>
+                <NavLink to="/" style={styles.link}>Home</NavLink>
+                {user?.userType === 'donor' && <NavLink to="/campaigns" style={styles.link}>Campaigns</NavLink>}
+                <NavLink to="/about" style={styles.link}>About Us</NavLink>
+                <NavLink to="/contact" style={styles.link}>Contact</NavLink>
+              </>
+            )}
 
             {user ? (
-              <div style={styles.userMenu}>
-                <span>Hello, {user.name}</span>
-                <ChevronDown size={16} />
-                <button onClick={logout} style={styles.authBtnSmall}>(Logout)</button>
+              <div
+                style={styles.userMenuContainer}
+                onMouseEnter={() => setIsDropdownOpen(true)}
+                onMouseLeave={() => setIsDropdownOpen(false)}
+              >
+                <div style={styles.userMenu}>
+                  <span>Hello, {user.name}</span>
+                  <ChevronDown size={16} />
+                </div>
+
+                {isDropdownOpen && (
+                  <div style={styles.dropdown}>
+                    <button
+                      onClick={() => navigate(getUserDashboardPath())}
+                      className="dropdown-item"
+                    >
+                      <LayoutDashboard size={14} /> Dashboard
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="dropdown-item logout-item"
+                    >
+                      <LogOut size={14} /> Logout
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div style={styles.authButtons}>
@@ -78,43 +119,85 @@ const styles = {
     alignItems: 'center',
     gap: '2rem',
     fontSize: '1rem',
-    color: 'var(--color-text-secondary)',
+    color: 'var(--color-secondary)',
   },
   link: {
     textDecoration: 'none',
-    color: 'var(--color-text-secondary)',
+    color: 'var(--color-secondary)',
     fontWeight: 500,
+  },
+  userMenuContainer: {
+    position: 'relative',
+    paddingBottom: '15px',
+    marginBottom: '-15px',
+    cursor: 'pointer',
   },
   userMenu: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
+    color: '#1e293b',
+    fontWeight: 600,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    padding: '0.5rem',
+    minWidth: '160px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem',
+    zIndex: 1000,
+    border: '1px solid #f1f5f9',
+  },
+  dropdownItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    padding: '0.75rem 1rem',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#475569',
+    fontSize: '0.9rem',
+    fontWeight: 500,
+    textAlign: 'left',
     cursor: 'pointer',
-    color: 'var(--color-text-secondary)',
+    borderRadius: '8px',
+    transition: 'all 0.2s ease',
+    width: '100%',
+    fontFamily: 'inherit',
+    '&:hover': {
+      backgroundColor: '#f8fafc',
+      color: '#2563eb',
+    }
+  },
+  logoutItem: {
+    color: '#ef4444',
+    borderTop: '1px solid #f1f5f9',
+    borderRadius: 0,
+    marginTop: '0.25rem',
+    paddingTop: '0.75rem',
   },
   authButtons: {
     display: 'flex',
-    gap: '0.5rem',
+    gap: '0.75rem',
     alignItems: 'center',
+    marginLeft: '1rem',
   },
   linkBtn: {
     background: 'none',
     border: 'none',
     fontSize: '1rem',
-    color: 'var(--color-text-secondary)',
+    color: 'var(--color-secondary)',
     fontWeight: 500,
     cursor: 'pointer',
     padding: 0,
     fontFamily: 'inherit',
   },
-  authBtnSmall: {
-    background: 'none',
-    border: 'none',
-    fontSize: '0.8rem',
-    color: '#94a3b8',
-    cursor: 'pointer',
-    marginLeft: '5px',
-  }
 };
 
 export default Navbar;

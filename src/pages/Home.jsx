@@ -7,7 +7,19 @@ import TestimonialsSection from '../components/TestimonialsSection';
 import ProjectsSection from '../components/ProjectsSection';
 import Footer from '../components/Footer';
 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
 const Home = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (user && user.userType === 'admin') {
+            navigate('/dashboard/admin');
+        }
+    }, [user, navigate]);
+
     return (
         <div className="start-page">
             <Navbar />
