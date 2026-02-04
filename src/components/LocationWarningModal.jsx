@@ -19,7 +19,7 @@ const LocationWarningModal = ({ isOpen, onClose, onConfirm }) => {
 
                 <div style={styles.messageBox}>
                     <p style={styles.description}>
-                        Only registered nonprofits and individuals in Sri Lanka can create accounts.
+                        Only registered nonprofits and individuals in<br />Sri Lanka can create accounts.
                     </p>
                     <p style={styles.subDescription}>
                         International donors are welcome to support causes.
@@ -89,7 +89,7 @@ const styles = {
         marginBottom: '0.5rem'
     },
     logo: {
-        height: '45px', // Adjusted size to match proportion
+        height: '60px', // Increased size
         objectFit: 'contain'
     },
     title: {
@@ -126,7 +126,7 @@ const styles = {
     },
     actions: {
         display: 'flex',
-        gap: '1rem',
+        gap: '2rem', // Increased from 1rem
         width: '100%',
         marginTop: '0.5rem',
         justifyContent: 'center'

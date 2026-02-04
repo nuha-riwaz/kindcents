@@ -1,30 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useCampaigns } from '../context/CampaignContext';
 import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
+import mrsPerera from '../assets/mrs-perera.jpg';
+import ayaanSurgery from '../assets/ayaan-surgery.png';
+import templeRenovation from '../assets/temple-renovation.png';
+import ruralMedical from '../assets/rural-medical.jpg';
+
+// Image mapping to resolve Firestore strings to local assets
+const imageMap = {
+    projectEmma,
+    projectArklow,
+    mrsPerera,
+    ayaanSurgery,
+    templeRenovation,
+    ruralMedical
+};
 
 const ProjectsSection = () => {
-    const projects = [
+    const navigate = useNavigate();
+    const { campaigns } = useCampaigns();
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Hardcoded past projects (always shown as completed)
+    const pastProjects = [
         {
+            id: 'emma-home',
             title: "Rebuild Emma's Home",
-            status: "Completed",
             image: projectEmma,
-            raised: "LKR 100,000"
+            raised: 100000,
+            status: 'completed',
+            isPastProject: true
         },
         {
-            title: "Renovations in Arklow",
-            subtitle: "Ireland Boys Home",
-            status: "Completed",
-            image: projectArklow,
-            raised: "LKR 80,000"
-        },
-        {
+            id: 'mrs-perera',
             title: "Medical Aid for Mrs. Perera",
-            status: "Completed",
-            image: "https://images.unsplash.com/photo-1516574187841-693019054ca1?q=80&w=2670&auto=format&fit=crop",
-            raised: "LKR 80,000"
+            image: mrsPerera,
+            raised: 80000,
+            status: 'completed',
+            isPastProject: true
+        },
+        {
+            id: 'arklow-boys',
+            title: "Renovations in Arklow Ireland Boys Home",
+            image: projectArklow,
+            raised: 80000,
+            status: 'completed',
+            isPastProject: true
         }
     ];
+
+    // Filter real completed campaigns from Firestore
+    const realCompletedCampaigns = Object.values(campaigns).filter(campaign => campaign.status === 'completed');
+
+    // Combine past projects with real completed campaigns
+    const allCompletedProjects = [...pastProjects, ...realCompletedCampaigns];
+
+    // Number of cards to show at once
+    const cardsToShow = 4;
+
+    const nextSlide = () => {
+        setCurrentIndex((prev) => (prev + 1) % allCompletedProjects.length);
+    };
+
+    const prevSlide = () => {
+        setCurrentIndex((prev) => (prev === 0 ? allCompletedProjects.length - 1 : prev - 1));
+    };
+
+    // Auto-slide every 5 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            nextSlide();
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [allCompletedProjects.length]);
+
+    // Always render (we have past projects as fallback)
 
     return (
         <section style={styles.section}>
@@ -33,38 +86,75 @@ const ProjectsSection = () => {
                 <p style={styles.subHeading}>Real projects. Real impact. See the difference your generosity makes.</p>
 
                 <div style={styles.carouselContainer}>
-                    <button style={styles.navButton}><ChevronLeft size={24} /></button>
+                    <button
+                        onClick={prevSlide}
+                        style={styles.navButton}
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
 
                     <div style={styles.cardsWrapper}>
-                        {projects.map((project, index) => (
-                            <div key={index} style={styles.card}>
-                                <div style={styles.statusBadge}>
-                                    <CheckCircle2 size={16} fill="#22C55E" color="white" />
-                                    <span>{project.status}</span>
-                                </div>
+                        <div style={{
+                            display: 'flex',
+                            gap: '1.5rem',
+                            transition: 'transform 0.5s ease-in-out',
+                            transform: `translateX(-${currentIndex * (100 / (allCompletedProjects.length > cardsToShow ? cardsToShow : allCompletedProjects.length))}%)`
+                        }}>
+                            {/* Render items twice to ensure continuity */}
+                            {[...allCompletedProjects, ...allCompletedProjects].map((campaign, index) => (
+                                <div
+                                    key={`${campaign.id}-${index}`}
+                                    style={{
+                                        ...styles.card,
+                                        minWidth: `calc(${100 / cardsToShow}% - ${(1.5 * (cardsToShow - 1)) / cardsToShow}rem)`,
+                                        cursor: campaign.isPastProject ? 'default' : 'pointer'
+                                    }}
+                                    onClick={() => !campaign.isPastProject && navigate(`/campaign/${campaign.id}`)}
+                                >
+                                    <div style={styles.statusBadge}>
+                                        <CheckCircle2 size={16} fill="#22C55E" color="white" />
+                                        <span>Completed</span>
+                                    </div>
 
-                                <h3 style={styles.cardTitle}>
-                                    {project.title}
-                                    {project.subtitle && <><br />{project.subtitle}</>}
-                                </h3>
+                                    <h3 style={styles.cardTitle}>
+                                        {campaign.title}
+                                    </h3>
 
-                                <div style={styles.imageContainer}>
-                                    <img src={project.image} alt={project.title} style={styles.image} />
-                                </div>
+                                    <div style={styles.imageContainer}>
+                                        <img
+                                            src={imageMap[campaign.image] || campaign.image}
+                                            alt={campaign.title}
+                                            style={styles.image}
+                                        />
+                                    </div>
 
-                                <div style={styles.cardFooter}>
-                                    {project.raised} raised and<br />completed
+                                    <div style={styles.cardFooter}>
+                                        Rs. {campaign.raised.toLocaleString()} raised and<br />completed
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
-                    <button style={styles.navButton}><ChevronRight size={24} /></button>
+                    <button
+                        onClick={nextSlide}
+                        style={styles.navButton}
+                    >
+                        <ChevronRight size={24} />
+                    </button>
                 </div>
 
                 <div style={styles.dots}>
-                    <div style={styles.dotActive}></div>
-                    <div style={styles.dot}></div>
+                    {allCompletedProjects.map((_, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                ...styles.dot,
+                                ...(index === currentIndex ? styles.dotActive : {})
+                            }}
+                            onClick={() => setCurrentIndex(index)}
+                        />
+                    ))}
                 </div>
             </div>
         </section>
@@ -73,11 +163,11 @@ const ProjectsSection = () => {
 
 const styles = {
     section: {
-        padding: '4rem 0',
+        padding: '3rem 0',
         backgroundColor: '#F8FAFC',
         borderRadius: '32px',
-        maxWidth: '1200px',
-        margin: '4rem auto',
+        maxWidth: '1100px',
+        margin: '3rem auto',
         textAlign: 'center',
     },
     heading: {
@@ -110,19 +200,19 @@ const styles = {
     },
     cardsWrapper: {
         display: 'flex',
-        gap: '2rem',
-        overflowX: 'auto',
-        padding: '1rem',
+        overflow: 'hidden',
+        width: '100%',
+        padding: '1rem 0',
     },
     card: {
         backgroundColor: 'white',
         borderRadius: '16px',
-        padding: '1.5rem',
-        width: '380px',
+        padding: '1.25rem',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        border: '1px solid #e2e8f0',
     },
     statusBadge: {
         display: 'flex',
@@ -145,10 +235,10 @@ const styles = {
     },
     imageContainer: {
         width: '100%',
-        height: '160px',
+        height: '140px',
         borderRadius: '12px',
         overflow: 'hidden',
-        marginBottom: '1rem',
+        marginBottom: '0.75rem',
     },
     image: {
         width: '100%',

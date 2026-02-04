@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 
 const Footer = () => {
     return (
-        <footer style={styles.footer}>
+        <footer id="contact" style={styles.footer}>
             <div className="container" style={styles.container}>
                 <div style={styles.topSection}>
                     {/* Logo and Description Column */}
@@ -13,7 +13,7 @@ const Footer = () => {
                         <img src={logo} alt="KindCents" style={styles.logo} />
                         <p style={styles.tagline}>Verified donations. Real Impact.</p>
                         <p style={styles.description}>
-                            A transparent crowdfunding platform connecting verified recipients with trusted donors.
+                            A transparent crowdfunding platform<br />connecting verified recipients with<br />trusted donors.
                         </p>
                         <div style={styles.socials}>
                             <X size={20} style={styles.socialIcon} />
@@ -27,7 +27,7 @@ const Footer = () => {
                     <div style={styles.linkColumn}>
                         <h4 style={styles.heading}>Quick Links</h4>
                         <ul style={styles.list}>
-                            <li><Link to="/about" style={styles.footerLink}>About Us</Link></li>
+                            <li><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
                             <li><Link to="/campaigns" style={styles.footerLink}>Dashboard</Link></li>
                         </ul>
                     </div>
@@ -90,10 +90,11 @@ const styles = {
         gap: '0.75rem',
     },
     logo: {
-        height: '120px',
+        height: '100px', // Adjusted to 100px
         width: 'auto',
         objectFit: 'contain',
         marginBottom: '0.5rem',
+        marginLeft: '-150px', // Shifted left significantly
     },
     tagline: {
         fontWeight: 600,

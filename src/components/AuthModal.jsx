@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Building2, User, Heart, ChevronRight, ChevronLeft, CloudUpload, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import logo from '../assets/logo.png';
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
@@ -14,7 +16,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         lastName: '',
         password: ''
     });
-    const { login } = useAuth();
+    const { login, signup, loginEmail } = useAuth();
     const navigate = useNavigate();
 
     const fileInputRefs = {
@@ -40,7 +42,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     // Reset mode and step when modal opens
     React.useEffect(() => {
         if (isOpen) {
-            setMode(initialMode === 'signup' ? 'location-check' : initialMode);
+            setMode(initialMode); // Directly use initialMode, no more location-check overwrite
             setStep(1);
             setUserType(null);
             setFormData({
@@ -54,97 +56,108 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
     if (!isOpen) return null;
 
-    const handleGoogleLogin = () => {
-        onClose();
-        login("Google User");
+    const handleGoogleLogin = async () => {
+        const googleUser = await login("Google User");
+        if (googleUser) {
+            // Check if user has a role in Firestore
+            try {
+                const userRef = doc(db, 'users', googleUser.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.role) {
+                        // User already has a role, log them in fully
+                        onClose();
+                        navigate(`/dashboard/${userData.role}`);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking user role:", error);
+            }
+
+            // New user or no role set - proceed to onboarding
+            const displayName = googleUser.displayName || '';
+            const nameParts = displayName.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            setFormData({
+                email: googleUser.email || '',
+                firstName,
+                lastName,
+                password: '' // Not needed for Google auth
+            });
+            setMode('email-signup');
+            setStep(2);
+        }
     };
 
     const handleEmailClick = () => {
         setMode('email-signup');
     };
 
-    const handleEmailLoginAction = (e) => {
-        if (e) e.preventDefault();
-        // For demo, check for admin credentials
-        if (formData.email === 'admin@kindcents.org') {
-            login("Simulated", "Admin", "admin", "admin@kindcents.org");
+    const handleEmailLoginAction = async (e) => {
+        e.preventDefault(); // Prevent form submission refresh
+        try {
+            // For demo, keep admin check if you want, or remove it.
+            // Let's try real login first.
+            await loginEmail(formData.email, formData.password);
+
+            // If successful, close and navigate (AuthContext updates user state automatically)
             onClose();
-            // window.alert("Admin Login Successful! Navigating..."); // Commented out for now, I'll just use console.log
-            console.log("Admin Login Success - Navigating");
-            navigate('/dashboard/admin');
-        } else {
-            login("Simulated", "Nuha", "donor", formData.email);
-            onClose();
-            navigate('/dashboard/donor');
+            // Note: Navigation might depend on role, which useEffect in Main App handles, 
+            // but here we can just default to dashboard or let the state update redirect.
+            // For now, let's just close. The main layout likely redirects based on user.
+            // Or we can fetch the user role and redirect. 
+            // But since loginEmail returns the user object (firebase user), it doesn't have the firestore role yet synchronously attached 
+            // unless we wait for AuthContext to sync. 
+            // AuthContext syncs and updates `user` state. 
+            // Let's just navigate to /dashboard/donor as default or check email.
+            if (formData.email === 'admin@kindcents.org') {
+                navigate('/dashboard/admin');
+            } else {
+                navigate('/dashboard/donor');
+            }
+        } catch (error) {
+            console.error("Login failed", error);
+            alert("Login Failed: " + error.message);
         }
     };
 
     const toggleMode = () => {
-        if (mode === 'signup' || mode === 'location-check') {
+        if (mode === 'signup') {
             setMode('login');
         } else {
-            setMode('location-check');
+            setMode('signup');
         }
     };
 
-    // Render the Location Check View
-    if (mode === 'location-check') {
-        return (
-            <div style={styles.overlay}>
-                <div style={styles.modal}>
-                    <button onClick={onClose} style={styles.closeBtn}>
-                        <X size={24} />
-                    </button>
-
-                    <div style={styles.content}>
-                        <img src={logo} alt="KindCents" style={{ height: '80px', marginBottom: '1rem' }} />
-
-                        <h2 style={{ ...styles.title, fontSize: '1.5rem', marginBottom: '1.5rem' }}>
-                            Is your nonprofit located in Sri Lanka?
-                        </h2>
-
-                        <div style={{
-                            ...isCardStyle,
-                            textAlign: 'center',
-                            padding: '2rem',
-                            marginBottom: '2rem',
-                            backgroundColor: '#fff',
-                            border: '1px solid #f1f5f9',
-                        }}>
-                            <p style={{ fontSize: '1rem', color: '#1e293b', marginBottom: '1rem', lineHeight: '1.5' }}>
-                                KindCents is currently designed <strong>for nonprofits in Sri Lanka only</strong>.
-                            </p>
-                            <p style={{ fontSize: '0.95rem', color: '#64748b' }}>
-                                International donations are supported.
-                            </p>
-                        </div>
-
-                        <div style={{ ...styles.buttonRow, justifyContent: 'center', gap: '1.5rem', marginTop: 0 }}>
-                            <button
-                                onClick={() => setMode('signup')}
-                                style={{ ...styles.nextBtn, minWidth: '150px' }}
-                            >
-                                Yes, continue
-                            </button>
-                            <button
-                                onClick={onClose}
-                                style={{ ...styles.nextBtn, minWidth: '150px' }}
-                            >
-                                No, it's not
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     // Render the Email Sign Up Form
     if (mode === 'email-signup') {
-        const handleStep1Submit = (e) => {
+        const handleStep1Submit = async (e) => {
             e.preventDefault();
-            setStep(2);
+
+            // If user logged in via google, they are already authenticated, so we just proceed to step 2 for role selection.
+            // But if they are filling out the email form, we need to create the account.
+
+            // Check if we already have a user (Google Sign In case)
+            // Actually, handleGoogleLogin sets step to 2 directly.
+            // So if we are at step 1, it MUST be email signup.
+
+            try {
+                const fullName = `${formData.firstName} ${formData.lastName}`;
+                await signup(formData.email, formData.password, fullName);
+                // Signup successful - User is now logged in.
+                setStep(2);
+            } catch (error) {
+                console.error("Signup failed", error);
+                alert("Signup Failed: " + error.message);
+            }
         };
+
+        // ... (rest of step 1 render)
 
         const handleBrowseClick = (key) => {
             if (fileInputRefs[key].current) {
@@ -175,7 +188,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '80px' }} />
+                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -275,7 +288,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '80px' }} />
+                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -354,7 +367,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '80px' }} />
+                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -470,7 +483,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '80px' }} />
+                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -659,7 +672,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                     <div style={styles.modal}>
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '80px' }} />
+                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
                             </div>
 
                             <div style={{ ...isCardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '3rem 2rem' }}>
@@ -708,7 +721,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 </button>
 
                 <div style={styles.content}>
-                    <img src={logo} alt="KindCents" style={{ height: '80px', marginBottom: '1rem' }} />
+                    <img src={logo} alt="KindCents" style={{ height: '60px', marginBottom: '1rem' }} />
 
                     {mode === 'signup' ? (
                         <>
@@ -735,6 +748,18 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                     ) : (
                         <div style={{ width: '100%', textAlign: 'left' }}>
                             <h2 style={{ ...styles.title, textAlign: 'center', marginBottom: '1.5rem' }}>Login</h2>
+
+                            <div style={{ width: '100%', marginBottom: '1.5rem' }}>
+                                <button onClick={handleGoogleLogin} style={styles.googleBtn}>
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style={{ width: '18px', marginRight: '10px' }} />
+                                    Log in with Google
+                                </button>
+                                <div style={{ ...styles.divider, marginTop: '1.5rem' }}>
+                                    <span style={styles.dividerLine}></span>
+                                    <span style={styles.dividerText}>or</span>
+                                    <span style={styles.dividerLine}></span>
+                                </div>
+                            </div>
 
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Email*</label>

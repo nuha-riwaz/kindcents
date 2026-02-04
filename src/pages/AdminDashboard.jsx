@@ -142,7 +142,7 @@ const AdminDashboard = () => {
                         </nav>
 
                         <div style={styles.sidebarFooter}>
-                            <img src={logo} alt="KindCents" style={{ height: '30px', opacity: 0.7 }} />
+                            <img src={logo} alt="KindCents" style={{ height: '60px', opacity: 0.7 }} />
                         </div>
                     </aside>
 

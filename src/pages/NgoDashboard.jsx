@@ -269,7 +269,7 @@ const styles = {
         marginBottom: '1.5rem',
     },
     sidebarLogo: {
-        height: '40px',
+        height: '60px',
     },
     avatarWrapper: {
         marginBottom: '1rem',

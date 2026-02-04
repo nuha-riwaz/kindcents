@@ -16,6 +16,24 @@ const Navbar = ({ minimal = false }) => {
   const [authMode, setAuthMode] = useState('signup');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const scrollToSection = (sectionId) => {
+    if (window.location.pathname !== '/') {
+      navigate('/#' + sectionId);
+      // Small timeout to allow navigation to complete before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   const openAuthModal = (mode) => {
     if (mode === 'signup') {
       setIsLocationModalOpen(true);
@@ -39,8 +57,8 @@ const Navbar = ({ minimal = false }) => {
 
   const getUserDashboardPath = () => {
     if (!user) return '/';
-    if (user.userType === 'admin') return '/dashboard/admin';
-    return `/dashboard/${user.userType || 'donor'}`;
+    if (user.role === 'admin') return '/dashboard/admin';
+    return `/dashboard/${user.role || 'donor'}`;
   };
 
   return (
@@ -48,16 +66,16 @@ const Navbar = ({ minimal = false }) => {
       <nav style={styles.nav}>
         <div className="container" style={styles.container}>
           <div style={styles.logo}>
-            <img src={logo} alt="KindCents" style={{ height: '50px' }} />
+            <img src={logo} alt="KindCents" style={{ height: '60px' }} />
           </div>
 
           <div style={styles.links}>
             {!minimal && (
               <>
                 <NavLink to="/" style={styles.link}>Home</NavLink>
-                {user?.userType === 'donor' && <NavLink to="/campaigns" style={styles.link}>Campaigns</NavLink>}
-                <NavLink to="/about" style={styles.link}>About Us</NavLink>
-                <NavLink to="/contact" style={styles.link}>Contact</NavLink>
+                {user?.role === 'donor' && <NavLink to="/campaigns" style={styles.link}>Campaigns</NavLink>}
+                <button onClick={() => scrollToSection('about')} style={styles.linkBtn}>About Us</button>
+                <button onClick={() => scrollToSection('contact')} style={styles.linkBtn}>Contact</button>
               </>
             )}
 

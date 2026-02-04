@@ -21,6 +21,28 @@ import {
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
+import ayaanSurgery from '../assets/ayaan-surgery.png';
+import mrsPerera from '../assets/mrs-perera.jpg';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgSmile from '../assets/org-smile.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
+import templeRenovation from '../assets/temple-renovation.png';
+import ruralMedical from '../assets/rural-medical.jpg';
+
+// Image mapping to resolve Firestore strings to local assets
+const imageMap = {
+    projectEmma,
+    projectArklow,
+    ayaanSurgery,
+    mrsPerera,
+    orgAkshay,
+    orgKeithston,
+    orgSmile,
+    orgLotus,
+    templeRenovation,
+    ruralMedical
+};
 
 import { useCampaigns } from '../context/CampaignContext';
 
@@ -72,7 +94,11 @@ const CampaignDetails = () => {
                 <div style={styles.heroCard}>
                     <div style={styles.heroLayout}>
                         <div style={styles.heroImageContainer}>
-                            <img src={campaign.image} alt={campaign.title} style={styles.heroImage} />
+                            <img
+                                src={imageMap[campaign.image] || campaign.image}
+                                alt={campaign.title}
+                                style={styles.heroImage}
+                            />
                             <div style={isNGO ? styles.verifiedNGOBadge : styles.verifiedBadge}>
                                 <CheckCircle2 size={16} /> {isNGO ? 'Verified NGO' : 'Verified Cause'}
                             </div>

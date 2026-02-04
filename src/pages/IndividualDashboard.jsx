@@ -195,7 +195,7 @@ const styles = {
         marginBottom: '2rem',
     },
     sideLogo: {
-        height: '40px',
+        height: '60px',
         marginBottom: '1.5rem',
     },
     avatarWrapper: {

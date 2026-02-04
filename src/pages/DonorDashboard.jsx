@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
     Home,
     History,
@@ -14,29 +17,234 @@ import {
     ArrowUpRight,
     CheckCircle2,
     Users,
-    Star
+    Star,
+    Save,
+    X,
+    Camera,
+    User,
+    Search
 } from 'lucide-react';
 import logo from '../assets/logo.png';
+import projectEmma from '../assets/project-emma.jpg';
+import projectArklow from '../assets/project-arklow.png';
+import orgSmile from '../assets/org-smile.jpg';
+import mrsPerera from '../assets/mrs-perera.jpg';
+import ayaanSurgery from '../assets/ayaan-surgery.png';
+import orphanCare from '../assets/orphan-care.png';
+import badgeLocked from '../assets/badge-locked.png';
+
+// Custom Badge Images
+import badgeFirstStep from '../assets/badge-first-step.png';
+import badgeKindHeart from '../assets/badge-kind-heart.png';
+import badgeLifeChanger from '../assets/badge-life-changer.png';
+import badgeCommunityHero from '../assets/badge-community-hero.png';
+import badgeHopeBringer from '../assets/badge-hope-bringer.png';
+import badgeGoldenGiver from '../assets/badge-golden-giver.png';
+
+// Import New Stats Icons
+import iconCampaigns from '../assets/icon-campaigns.png';
+import iconLivesImpacted from '../assets/icon-lives-impacted.png';
+import iconBadges from '../assets/icon-badges.png';
+import iconDonatedRupee from '../assets/icon-donated-rupee.png';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
+import templeRenovation from '../assets/temple-renovation.png';
+import ruralMedical from '../assets/rural-medical.jpg';
+
+// Image mapping to resolve Firestore strings to local assets
+const imageMap = {
+    projectEmma,
+    projectArklow,
+    mrsPerera,
+    ayaanSurgery,
+    orphanCare,
+    orgSmile,
+    orgAkshay,
+    orgKeithston,
+    orgLotus,
+    templeRenovation,
+    ruralMedical
+};
 
 const DonorDashboard = () => {
-    const { user } = useAuth();
+    const { user, updateUserProfile } = useAuth();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [isEditing, setIsEditing] = useState(false);
+    const [newName, setNewName] = useState(user?.name || '');
+    const fileInputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
 
     // Use logged in user info or fallback to mock Alicia (from image)
     const displayName = user?.name || "Alicia Johns";
     const displayEmail = user?.email || "alicia.johns@gmail.com";
 
+    // Real-time stats from Firestore
+    const [realStats, setRealStats] = React.useState({
+        totalDonated: 0,
+        campaignsSupported: 0,
+        livesImpacted: 0,
+        badgesEarned: 0
+    });
+
+    // Fetch and calculate real stats from donations
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            if (!user) return;
+
+            try {
+                const { collection, query, where, getDocs } = await import('firebase/firestore');
+                const { db } = await import('../firebase');
+
+                const donationsRef = collection(db, 'donations');
+                const q = query(donationsRef, where('userId', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                let totalDonated = 0;
+                const uniqueCampaigns = new Set();
+
+                querySnapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    totalDonated += data.amount || 0;
+                    if (data.campaignId) {
+                        uniqueCampaigns.add(data.campaignId);
+                    }
+                });
+
+                // Calculate badges (simple logic for now)
+                let badgesEarned = 0;
+                if (totalDonated > 0) badgesEarned++; // First Step
+                if (uniqueCampaigns.size >= 3) badgesEarned++; // Kind Heart
+                if (totalDonated >= 100000) badgesEarned++; // Community Hero
+                if (uniqueCampaigns.size >= 10) badgesEarned++; // Golden Giver
+
+                setRealStats({
+                    totalDonated,
+                    campaignsSupported: uniqueCampaigns.size,
+                    livesImpacted: totalDonated > 0 ? Math.floor(totalDonated / 1000) : 0, // Estimate
+                    badgesEarned
+                });
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        };
+
+        fetchStats();
+    }, [user]);
+
     const sidebarItems = [
         { id: 'Overview', icon: <Home size={20} />, label: 'Overview' },
+        { id: 'Browse', icon: <Search size={20} />, label: 'Browse Campaigns' },
         { id: 'My Campaigns', icon: <History size={20} />, label: 'My Campaigns' },
         { id: 'Achievements', icon: <Trophy size={20} />, label: 'Achievements' },
         { id: 'Recent Donations', icon: <Clock size={20} />, label: 'Recent Donations' },
     ];
 
+    const stats = [
+        {
+            label: 'Total Donated',
+            value: `Rs. ${realStats.totalDonated.toLocaleString()}`,
+            change: null,
+            icon: <img src={iconCampaigns} alt="Total Donated" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            color: '#eff6ff'
+        },
+        {
+            label: 'Campaigns Supported',
+            value: realStats.campaignsSupported,
+            change: null,
+            icon: <img src={iconLivesImpacted} alt="Campaigns" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            color: '#f0fdf4'
+        },
+        {
+            label: 'Lives Impacted',
+            value: realStats.livesImpacted,
+            change: null,
+            icon: <img src={iconBadges} alt="Lives Impacted" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            color: '#fef2f2'
+        },
+        {
+            label: 'Badges Earned',
+            value: realStats.badgesEarned,
+            change: null,
+            icon: <img src={iconDonatedRupee} alt="Badges" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            color: '#fffbeb'
+        },
+    ];
+
+    const handleImageClick = () => {
+        if (isEditing) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Check file size (limit to 1MB for Firestore)
+        if (file.size > 1024 * 1024) {
+            alert('Image too large! Please choose an image smaller than 1MB.');
+            return;
+        }
+
+        console.log('Starting Base64 conversion for file:', file.name);
+        setUploading(true);
+
+        try {
+            // Convert image to Base64
+            const reader = new FileReader();
+
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+                console.log('Base64 conversion complete, updating profile...');
+
+                try {
+                    await updateUserProfile({ photoURL: base64String });
+                    console.log('Profile updated successfully!');
+                    alert('Profile picture updated successfully!');
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    alert(`Failed to update profile: ${error.message}`);
+                }
+                setUploading(false);
+            };
+
+            reader.onerror = () => {
+                console.error("Error reading file");
+                alert('Failed to read image file. Please try again.');
+                setUploading(false);
+            };
+
+            // Read file as Base64
+            reader.readAsDataURL(file);
+
+        } catch (error) {
+            console.error("Error processing image:", error);
+            alert(`Failed to process image: ${error.message}`);
+            setUploading(false);
+        }
+    };
+
+    const saveProfile = async () => {
+        try {
+            await updateUserProfile({ name: newName });
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            alert("Failed to update profile.");
+        }
+    };
+
+    const cancelEdit = () => {
+        setNewName(user?.name || '');
+        setIsEditing(false);
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Overview':
-                return <OverviewView name={displayName.split(' ')[0]} />;
+                return <OverviewView name={displayName.split(' ')[0]} stats={stats} />;
             case 'My Campaigns':
                 return <MyCampaignsView />;
             case 'Achievements':
@@ -58,16 +266,69 @@ const DonorDashboard = () => {
                         <div style={styles.profileSection}>
                             <img src={logo} alt="KindCents" style={styles.logoSmall} />
                             <div style={styles.avatarContainer}>
-                                <div style={styles.avatar}>
-                                    <Users size={40} color="#64748b" />
+                                <div
+                                    style={{
+                                        ...styles.avatar,
+                                        cursor: isEditing ? 'pointer' : 'default',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                    onClick={handleImageClick}
+                                >
+                                    {user?.photoURL ? (
+                                        <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <Users size={40} color="#64748b" />
+                                    )}
+
+                                    {isEditing && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: '30px',
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Camera size={16} color="#fff" />
+                                        </div>
+                                    )}
                                 </div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                />
                             </div>
+
                             <div style={styles.profileInfo}>
-                                <div style={styles.nameRow}>
-                                    <strong style={styles.profileName}>{displayName}</strong>
-                                    <button style={styles.editBtn}><Edit size={14} /></button>
-                                </div>
-                                <p style={styles.profileEmail}>{displayEmail}</p>
+                                {isEditing ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                                        <input
+                                            type="text"
+                                            value={newName}
+                                            onChange={(e) => setNewName(e.target.value)}
+                                            style={styles.editInput}
+                                        />
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button onClick={saveProfile} style={styles.saveBtn}><Save size={14} /></button>
+                                            <button onClick={cancelEdit} style={styles.cancelBtn}><X size={14} /></button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={styles.nameRow}>
+                                        <strong style={styles.profileName}>{user?.name || 'Guest User'}</strong>
+                                        <button onClick={() => { setIsEditing(true); setNewName(user?.name || ''); }} style={styles.editBtn}>
+                                            <Edit size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                                <p style={styles.profileEmail}>{user?.email || 'guest@kindcents.org'}</p>
                             </div>
                         </div>
 
@@ -79,7 +340,13 @@ const DonorDashboard = () => {
                                         ...styles.navItem,
                                         ...(activeTab === item.id ? styles.activeNavItem : {})
                                     }}
-                                    onClick={() => setActiveTab(item.id)}
+                                    onClick={() => {
+                                        if (item.id === 'Browse') {
+                                            navigate('/campaigns');
+                                        } else {
+                                            setActiveTab(item.id);
+                                        }
+                                    }}
                                 >
                                     {item.icon}
                                     <span>{item.label}</span>
@@ -101,7 +368,7 @@ const DonorDashboard = () => {
 
 // --- Sub-Views ---
 
-const OverviewView = ({ name }) => (
+const OverviewView = ({ name, stats }) => (
     <div style={styles.tabView}>
         <div style={styles.welcomeHeader}>
             <h2 style={styles.welcomeTitle}>Welcome back, {name}!</h2>
@@ -109,60 +376,136 @@ const OverviewView = ({ name }) => (
         </div>
 
         <div style={styles.statsGrid}>
-            <div style={styles.statsCard}>
-                <div style={styles.statsIconRow}>
-                    <div style={styles.statsIconCircle}>
-                        <img src="https://img.icons8.com/isometric/50/coins.png" alt="coins" style={{ width: 50 }} />
-                    </div>
-                    <div style={styles.statsTrend}><TrendingUp size={14} /> +12%</div>
-                </div>
-                <p style={styles.statsLabel}>Total Donated</p>
-                <h3 style={styles.statsValue}>Rs. 155,000</h3>
-            </div>
-
-            <div style={styles.statsCard}>
-                <div style={styles.statsIconRow}>
-                    <div style={styles.statsIconCircle}>
-                        <Flag size={40} color="#2563eb" fill="#2563eb" fillOpacity={0.2} />
-                    </div>
-                </div>
-                <p style={styles.statsLabel}>Campaigns Supported</p>
-                <h3 style={styles.statsValue}>5</h3>
-            </div>
-
-            <div style={styles.statsCard}>
-                <div style={styles.statsIconRow}>
-                    <div style={styles.statsIconCircle}>
-                        <div style={styles.heartImpactIcon}>
-                            <img src="https://img.icons8.com/isometric/50/family.png" alt="impact" style={{ width: 50 }} />
+            {stats.map((stat, index) => (
+                <div key={index} style={styles.statsCard}>
+                    <div style={styles.statsIconRow}>
+                        <div style={styles.statsIconCircle}>
+                            {stat.icon}
                         </div>
+                        {stat.change && (
+                            <div style={styles.statsTrend}>
+                                <TrendingUp size={14} /> {stat.change}
+                            </div>
+                        )}
                     </div>
-                    <div style={styles.statsTrend}><TrendingUp size={14} /> +25%</div>
+                    <p style={styles.statsLabel}>{stat.label}</p>
+                    <h3 style={styles.statsValue}>{stat.value}</h3>
                 </div>
-                <p style={styles.statsLabel}>Lives Impacted</p>
-                <h3 style={styles.statsValue}>100</h3>
-            </div>
-
-            <div style={styles.statsCard}>
-                <div style={styles.statsIconRow}>
-                    <div style={styles.statsIconCircle}>
-                        <Medal size={40} color="#2563eb" />
-                    </div>
-                </div>
-                <p style={styles.statsLabel}>Badges Earned</p>
-                <h3 style={styles.statsValue}>3</h3>
-            </div>
+            ))}
         </div>
     </div>
 );
 
 const MyCampaignsView = () => {
-    const campaigns = [
-        { id: 1, title: "Help Ayaan's Surgery", type: "Individual", image: logo, raised: 450000, goal: 1000000, donation: 40000, rating: 4 },
-        { id: 2, title: "Orphan Care Essentials", type: "NGO", image: logo, raised: 50000, goal: 70000, donation: 35000, rating: 3 },
-        { id: 3, title: "Medical Aid for Mrs. Perera", type: "Individual", image: logo, raised: 80000, goal: 80000, donation: 30000, rating: 4 },
-        { id: 4, title: "Rebuild Emma's House", type: "NGO", image: logo, raised: 100000, goal: 100000, donation: 25000, rating: 4 },
-    ];
+    const { user } = useAuth();
+    const [userDonations, setUserDonations] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        const fetchUserDonations = async () => {
+            if (!user) return;
+
+            console.log('🔍 Fetching donations for user:', user.uid);
+
+            try {
+                // Import Firestore functions
+                const { collection, query, where, getDocs } = await import('firebase/firestore');
+                const { db } = await import('../firebase');
+
+                // Query donations made by this user
+                const donationsRef = collection(db, 'donations');
+                const q = query(donationsRef, where('userId', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                console.log('📊 Found', querySnapshot.docs.length, 'donations');
+                querySnapshot.docs.forEach(doc => {
+                    console.log('💰 Donation:', doc.id, doc.data());
+                });
+
+                // Fetch campaign details for each donation
+                const donationsWithCampaigns = await Promise.all(
+                    querySnapshot.docs.map(async (donationDoc) => {
+                        const donationData = donationDoc.data();
+
+                        // Fetch the campaign details
+                        const { doc, getDoc } = await import('firebase/firestore');
+                        const campaignRef = doc(db, 'campaigns', donationData.campaignId);
+                        const campaignSnap = await getDoc(campaignRef);
+
+                        if (campaignSnap.exists()) {
+                            return {
+                                id: donationDoc.id,
+                                donation: donationData.amount,
+                                donatedAt: donationData.createdAt,
+                                ...campaignSnap.data(),
+                                campaignId: donationData.campaignId
+                            };
+                        }
+                        return null;
+                    })
+                );
+
+                const filteredDonations = donationsWithCampaigns.filter(d => d !== null);
+                console.log('✅ Processed donations with campaigns:', filteredDonations);
+                setUserDonations(filteredDonations);
+            } catch (error) {
+                console.error('❌ Error fetching donations:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserDonations();
+    }, [user]);
+
+    if (loading) {
+        return (
+            <div style={styles.tabView}>
+                <div style={styles.welcomeHeader}>
+                    <h2 style={styles.welcomeTitle}>My Campaigns</h2>
+                    <p style={styles.welcomeSub}>Loading your donations...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Empty state if no donations
+    if (userDonations.length === 0) {
+        return (
+            <div style={{ ...styles.tabView, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '500px' }}>
+                <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+                    <h2 style={{ ...styles.welcomeTitle, whiteSpace: 'nowrap' }}>You Haven't Made a Donation Yet</h2>
+                    <p style={{ ...styles.welcomeSub, marginBottom: '2rem' }}>
+                        Start making a difference today by supporting campaigns that matter to you.
+                    </p>
+                    <button
+                        onClick={() => navigate('/campaigns')}
+                        style={{
+                            backgroundColor: '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '1rem 2rem',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#059669'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#10b981'}
+                    >
+                        Donate Now
+                        <ArrowUpRight size={20} />
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={styles.tabView}>
@@ -172,27 +515,31 @@ const MyCampaignsView = () => {
             </div>
 
             <div style={styles.campaignListGrid}>
-                {campaigns.map(c => (
+                {userDonations.map(c => (
                     <div key={c.id} style={styles.compactCampaignCard}>
                         <div style={styles.compactImageWrapper}>
-                            <img src={c.image} alt={c.title} style={styles.compactImage} />
-                            <span style={styles.compactTypeBadge}>{c.type}</span>
+                            <img
+                                src={imageMap[c.image] || c.image || c.imageUrl}
+                                alt={c.title}
+                                style={styles.compactImage}
+                            />
+                            <span style={styles.compactTypeBadge}>{c.type || 'Campaign'}</span>
                         </div>
                         <div style={styles.compactContent}>
                             <div style={styles.compactHeader}>
                                 <h4 style={styles.compactTitle}>{c.title}</h4>
                                 <div style={styles.compactRating}>
-                                    {[...Array(c.rating)].map((_, i) => <Star key={i} size={12} fill="#fbbf24" color="#fbbf24" />)}
-                                    {[...Array(5 - c.rating)].map((_, i) => <Star key={i} size={12} color="#cbd5e1" />)}
+                                    {[...Array(4)].map((_, i) => <Star key={i} size={12} fill="#fbbf24" color="#fbbf24" />)}
+                                    {[...Array(1)].map((_, i) => <Star key={i} size={12} color="#cbd5e1" />)}
                                 </div>
                             </div>
                             <div style={styles.compactProgress}>
                                 <div style={styles.compactProgressBarContainer}>
-                                    <div style={{ ...styles.compactProgressBar, width: `${(c.raised / c.goal) * 100}%` }} />
+                                    <div style={{ ...styles.compactProgressBar, width: `${Math.min((c.raised / c.goal) * 100, 100)}%` }} />
                                 </div>
                                 <div style={styles.compactProgressLabels}>
-                                    <span>Rs. {c.raised.toLocaleString()}</span>
-                                    <span>of Rs. {c.goal.toLocaleString()}</span>
+                                    <span>Rs. {(c.raised || 0).toLocaleString()}</span>
+                                    <span>of Rs. {(c.goal || 0).toLocaleString()}</span>
                                 </div>
                             </div>
                             <div style={styles.myDonationRow}>
@@ -203,26 +550,106 @@ const MyCampaignsView = () => {
                     </div>
                 ))}
             </div>
-
-            <div style={styles.pagination}>
-                <button style={styles.pagBtn}>← Previous</button>
-                <button style={{ ...styles.pagBtn, ...styles.activePagBtn }}>1</button>
-                <button style={styles.pagBtn}>2</button>
-                <button style={styles.pagBtn}>Next →</button>
-            </div>
-        </div>
+        </div >
     );
 };
 
+
 const AchievementsView = () => {
-    const badges = [
-        { title: "First Step", desc: "Made your first charitable donation!", icon: "https://img.icons8.com/fluency/96/ribbon--v1.png", unlocked: true },
-        { title: "Kind Heart", desc: "Supported 3 different campaigns", icon: "https://img.icons8.com/fluency/96/pink-heart.png", unlocked: true },
-        { title: "Life Changer", desc: "Impacted 50+ lives through your donations", icon: "https://img.icons8.com/fluency/96/hands-clasping.png", unlocked: true },
-        { title: "Community Hero", desc: "Donated over LKR 100,000 in total", icon: "https://img.icons8.com/fluency/96/military-medal.png", unlocked: true },
-        { title: "Hope Bringer", desc: "Fully funded an entire campaign", icon: "https://img.icons8.com/fluency/96/security-shield-green.png", unlocked: false, progress: 0, target: 1 },
-        { title: "Golden Giver", desc: "Supported 10+ campaigns", icon: "https://img.icons8.com/fluency/96/award-star.png", unlocked: false, progress: 5, target: 10 },
-    ];
+    const { user } = useAuth();
+    const [badges, setBadges] = React.useState([
+        { title: "First Step", desc: "Made your first charitable donation!", icon: badgeFirstStep, unlocked: false, progress: 0, target: 1 },
+        { title: "Kind Heart", desc: "Supported 3 different campaigns", icon: badgeKindHeart, unlocked: false, progress: 0, target: 3 },
+        { title: "Life Changer", desc: "Impacted 50+ lives through your donations", icon: badgeLifeChanger, unlocked: false, progress: 0, target: 50 },
+        { title: "Community Hero", desc: "Donated over Rs. 100,000 in total", icon: badgeCommunityHero, unlocked: false, progress: 0, target: 100000 },
+        { title: "Hope Bringer", desc: "Fully funded an entire campaign", icon: badgeHopeBringer, unlocked: false, progress: 0, target: 1 },
+        { title: "Golden Giver", desc: "Supported 10+ campaigns", icon: badgeGoldenGiver, unlocked: false, progress: 0, target: 10 },
+    ]);
+
+    React.useEffect(() => {
+        const fetchBadgeProgress = async () => {
+            if (!user) return;
+
+            try {
+                const { collection, query, where, getDocs } = await import('firebase/firestore');
+                const { db } = await import('../firebase');
+
+                const donationsRef = collection(db, 'donations');
+                const q = query(donationsRef, where('userId', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                let totalDonated = 0;
+                const uniqueCampaigns = new Set();
+                let fullyFundedCount = 0;
+
+                querySnapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    totalDonated += data.amount || 0;
+                    if (data.campaignId) {
+                        uniqueCampaigns.add(data.campaignId);
+                    }
+                });
+
+                const livesImpacted = totalDonated > 0 ? Math.floor(totalDonated / 1000) : 0;
+
+                // Update badges with real progress
+                setBadges([
+                    {
+                        title: "First Step",
+                        desc: "Made your first charitable donation!",
+                        icon: badgeFirstStep,
+                        unlocked: totalDonated > 0,
+                        progress: totalDonated > 0 ? 1 : 0,
+                        target: 1
+                    },
+                    {
+                        title: "Kind Heart",
+                        desc: "Supported 3 different campaigns",
+                        icon: badgeKindHeart,
+                        unlocked: uniqueCampaigns.size >= 3,
+                        progress: uniqueCampaigns.size,
+                        target: 3
+                    },
+                    {
+                        title: "Life Changer",
+                        desc: "Impacted 50+ lives through your donations",
+                        icon: badgeLifeChanger,
+                        unlocked: livesImpacted >= 50,
+                        progress: livesImpacted,
+                        target: 50
+                    },
+                    {
+                        title: "Community Hero",
+                        desc: "Donated over Rs. 100,000 in total",
+                        icon: badgeCommunityHero,
+                        unlocked: totalDonated >= 100000,
+                        progress: totalDonated,
+                        target: 100000
+                    },
+                    {
+                        title: "Hope Bringer",
+                        desc: "Fully funded an entire campaign",
+                        icon: badgeHopeBringer,
+                        unlocked: fullyFundedCount >= 1,
+                        progress: fullyFundedCount,
+                        target: 1
+                    },
+                    {
+                        title: "Golden Giver",
+                        desc: "Supported 10+ campaigns",
+                        icon: badgeGoldenGiver,
+                        unlocked: uniqueCampaigns.size >= 10,
+                        progress: uniqueCampaigns.size,
+                        target: 10
+                    },
+                ]);
+            } catch (error) {
+                console.error('Error fetching badge progress:', error);
+            }
+        };
+
+        fetchBadgeProgress();
+    }, [user]);
 
     return (
         <div style={styles.tabView}>
@@ -233,8 +660,15 @@ const AchievementsView = () => {
 
             <div style={styles.badgeGrid}>
                 {badges.map((badge, i) => (
-                    <div key={i} style={{ ...styles.badgeCard, ...(badge.unlocked ? {} : styles.lockedBadge) }}>
-                        <img src={badge.icon} alt={badge.title} style={styles.badgeIcon} />
+                    <div key={i} style={{
+                        ...styles.badgeCard,
+                        ...(badge.unlocked ? { border: '2px solid #e5e7eb' } : styles.lockedBadge)
+                    }}>
+                        <img
+                            src={badge.unlocked ? badge.icon : badgeLocked}
+                            alt={badge.title}
+                            style={styles.badgeIcon}
+                        />
                         <h4 style={styles.badgeTitle}>{badge.title}</h4>
                         <p style={styles.badgeDesc}>{badge.desc}</p>
                         {badge.unlocked ? (
@@ -246,33 +680,111 @@ const AchievementsView = () => {
                                     <span>{badge.target}</span>
                                 </div>
                                 <div style={styles.badgeProgressBar}>
-                                    <div style={{ ...styles.badgeProgressFill, width: `${(badge.progress / badge.target) * 100}%` }} />
+                                    <div style={{ ...styles.badgeProgressFill, width: `${Math.min((badge.progress / badge.target) * 100, 100)}%` }} />
                                 </div>
                             </div>
                         )}
-                        {!badge.unlocked && <div style={styles.lockIcon}><History size={24} color="#94a3b8" /></div>}
                     </div>
                 ))}
-            </div>
-
-            <div style={styles.pagination}>
-                <button style={styles.pagBtn}>← Previous</button>
-                <button style={{ ...styles.pagBtn, ...styles.activePagBtn }}>1</button>
-                <button style={styles.pagBtn}>2</button>
-                <button style={styles.pagBtn}>Next →</button>
             </div>
         </div>
     );
 };
 
 const RecentDonationsView = () => {
-    const donations = [
-        { title: "Help Ayaan's Surgery", date: "Jan 14, 2026", amount: 40000, status: "Pending" },
-        { title: "Orphan Care Essentials", date: "Jan 10, 2026", amount: 35000, status: "Pending" },
-        { title: "Medical Aid for Mrs. Perera", date: "Jan 5, 2026", amount: 30000, status: "Completed" },
-        { title: "Rebuild Emma's Home", date: "Dec 31, 2025", amount: 25000, status: "Completed" },
-        { title: "Books for Bright Futures", date: "Dec 24, 2025", amount: 25000, status: "Completed" },
-    ];
+    const { user } = useAuth();
+    const [donations, setDonations] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        const fetchRecentDonations = async () => {
+            if (!user) return;
+
+            try {
+                const { collection, query, where, getDocs } = await import('firebase/firestore');
+                const { db } = await import('../firebase');
+
+                // Query recent donations by this user (without orderBy to avoid index requirement)
+                const donationsRef = collection(db, 'donations');
+                const q = query(
+                    donationsRef,
+                    where('userId', '==', user.uid)
+                );
+                const querySnapshot = await getDocs(q);
+
+                const donationsData = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                // Sort client-side by createdAt descending and limit to 10
+                const sortedDonations = donationsData
+                    .sort((a, b) => {
+                        const dateA = a.createdAt?.toDate?.() || new Date(0);
+                        const dateB = b.createdAt?.toDate?.() || new Date(0);
+                        return dateB - dateA;
+                    })
+                    .slice(0, 10);
+
+                setDonations(sortedDonations);
+            } catch (error) {
+                console.error('Error fetching recent donations:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecentDonations();
+    }, [user]);
+
+    if (loading) {
+        return (
+            <div style={styles.tabView}>
+                <div style={styles.welcomeHeader}>
+                    <h2 style={styles.welcomeTitle}>Recent Donations</h2>
+                    <p style={styles.welcomeSub}>Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Empty state if no donations
+    if (donations.length === 0) {
+        return (
+            <div style={{ ...styles.tabView, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '500px' }}>
+                <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+                    <h2 style={{ ...styles.welcomeTitle, whiteSpace: 'nowrap' }}>No Donation History Yet</h2>
+                    <p style={{ ...styles.welcomeSub, marginBottom: '2rem' }}>
+                        Your donation history will appear here once you start supporting campaigns.
+                    </p>
+                    <button
+                        onClick={() => navigate('/campaigns')}
+                        style={{
+                            backgroundColor: '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '1rem 2rem',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#059669'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#10b981'}
+                    >
+                        Browse Campaigns
+                        <ArrowUpRight size={20} />
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={styles.tabView}>
@@ -286,25 +798,19 @@ const RecentDonationsView = () => {
                         <div key={i} style={styles.historyItem}>
                             <div style={styles.historyIconCircle}><ArrowUpRight size={20} color="#10b981" /></div>
                             <div style={styles.historyInfo}>
-                                <strong style={styles.historyTitle}>{d.title}</strong>
-                                <p style={styles.historyDate}>{d.date}</p>
+                                <strong style={styles.historyTitle}>{d.campaignTitle || 'Campaign'}</strong>
+                                <p style={styles.historyDate}>{d.createdAt?.toDate?.()?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) || 'Recent'}</p>
                             </div>
                             <div style={styles.historyRight}>
-                                <strong style={styles.historyAmount}>Rs. {d.amount.toLocaleString()}</strong>
+                                <strong style={styles.historyAmount}>Rs. {(d.amount || 0).toLocaleString()}</strong>
                                 <span style={{
                                     ...styles.statusTag,
                                     color: d.status === 'Completed' ? '#10b981' : '#f59e0b'
-                                }}>{d.status}</span>
+                                }}>{d.status || 'Pending'}</span>
                             </div>
                         </div>
                     ))}
                 </div>
-            </div>
-
-            <div style={styles.pagination}>
-                <button style={styles.pagBtn}>← Previous</button>
-                <button style={{ ...styles.pagBtn, ...styles.activePagBtn }}>1</button>
-                <button style={styles.pagBtn}>Next →</button>
             </div>
         </div>
     );
@@ -339,8 +845,10 @@ const styles = {
         gap: '2.5rem',
     },
     logoSmall: {
-        height: '40px',
+        height: '60px',
+        width: 'auto',
         marginBottom: '1.5rem',
+        objectFit: 'contain',
     },
     profileSection: {
         display: 'flex',
@@ -386,6 +894,35 @@ const styles = {
         fontSize: '0.85rem',
         color: '#64748b',
         marginTop: '0.25rem',
+    },
+    editInput: {
+        padding: '0.5rem',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e1',
+        width: '100%',
+        fontSize: '0.9rem',
+    },
+    saveBtn: {
+        backgroundColor: '#10b981',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        padding: '4px 8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cancelBtn: {
+        backgroundColor: '#ef4444',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        padding: '4px 8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     sidebarNav: {
         display: 'flex',
@@ -448,23 +985,29 @@ const styles = {
         border: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center', // Center content horizontally
         gap: '0.5rem',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        position: 'relative', // For absolute positioning of trend
     },
     statsIconRow: {
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        justifyContent: 'center', // Center the icon
+        alignItems: 'center',
         marginBottom: '0.5rem',
+        width: '100%',
     },
     statsIconCircle: {
-        width: '60px',
-        height: '60px',
+        width: 'auto',
+        height: 'auto',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
     },
     statsTrend: {
+        position: 'absolute', // Absolute positioning
+        top: '1.5rem',
+        right: '1.5rem',
         backgroundColor: '#dcfce7',
         color: '#16a34a',
         padding: '0.25rem 0.75rem',
@@ -479,13 +1022,15 @@ const styles = {
         fontSize: '0.9rem',
         fontWeight: '700',
         color: '#64748b',
-        margin: 0,
+        margin: '0.5rem 0 0 0', // Add some top margin
+        textAlign: 'center',
     },
     statsValue: {
         fontSize: '1.75rem',
         fontWeight: '800',
         color: '#1e293b',
         margin: 0,
+        textAlign: 'center',
     },
     campaignListGrid: {
         display: 'grid',
@@ -596,12 +1141,12 @@ const styles = {
         position: 'relative',
     },
     lockedBadge: {
-        backgroundColor: '#f1f5f9',
+        backgroundColor: '#f8fafc',
         borderStyle: 'dashed',
     },
     badgeIcon: {
-        width: '64px',
-        height: '64px',
+        width: '120px',
+        height: '120px',
         marginBottom: '0.5rem',
     },
     badgeTitle: {

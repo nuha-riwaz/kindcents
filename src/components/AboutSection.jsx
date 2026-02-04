@@ -4,7 +4,7 @@ import logo from '../assets/logo.png';
 
 const AboutSection = () => {
     return (
-        <section style={styles.section}>
+        <section id="about" style={styles.section}>
             <div className="container" style={styles.container}>
                 <div style={styles.content}>
                     <h2 style={styles.heading}>

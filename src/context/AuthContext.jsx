@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { auth, googleProvider, db } from '../firebase';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
@@ -13,56 +13,91 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
                 try {
-                    // Check if user exists in Firestore
+                    // Fetch user document once (no real-time listener)
                     const userRef = doc(db, 'users', currentUser.uid);
-                    const userSnap = await getDoc(userRef);
+                    const docSnap = await getDoc(userRef);
 
-                    let firestoreData = {};
-
-                    if (userSnap.exists()) {
-                        firestoreData = userSnap.data();
+                    if (docSnap.exists()) {
+                        const firestoreData = docSnap.data();
+                        setUser({
+                            ...currentUser,
+                            ...firestoreData,
+                            role: firestoreData.role,
+                            status: firestoreData.status,
+                            name: firestoreData.name || currentUser.displayName,
+                            photoURL: firestoreData.photoURL || currentUser.photoURL,
+                            stats: firestoreData.stats || {}
+                        });
                     } else {
-                        // Create new user profile in Firestore
-                        // NOTE: We do NOT assign a default role here.
-                        // This allows us to detect new users and redirect them to Onboarding.
-                        firestoreData = {
+                        // Create new user profile if missing
+                        const newUserData = {
                             uid: currentUser.uid,
                             name: currentUser.displayName || "User",
                             email: currentUser.email,
-                            // role: undefined, // Intentionally undefined
-                            // status: undefined, // Intentionally undefined
-                            signupDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            signupDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                            stats: {
+                                totalDonated: 0,
+                                campaignsSupported: 0,
+                                livesImpacted: 0,
+                                badges: 0
+                            }
                         };
-                        await setDoc(userRef, firestoreData);
+                        await setDoc(userRef, newUserData);
+                        setUser({ ...currentUser, ...newUserData });
                     }
-
-                    // Merge Auth and Firestore data
-                    setUser({
-                        ...currentUser,
-                        ...firestoreData,
-                        // Ensure critical fields are accessible at top level
-                        role: firestoreData.role,
-                        status: firestoreData.status,
-                        name: firestoreData.name || currentUser.displayName,
-                        photoURL: currentUser.photoURL
-                    });
                 } catch (error) {
-                    console.error("Error syncing user profile:", error);
-                    // Fallback to basic auth user
-                    setUser(currentUser);
+                    console.error("Error fetching user profile:", error);
+                    setUser(currentUser); // Fallback to auth data
                 }
+                setLoading(false);
             } else {
                 setUser(null);
+                setLoading(false);
             }
-            setLoading(false);
         });
         return unsubscribe;
     }, []);
 
+    const signup = async (email, password, fullName) => {
+        try {
+            // 1. Create User in Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // 2. Update Auth Profile
+            await updateProfile(user, { displayName: fullName });
+
+            // 3. Create Firestore Document Immediately (to avoid race conditions)
+            const userRef = doc(db, 'users', user.uid);
+            await setDoc(userRef, {
+                uid: user.uid,
+                name: fullName,
+                email: user.email,
+                signupDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            });
+
+            return user;
+        } catch (error) {
+            console.error("Error signing up:", error);
+            throw error;
+        }
+    };
+
+    const loginEmail = async (email, password) => {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            return userCredential.user;
+        } catch (error) {
+            console.error("Error logging in:", error);
+            throw error;
+        }
+    };
+
     const login = async (method, customName = null, userType = 'donor', email = null) => {
         if (method === "Google User") {
             try {
-                await signInWithPopup(auth, googleProvider);
+                const result = await signInWithPopup(auth, googleProvider);
+                return result.user;
             } catch (error) {
                 console.error("Error signing in with Google", error);
                 if (error.code === 'auth/configuration-not-found') {
@@ -72,6 +107,7 @@ export const AuthProvider = ({ children }) => {
                 } else if (error.code !== 'auth/popup-closed-by-user') {
                     alert(`Login Failed!\nError: ${error.message}`);
                 }
+                return null;
             }
         } else if (method === "Simulated") {
             // Keep simulated login for testing/admin backup
@@ -114,8 +150,37 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateUserProfile = async (updates) => {
+        if (!user) return;
+        try {
+            // 1. Update Firestore
+            const userRef = doc(db, 'users', user.uid);
+            await setDoc(userRef, updates, { merge: true });
+
+            // 2. Update Local State immediately
+            setUser(prev => ({ ...prev, ...updates }));
+
+            // 3. Keep Auth Profile in sync
+            if (auth.currentUser) {
+                const authUpdates = {};
+                if (updates.name) authUpdates.displayName = updates.name;
+                // Only update photoURL in Firebase Auth if it's a regular URL (not Base64)
+                if (updates.photoURL && !updates.photoURL.startsWith('data:')) {
+                    authUpdates.photoURL = updates.photoURL;
+                }
+
+                if (Object.keys(authUpdates).length > 0) {
+                    await updateProfile(auth.currentUser, authUpdates);
+                }
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, saveUserRole }}>
+        <AuthContext.Provider value={{ user, login, logout, signup, loginEmail, saveUserRole, updateUserProfile }}>
             {!loading && children}
         </AuthContext.Provider>
     );

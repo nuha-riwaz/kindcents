@@ -111,7 +111,7 @@ const Onboarding = () => {
 const styles = {
     page: { minHeight: '100vh', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' },
     header: { width: '100%', padding: '1.5rem', display: 'flex', justifyContent: 'center' },
-    logo: { height: '40px' },
+    logo: { height: '60px' },
     container: { width: '100%', maxWidth: '500px', padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column' },
     progressRow: { marginBottom: '2rem' },
     stepText: { fontSize: '0.9rem', color: '#1e293b', fontWeight: '600', marginBottom: '0.5rem' },

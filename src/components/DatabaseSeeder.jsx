@@ -14,13 +14,13 @@ const DatabaseSeeder = () => {
             type: "campaign",
             title: "Help Ayaan's Surgery",
             // Note: We can't upload local images to Firestore directly. 
-            // We'll store the path string for now, or use a placeholder URL if we were using Storage.
+            // We'll store the path string for now, or use a placeholder URL if we were using Storage. 
             // For this app's current stage, let's keep the image import logic in the frontend 
             // by storing a recognizable string ID for the image, or just keeping the import in the component.
             // However, to make it fully dynamic, we usually upload images to Firebase Storage.
             // For now, let's store a string that the frontend can map back to an import or a fixed URL.
             // We'll use the variable name as a string for now.
-            image: "projectEmma",
+            image: "ayaanSurgery",
             raised: 450000,
             goal: 1000000,
             contributors: 34,
@@ -76,7 +76,7 @@ const DatabaseSeeder = () => {
             id: "3",
             type: "campaign",
             title: "Medical Equipment for Rural Hospital",
-            image: "projectEmma",
+            image: "ruralMedical",
             raised: 190000,
             goal: 200000,
             contributors: 52,
@@ -104,7 +104,7 @@ const DatabaseSeeder = () => {
             id: "4",
             type: "campaign",
             title: "Temple renovation in Panagama",
-            image: "projectArklow",
+            image: "templeRenovation",
             raised: 20000,
             goal: 50000,
             contributors: 18,
@@ -131,7 +131,7 @@ const DatabaseSeeder = () => {
             id: "akshay-society",
             type: "ngo",
             title: "Akshay Society",
-            image: "projectEmma",
+            image: "orgAkshay",
             raised: 1820000,
             goal: 5000000,
             contributors: 173,
@@ -166,7 +166,7 @@ const DatabaseSeeder = () => {
             id: "keithston-foundation",
             type: "ngo",
             title: "Keithston Foundation",
-            image: "projectArklow",
+            image: "orgKeithston",
             raised: 2100000,
             goal: 6000000,
             contributors: 215,
@@ -199,7 +199,7 @@ const DatabaseSeeder = () => {
             id: "smile-foundation",
             type: "ngo",
             title: "Smile Foundation",
-            image: "projectEmma",
+            image: "orgSmile",
             raised: 3500000,
             goal: 8000000,
             contributors: 420,
@@ -232,7 +232,7 @@ const DatabaseSeeder = () => {
             id: "lotus-born-foundation",
             type: "ngo",
             title: "Lotus Born Foundation",
-            image: "projectArklow",
+            image: "orgLotus",
             raised: 950000,
             goal: 2500000,
             contributors: 85,
