@@ -24,10 +24,15 @@ import projectArklow from '../assets/project-arklow.png';
 
 import { useCampaigns } from '../context/CampaignContext';
 
+import DonationModal from '../components/DonationModal';
+import { useAuth } from '../context/AuthContext';
+
 const CampaignDetails = () => {
     const { id } = useParams();
-    const { campaignStore } = useCampaigns();
+    const { campaignStore, donateToCampaign } = useCampaigns();
+    const { user } = useAuth();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
     const campaign = campaignStore[id] || campaignStore["1"];
     const isNGO = campaign.type === 'ngo';
@@ -47,6 +52,18 @@ const CampaignDetails = () => {
             setIsShareModalOpen(true);
         }
     };
+
+    const handleDonation = async (amount) => {
+        if (!campaign) return;
+        try {
+            await donateToCampaign(campaign.id, amount, user ? user.uid : 'anonymous');
+            // Additional success logic happens inside the modal (showing success step)
+        } catch (error) {
+            alert("Donation failed. Please try again.");
+        }
+    };
+
+    if (!campaign) return <div>Loading...</div>;
 
     return (
         <div style={styles.page}>
@@ -90,7 +107,9 @@ const CampaignDetails = () => {
                                     <button style={styles.shareBtn} onClick={handleShare}><Share2 size={16} /> Share</button>
                                 </div>
                             </div>
-                            <button style={styles.donateBtn}>Donate Now <ArrowRight size={20} /></button>
+                            <button style={styles.donateBtn} onClick={() => setIsDonationModalOpen(true)}>
+                                Donate Now <ArrowRight size={20} />
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -115,6 +134,42 @@ const CampaignDetails = () => {
                                 ))}
                             </div>
                         </div>
+
+                        {campaign.fundUtilization && (
+                            <div style={styles.sectionCard}>
+                                <h2 style={styles.sectionTitle}>Fund Utilization</h2>
+                                <div style={styles.fundList}>
+                                    {campaign.fundUtilization.map((fund, i) => (
+                                        <div key={i} style={styles.fundItem}>
+                                            <div style={styles.fundHeader}>
+                                                <span style={styles.fundTitle}>{fund.title}</span>
+                                                <span style={styles.fundAmount}>Rs. {fund.amount.toLocaleString()}</span>
+                                            </div>
+                                            <p style={styles.fundDesc}>{fund.desc}</p>
+                                            <span style={styles.fundDate}>{fund.date}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {campaign.updates && (
+                            <div style={styles.sectionNoCard}>
+                                <h2 style={styles.sectionTitle}>Recent Updates</h2>
+                                <div style={styles.updateList}>
+                                    {campaign.updates.map((update, i) => (
+                                        <div key={i} style={styles.updateItem}>
+                                            <div style={styles.updateMarker}></div>
+                                            <div style={styles.updateContent}>
+                                                <span style={styles.updateDate}>{update.date}</span>
+                                                <h4 style={styles.updateTitle}>{update.title}</h4>
+                                                <p style={styles.updateText}>{update.content}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <div style={styles.rightCol}>
                         <div style={styles.sideCard}>
@@ -129,6 +184,12 @@ const CampaignDetails = () => {
             </div>
             <Footer />
             <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} campaignTitle={campaign.title} campaignUrl={window.location.href} />
+            <DonationModal
+                isOpen={isDonationModalOpen}
+                onClose={() => setIsDonationModalOpen(false)}
+                campaignTitle={campaign.title}
+                onDonate={handleDonation}
+            />
         </div>
     );
 };
@@ -178,7 +239,25 @@ const styles = {
     avatar: { width: '60px', height: '60px', backgroundColor: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.25rem', fontWeight: '700' },
     sideName: { display: 'block', fontSize: '1.1rem', marginBottom: '0.25rem' },
     sideSub: { fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' },
-    verifiedTag: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.85rem' }
+    verifiedTag: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.85rem' },
+
+    // Fund Utilization Styles
+    fundList: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+    fundItem: { borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' },
+    fundHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' },
+    fundTitle: { fontWeight: '600', color: '#1e293b' },
+    fundAmount: { fontWeight: '700', color: '#10b981' },
+    fundDesc: { fontSize: '0.9rem', color: '#64748b', marginBottom: '0.25rem' },
+    fundDate: { fontSize: '0.8rem', color: '#94a3b8' },
+
+    // Updates Styles
+    updateList: { position: 'relative', borderLeft: '2px solid #e2e8f0', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' },
+    updateItem: { position: 'relative' },
+    updateMarker: { position: 'absolute', left: '-1.95rem', top: '0', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#2563eb', border: '3px solid #fff', boxShadow: '0 0 0 1px #e2e8f0' },
+    updateContent: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
+    updateDate: { fontSize: '0.75rem', fontWeight: '600', color: '#64748b', backgroundColor: '#f1f5f9', padding: '0.2rem 0.75rem', borderRadius: '50px', width: 'fit-content', border: '1px solid #e2e8f0' },
+    updateTitle: { fontSize: '1.1rem', fontWeight: '700', color: '#1e293b', margin: 0 },
+    updateText: { fontSize: '0.95rem', lineHeight: '1.6', color: '#475569', margin: 0 }
 };
 
 export default CampaignDetails;

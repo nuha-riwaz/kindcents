@@ -6,6 +6,10 @@ import { Search, X, Users, Star, ChevronLeft, ChevronRight } from 'lucide-react'
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgSmile from '../assets/org-smile.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
 
 import { useCampaigns } from '../context/CampaignContext';
 
@@ -119,32 +123,34 @@ const Campaigns = () => {
                     <button style={{ ...styles.pagBtn, ...styles.activePagBtn }}>1</button>
                     <button style={styles.pagBtn}>Next <ChevronRight size={16} /></button>
                 </div>
+
+                {/* Verified Organizations Section */}
                 <div style={styles.verifiedSection}>
                     <h2 style={styles.verifiedTitle}>Be a part of Verified organizations</h2>
                     <div style={styles.orgLogos}>
                         <div
-                            style={{ ...styles.orgCard, cursor: 'pointer' }}
+                            style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/akshay-society')}
                         >
-                            <div style={styles.placeholderLogo}>AKSHAY SOCIETY</div>
+                            <img src={orgAkshay} alt="Akshay Society" style={styles.orgLogo} />
                         </div>
                         <div
-                            style={{ ...styles.orgCard, cursor: 'pointer' }}
+                            style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/keithston-foundation')}
                         >
-                            <div style={styles.placeholderLogo}>KEITHSTON FOUNDATION</div>
+                            <img src={orgKeithston} alt="Keithston Foundation" style={styles.orgLogo} />
                         </div>
                         <div
-                            style={{ ...styles.orgCard, cursor: 'pointer' }}
+                            style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/smile-foundation')}
                         >
-                            <div style={styles.placeholderLogo}>SMILE FOUNDATION</div>
+                            <img src={orgSmile} alt="Smile Foundation" style={styles.orgLogo} />
                         </div>
                         <div
-                            style={{ ...styles.orgCard, cursor: 'pointer' }}
+                            style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/lotus-born-foundation')}
                         >
-                            <div style={styles.placeholderLogo}>LOTUS BORN FOUNDATION</div>
+                            <img src={orgLotus} alt="Lotus Born Foundation" style={styles.orgLogo} />
                         </div>
                     </div>
                 </div>
@@ -189,11 +195,26 @@ const styles = {
     pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginBottom: '4rem' },
     pagBtn: { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', backgroundColor: 'transparent', color: '#64748b', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '500' },
     activePagBtn: { backgroundColor: '#64748b', color: '#fff', borderRadius: '4px', width: '32px', height: '32px', justifyContent: 'center', padding: 0 },
-    verifiedSection: { backgroundColor: '#fff', borderRadius: '20px', padding: '3rem', border: '1px solid #e2e8f0', textAlign: 'center' },
+    verifiedSection: { backgroundColor: '#fff', borderRadius: '20px', padding: '3rem', border: '1px solid #e2e8f0', textAlign: 'center', marginBottom: '3rem' },
     verifiedTitle: { fontSize: '1.25rem', fontWeight: '700', color: '#1e293b', marginBottom: '2.5rem' },
-    orgLogos: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem', alignItems: 'center' },
-    orgCard: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
-    placeholderLogo: { fontSize: '0.8rem', fontWeight: '700', color: '#94a3b8', border: '2px solid #f1f5f9', padding: '1.5rem 1rem', width: '100%', textAlign: 'center' }
+    orgLogos: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem', alignItems: 'center', justifyContent: 'center' },
+    orgLogoWrapper: {
+        backgroundColor: '#f8fafc',
+        borderRadius: '12px',
+        padding: '2rem 1.5rem',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '120px',
+        border: '1px solid #e2e8f0'
+    },
+    orgLogo: {
+        maxWidth: '100%',
+        maxHeight: '100px',
+        width: 'auto',
+        height: 'auto',
+        objectFit: 'contain'
+    }
 };
 
 export default Campaigns;

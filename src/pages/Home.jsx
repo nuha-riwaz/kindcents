@@ -15,8 +15,17 @@ const Home = () => {
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        if (user && user.userType === 'admin') {
-            navigate('/dashboard/admin');
+        if (user) {
+            // New User (No Role) -> Onboarding
+            if (!user.role) {
+                navigate('/onboarding');
+                return;
+            }
+
+            // Admin -> Dashboard
+            if (user.role === 'admin' || user.userType === 'admin') {
+                navigate('/dashboard/admin');
+            }
         }
     }, [user, navigate]);
 

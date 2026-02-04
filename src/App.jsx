@@ -12,6 +12,8 @@ import NgoDashboard from "./pages/NgoDashboard";
 import IndividualDashboard from "./pages/IndividualDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import CreateCampaign from "./pages/CreateCampaign";
+import DatabaseSeeder from "./components/DatabaseSeeder";
+import Onboarding from "./pages/Onboarding";
 
 import { AuthProvider } from "./context/AuthContext";
 import { CampaignProvider } from "./context/CampaignContext";
@@ -36,6 +38,8 @@ function App() {
             <Route path="/dashboard/individual" element={<IndividualDashboard />} />
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/create-campaign" element={<CreateCampaign />} />
+            <Route path="/seed" element={<DatabaseSeeder />} />
+            <Route path="/onboarding" element={<Onboarding />} />
           </Routes>
         </BrowserRouter>
       </CampaignProvider>

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
 
@@ -9,17 +10,48 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
-                // User is signed in
-                setUser({
-                    name: currentUser.displayName,
-                    email: currentUser.email,
-                    photoURL: currentUser.photoURL,
-                    uid: currentUser.uid
-                });
+                try {
+                    // Check if user exists in Firestore
+                    const userRef = doc(db, 'users', currentUser.uid);
+                    const userSnap = await getDoc(userRef);
+
+                    let firestoreData = {};
+
+                    if (userSnap.exists()) {
+                        firestoreData = userSnap.data();
+                    } else {
+                        // Create new user profile in Firestore
+                        // NOTE: We do NOT assign a default role here.
+                        // This allows us to detect new users and redirect them to Onboarding.
+                        firestoreData = {
+                            uid: currentUser.uid,
+                            name: currentUser.displayName || "User",
+                            email: currentUser.email,
+                            // role: undefined, // Intentionally undefined
+                            // status: undefined, // Intentionally undefined
+                            signupDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        };
+                        await setDoc(userRef, firestoreData);
+                    }
+
+                    // Merge Auth and Firestore data
+                    setUser({
+                        ...currentUser,
+                        ...firestoreData,
+                        // Ensure critical fields are accessible at top level
+                        role: firestoreData.role,
+                        status: firestoreData.status,
+                        name: firestoreData.name || currentUser.displayName,
+                        photoURL: currentUser.photoURL
+                    });
+                } catch (error) {
+                    console.error("Error syncing user profile:", error);
+                    // Fallback to basic auth user
+                    setUser(currentUser);
+                }
             } else {
-                // User is signed out
                 setUser(null);
             }
             setLoading(false);
@@ -33,45 +65,57 @@ export const AuthProvider = ({ children }) => {
                 await signInWithPopup(auth, googleProvider);
             } catch (error) {
                 console.error("Error signing in with Google", error);
-
                 if (error.code === 'auth/configuration-not-found') {
-                    alert("Login Failed: Google Sign-In is disabled in your Firebase Console.\n\nPlease go to Firebase Console > Authentication > Sign-in method, and enable 'Google'.");
-                }
-                else if (error.code === 'auth/unauthorized-domain') {
-                    alert("Login Failed: Unauthorized Domain.\n\nPlease go to Firebase Console > Authentication > Settings > Authorized Domains, and add 'localhost'.");
-                }
-                else if (error.code === 'auth/popup-closed-by-user') {
-                    console.log("Popup closed by user");
-                }
-                else {
-                    alert(`Login Failed!\nError: ${error.message}\nCode: ${error.code}`);
+                    alert("Login Failed: Google Sign-In is disabled in your Firebase Console.");
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    alert("Login Failed: Unauthorized Domain.");
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    alert(`Login Failed!\nError: ${error.message}`);
                 }
             }
         } else if (method === "Simulated") {
+            // Keep simulated login for testing/admin backup
             const isAdmin = email === 'admin@kindcents.org' || customName === 'Admin';
-            setUser({
+            const mockUser = {
+                uid: isAdmin ? "admin-999" : "simulated-123",
                 name: customName || (isAdmin ? "Admin Control" : "User"),
                 email: email || (isAdmin ? "admin@kindcents.org" : "demo@kindcents.org"),
                 photoURL: null,
-                uid: isAdmin ? "admin-999" : "simulated-123",
-                userType: isAdmin ? 'admin' : userType
-            });
-        } else {
-            alert("For this demo, please use 'Sign up with Google'. Email login is not yet connected to a backend.");
+                role: isAdmin ? 'admin' : userType,
+                status: 'Verified'
+            };
+            setUser(mockUser);
         }
     };
 
     const logout = async () => {
         try {
             await signOut(auth);
-            setUser(null);
+            setUser(null); // Explicitly clear for simulated cases
         } catch (error) {
             console.error("Error signing out", error);
         }
     };
 
+    const saveUserRole = async (role) => {
+        if (!user) return;
+        try {
+            const userRef = doc(db, 'users', user.uid);
+            await setDoc(userRef, {
+                role,
+                status: role === 'donor' ? 'Verified' : 'Pending' // NGOs/Individuals need verification
+            }, { merge: true });
+
+            // Update local state
+            setUser(prev => ({ ...prev, role, status: role === 'donor' ? 'Verified' : 'Pending' }));
+        } catch (error) {
+            console.error("Error saving user role:", error);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, saveUserRole }}>
             {!loading && children}
         </AuthContext.Provider>
     );
