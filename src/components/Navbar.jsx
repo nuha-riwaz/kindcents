@@ -6,16 +6,28 @@ import logo from '../assets/logo.png';
 
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import LocationWarningModal from './LocationWarningModal';
 
 const Navbar = ({ minimal = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signup');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const openAuthModal = (mode) => {
-    setAuthMode(mode);
+    if (mode === 'signup') {
+      setIsLocationModalOpen(true);
+    } else {
+      setAuthMode(mode);
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const handleLocationConfirm = () => {
+    setIsLocationModalOpen(false);
+    setAuthMode('signup');
     setIsAuthModalOpen(true);
   };
 
@@ -92,6 +104,11 @@ const Navbar = ({ minimal = false }) => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authMode}
+      />
+      <LocationWarningModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onConfirm={handleLocationConfirm}
       />
     </>
   );

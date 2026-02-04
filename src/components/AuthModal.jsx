@@ -891,7 +891,7 @@ const styles = {
     emailBtn: {
         width: '100%',
         padding: '12px',
-        backgroundColor: '#2596be',
+        backgroundColor: '#2897c8',
         border: 'none',
         borderRadius: '8px',
         fontSize: '1rem',
@@ -908,7 +908,7 @@ const styles = {
     linkBtn: {
         background: 'none',
         border: 'none',
-        color: '#2596be',
+        color: '#2897c8',
         fontWeight: '600',
         cursor: 'pointer',
         marginLeft: '5px',
@@ -1013,7 +1013,7 @@ const styles = {
     },
     nextBtn: {
         padding: '10px 24px',
-        backgroundColor: '#2596be',
+        backgroundColor: '#2897c8',
         color: 'white',
         border: 'none',
         borderRadius: '8px',
@@ -1044,7 +1044,7 @@ const styles = {
     },
     browseBtn: {
         padding: '6px 16px',
-        backgroundColor: '#2596be',
+        backgroundColor: '#2897c8',
         color: 'white',
         border: 'none',
         borderRadius: '6px',
