@@ -34,7 +34,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text-main);
@@ -80,38 +85,89 @@ button {
 
 /* Navbar Dropdown Styles */
 .dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border: none;
-    background-color: transparent;
-    color: #475569;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    width: 100%;
-    font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background-color: transparent;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-family: inherit;
 }
 
 .dropdown-item:hover {
-    background-color: #f8fafc;
-    color: #2563eb;
-    padding-left: 1.25rem;
+  background-color: #f8fafc;
+  color: #2563eb;
+  padding-left: 1.25rem;
 }
 
 .logout-item {
-    color: #ef4444 !important;
-    border-top: 1px solid #f1f5f9;
-    border-radius: 0;
-    margin-top: 0.25rem;
-    padding-top: 0.75rem;
+  color: #ef4444 !important;
+  border-top: 1px solid #f1f5f9;
+  border-radius: 0;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
 }
 
 .logout-item:hover {
-    color: #dc2626 !important;
-    background-color: #fef2f2;
+  color: #dc2626 !important;
+  background-color: #fef2f2;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .desktop-menu {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: block !important;
+  }
+
+  :root {
+    --spacing-container: 100%;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  /* Grid Stack on Mobile */
+  .grid-cols-3,
+  .stats-row,
+  .overview-grid,
+  .campaign-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Flex Stack on Mobile */
+  .flex-row,
+  .header-content,
+  .stats-row-flex,
+  .dashboard-layout {
+    flex-direction: column !important;
+  }
+
+  /* Admin Sidebar Logic */
+  .admin-sidebar {
+    display: none !important;
+    /* Hide default sidebar */
+  }
+
+  .admin-sidebar.open {
+    display: flex !important;
+    /* Show when open class added */
+    /* Other styles handled inline for transitions */
+  }
+
+  .sidebar-toggle {
+    display: block !important;
+  }
 }

@@ -19,7 +19,8 @@ import {
     TrendingUp,
     Shield,
     CreditCard,
-    User
+    User,
+    Menu // Add Menu icon
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
@@ -50,6 +51,18 @@ const imageMap = {
 
 const AdminDashboard = () => {
     const { user } = useAuth();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Close sidebar when clicking outside on mobile
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isSidebarOpen && window.innerWidth <= 768 && !event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
+                setIsSidebarOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isSidebarOpen]);
     const navigate = useNavigate();
     const campaignsData = useCampaigns();
 
@@ -138,15 +151,27 @@ const AdminDashboard = () => {
             <Navbar minimal={true} />
 
             <div className="container" style={styles.container}>
-                <div style={styles.dashboardLayout}>
-                    {/* Admin Sidebar */}
-                    <aside style={styles.sidebar}>
-                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                            <img src={logo} alt="KindCents" style={{ height: '60px' }} />
-                        </div>
+                <div style={styles.dashboardLayout} className="dashboard-layout">
+                    {/* Mobile Sidebar Toggle */}
+                    <button
+                        className="sidebar-toggle"
+                        style={styles.sidebarToggle}
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    >
+                        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+
+                    {/* Sidebar */}
+                    <aside
+                        className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}
+                        style={{
+                            ...styles.sidebar,
+                            ...(window.innerWidth <= 768 ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                        }}
+                    >
                         <div style={styles.adminProfile}>
                             <div style={styles.adminAvatar}>
-                                <Users size={32} color="white" />
+                                <Shield size={40} color="#64748b" />
                             </div>
                             <div style={styles.adminInfo}>
                                 <p style={styles.adminRole}>System Administrator</p>
@@ -156,31 +181,31 @@ const AdminDashboard = () => {
 
                         <nav style={styles.sideNav}>
                             <button
-                                onClick={() => setActiveTab('Dashboard')}
+                                onClick={() => { setActiveTab('Dashboard'); setIsSidebarOpen(false); }}
                                 style={{ ...styles.navItem, ...(activeTab === 'Dashboard' ? styles.activeNavItem : {}) }}
                             >
                                 <LayoutDashboard size={20} /> Dashboard
                             </button>
                             <button
-                                onClick={() => setActiveTab('Campaigns')}
+                                onClick={() => { setActiveTab('Campaigns'); setIsSidebarOpen(false); }}
                                 style={{ ...styles.navItem, ...(activeTab === 'Campaigns' ? styles.activeNavItem : {}) }}
                             >
                                 <TrendingUp size={20} /> Manage Campaigns
                             </button>
                             <button
-                                onClick={() => setActiveTab('Verification')}
+                                onClick={() => { setActiveTab('Verification'); setIsSidebarOpen(false); }}
                                 style={{ ...styles.navItem, ...(activeTab === 'Verification' ? styles.activeNavItem : {}) }}
                             >
                                 <FileCheck size={20} /> Verifications
                             </button>
                             <button
-                                onClick={() => setActiveTab('Users')}
+                                onClick={() => { setActiveTab('Users'); setIsSidebarOpen(false); }}
                                 style={{ ...styles.navItem, ...(activeTab === 'Users' ? styles.activeNavItem : {}) }}
                             >
                                 <Users size={20} /> User Management
                             </button>
                             <button
-                                onClick={() => setActiveTab('Payments')}
+                                onClick={() => { setActiveTab('Payments'); setIsSidebarOpen(false); }}
                                 style={{ ...styles.navItem, ...(activeTab === 'Payments' ? styles.activeNavItem : {}) }}
                             >
                                 <CreditCard size={20} /> Payment Approvals
@@ -506,7 +531,7 @@ const AdminDashboard = () => {
 const styles = {
     page: { backgroundColor: '#f0f4f8', minHeight: '100vh', display: 'flex', flexDirection: 'column' },
     container: { paddingTop: '100px', paddingBottom: '3rem', flex: 1 },
-    dashboardLayout: { display: 'flex', gap: '2rem', minHeight: '700px' },
+    dashboardLayout: { display: 'flex', gap: '2rem', minHeight: '100vh', position: 'relative' },
     sidebar: {
         width: '280px',
         backgroundColor: '#ffffff',
@@ -516,7 +541,42 @@ const styles = {
         flexDirection: 'column',
         color: '#1e293b',
         border: '1px solid #e2e8f0',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+        transition: 'transform 0.3s ease-in-out',
+        zIndex: 50
+    },
+    sidebarToggle: {
+        display: 'none', // Hidden on desktop, shown via CSS media query
+        position: 'absolute',
+        top: '-60px',
+        left: '0',
+        background: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        padding: '0.5rem',
+        zIndex: 60,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+        cursor: 'pointer'
+    },
+    mobileSidebarOpen: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        transform: 'translateX(0)',
+        borderRadius: 0,
+        width: '80%',
+        maxWidth: '300px'
+    },
+    mobileSidebarClosed: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        transform: 'translateX(-110%)',
+        borderRadius: 0,
+        width: '80%',
+        maxWidth: '300px'
     },
     adminProfile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginBottom: '3rem', textAlign: 'center' },
     adminAvatar: { width: '80px', height: '80px', backgroundColor: '#cbd5e1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' },

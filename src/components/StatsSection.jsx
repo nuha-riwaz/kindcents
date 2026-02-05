@@ -41,7 +41,7 @@ const StatsSection = () => {
 
     return (
         <section style={styles.section}>
-            <div className="container" style={styles.grid}>
+            <div className="container stats-row" style={styles.grid}>
                 {stats.map((stat, index) => (
                     <div key={index} style={styles.card}>
                         <div style={styles.iconWrapper}>
