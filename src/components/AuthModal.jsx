@@ -777,8 +777,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                 <label style={styles.label}>Password*</label>
                                 <input
                                     type="password"
+                                    name="password"
                                     placeholder="Enter your password"
                                     style={styles.input}
+                                    value={formData.password}
+                                    onChange={handleInputChange}
                                 />
                             </div>
 
