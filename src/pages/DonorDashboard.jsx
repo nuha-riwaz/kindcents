@@ -29,9 +29,6 @@ import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
 import orgSmile from '../assets/org-smile.jpg';
 import mrsPerera from '../assets/mrs-perera.jpg';
-import ayaanSurgery from '../assets/ayaan-surgery.png';
-import orphanCare from '../assets/orphan-care.png';
-import badgeLocked from '../assets/badge-locked.png';
 
 // Custom Badge Images
 import badgeFirstStep from '../assets/badge-first-step.png';
@@ -50,7 +47,10 @@ import orgAkshay from '../assets/org-akshay.jpg';
 import orgKeithston from '../assets/org-keithston.jpg';
 import orgLotus from '../assets/org-lotus.jpg';
 import templeRenovation from '../assets/temple-renovation.png';
+import orphanCare from '../assets/orphan-care.png';
 import ruralMedical from '../assets/rural-medical.jpg';
+import ayaanSurgery from '../assets/ayaan-surgery.png';
+import badgeLocked from '../assets/badge-locked.png';
 
 // Image mapping to resolve Firestore strings to local assets
 const imageMap = {
@@ -58,12 +58,12 @@ const imageMap = {
     projectArklow,
     mrsPerera,
     ayaanSurgery,
-    orphanCare,
     orgSmile,
     orgAkshay,
     orgKeithston,
     orgLotus,
     templeRenovation,
+    orphanCare,
     ruralMedical
 };
 
@@ -106,9 +106,12 @@ const DonorDashboard = () => {
 
                 querySnapshot.docs.forEach(doc => {
                     const data = doc.data();
-                    totalDonated += data.amount || 0;
-                    if (data.campaignId) {
-                        uniqueCampaigns.add(data.campaignId);
+                    // Only count completed (approved) donations towards totals
+                    if (data.status === 'Completed') {
+                        totalDonated += data.amount || 0;
+                        if (data.campaignId) {
+                            uniqueCampaigns.add(data.campaignId);
+                        }
                     }
                 });
 
@@ -447,7 +450,10 @@ const MyCampaignsView = () => {
                 );
 
                 const filteredDonations = donationsWithCampaigns.filter(d => d !== null);
-                console.log('✅ Processed donations with campaigns:', filteredDonations);
+
+                // Group by campaign and status to show pending vs completed
+                // For now, simple filter to only show campaigns with at least one donation
+                // and keep the current structure but adding status awareness
                 setUserDonations(filteredDonations);
             } catch (error) {
                 console.error('❌ Error fetching donations:', error);
@@ -584,9 +590,12 @@ const AchievementsView = () => {
 
                 querySnapshot.docs.forEach(doc => {
                     const data = doc.data();
-                    totalDonated += data.amount || 0;
-                    if (data.campaignId) {
-                        uniqueCampaigns.add(data.campaignId);
+                    // Achievements only count approved funds
+                    if (data.status === 'Completed') {
+                        totalDonated += data.amount || 0;
+                        if (data.campaignId) {
+                            uniqueCampaigns.add(data.campaignId);
+                        }
                     }
                 });
 

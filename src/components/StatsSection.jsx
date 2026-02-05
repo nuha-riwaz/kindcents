@@ -4,21 +4,32 @@ import statDonors from '../assets/stat-donors.png';
 import statHeart from '../assets/stat-heart.png';
 import statChart from '../assets/stat-chart.png';
 
+import { useCampaigns } from '../context/CampaignContext';
+
 const StatsSection = () => {
+    const { campaigns } = useCampaigns();
+
+    // Filter out NGO profile cards, only count real campaigns
+    const realCampaigns = campaigns.filter(c => c.type === 'campaign');
+
+    const totalRaised = realCampaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
+    const totalDonors = realCampaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
+    const totalProjects = realCampaigns.length;
+
     const stats = [
         {
             image: statMoney,
-            value: "LKR 2.4M",
+            value: `LKR ${(totalRaised / 1000).toFixed(1)}K`, // Simple formatting
             label: "Total Donated"
         },
         {
             image: statDonors,
-            value: "5,000",
+            value: totalDonors.toLocaleString(),
             label: "Active Donors"
         },
         {
             image: statHeart,
-            value: "150",
+            value: totalProjects,
             label: "Projects Funded"
         },
         {

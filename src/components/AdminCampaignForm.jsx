@@ -24,8 +24,11 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                 about: Array.isArray(campaign.about) ? campaign.about.join('\n\n') : (campaign.about || ''),
                 organizerName: campaign.organizer?.name || '',
                 hospitalName: campaign.hospital?.name || '',
-                isActive: campaign.isActive ?? true,
-                type: campaign.type || 'campaign'
+                type: campaign.type || 'campaign',
+                image: campaign.image || null,
+                deadline: campaign.deadline || '',
+                fundUtilization: campaign.fundUtilization || [],
+                updates: campaign.updates || []
             });
         } else {
             setFormData({
@@ -37,26 +40,75 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                 organizerName: '',
                 hospitalName: '',
                 isActive: true,
-                type: 'campaign'
+                type: 'campaign',
+                image: null,
+                deadline: '',
+                fundUtilization: [],
+                updates: []
             });
         }
     }, [campaign, isOpen]);
 
+    const handleAddFund = () => {
+        setFormData({
+            ...formData,
+            fundUtilization: [...formData.fundUtilization, { title: '', amount: '', desc: '', date: 'Verified' }]
+        });
+    };
+
+    const handleRemoveFund = (index) => {
+        const newFunds = formData.fundUtilization.filter((_, i) => i !== index);
+        setFormData({ ...formData, fundUtilization: newFunds });
+    };
+
+    const handleFundChange = (index, field, value) => {
+        const newFunds = [...formData.fundUtilization];
+        newFunds[index] = { ...newFunds[index], [field]: field === 'amount' ? Number(value) : value };
+        setFormData({ ...formData, fundUtilization: newFunds });
+    };
+
+    const handleAddUpdate = () => {
+        setFormData({
+            ...formData,
+            updates: [...formData.updates, { title: '', date: new Date().toLocaleDateString('en-GB').replace(/\//g, '.'), content: '' }]
+        });
+    };
+
+    const handleRemoveUpdate = (index) => {
+        const newUpdates = formData.updates.filter((_, i) => i !== index);
+        setFormData({ ...formData, updates: newUpdates });
+    };
+
+    const handleUpdateChange = (index, field, value) => {
+        const newUpdates = [...formData.updates];
+        newUpdates[index] = { ...newUpdates[index], [field]: value };
+        setFormData({ ...formData, updates: newUpdates });
+    };
+
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const formattedData = {
-            ...formData,
-            id: campaign?.id,
-            goal: Number(formData.goal),
-            raised: Number(formData.raised),
-            about: formData.about.split('\n\n'),
-            organizer: { name: formData.organizerName, initials: formData.organizerName.charAt(0) },
-            hospital: { name: formData.hospitalName, sub: 'Location Pending' }
-        };
-        onSave(formattedData);
-        onClose();
+        try {
+            const formattedData = {
+                ...formData,
+                goal: Number(formData.goal),
+                raised: Number(formData.raised),
+                about: formData.about.split('\n\n'),
+                organizer: { name: formData.organizerName, initials: formData.organizerName.charAt(0) },
+                hospital: { name: formData.hospitalName, sub: 'Location Pending' }
+            };
+
+            // Only add ID if we are editing an existing campaign
+            if (campaign?.id) {
+                formattedData.id = campaign.id;
+            }
+
+            await onSave(formattedData);
+            onClose();
+        } catch (error) {
+            alert("Failed to save campaign. Please try again. " + error.message);
+        }
     };
 
     return (
@@ -68,6 +120,42 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                 </header>
 
                 <form onSubmit={handleSubmit} style={styles.form}>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Campaign Image</label>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            {formData.image && (
+                                <img
+                                    src={formData.image}
+                                    alt="Preview"
+                                    style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px' }}
+                                />
+                            )}
+                            <label style={styles.uploadBtn}>
+                                <Upload size={18} />
+                                {formData.image ? 'Change Image' : 'Upload Image'}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            if (file.size > 800 * 1024) { // 800KB limit
+                                                alert("Image is too large. Please upload an image smaller than 800KB.");
+                                                return;
+                                            }
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setFormData({ ...formData, image: reader.result });
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                        </div>
+                    </div>
+
                     <div style={styles.row}>
                         <div style={styles.field}>
                             <label style={styles.label}>Campaign Title*</label>
@@ -119,35 +207,106 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                     </div>
 
                     <div style={styles.field}>
+                        <label style={styles.label}>Campaign Deadline</label>
+                        <input
+                            type="date"
+                            value={formData.deadline}
+                            onChange={e => setFormData({ ...formData, deadline: e.target.value })}
+                            style={styles.input}
+                        />
+                    </div>
+
+                    <div style={styles.field}>
                         <label style={styles.label}>About / Description (Use double newlines for paragraphs)*</label>
                         <textarea
                             required
                             value={formData.about}
                             onChange={e => setFormData({ ...formData, about: e.target.value })}
-                            style={{ ...styles.input, height: '150px', resize: 'vertical' }}
-                            placeholder="Describe the campaign..."
+                            style={{ ...styles.input, height: '120px', resize: 'vertical' }}
+                            placeholder="Describe the campaign story..."
                         />
                     </div>
 
-                    <div style={styles.row}>
-                        <div style={styles.field}>
-                            <label style={styles.label}>Organizer Name</label>
-                            <input
-                                value={formData.organizerName}
-                                onChange={e => setFormData({ ...formData, organizerName: e.target.value })}
-                                style={styles.input}
-                                placeholder="Mr. Rashid Hassan"
-                            />
-                        </div>
-                        <div style={styles.field}>
-                            <label style={styles.label}>Hospital/Center Name</label>
-                            <input
-                                value={formData.hospitalName}
-                                onChange={e => setFormData({ ...formData, hospitalName: e.target.value })}
-                                style={styles.input}
-                                placeholder="Base Hospital Welimada"
-                            />
-                        </div>
+                    {/* Fund Utilization Section */}
+                    <div style={styles.section}>
+                        <h4 style={styles.sectionHeader}>Fund Utilization</h4>
+                        {formData.fundUtilization.map((fund, index) => (
+                            <div key={index} style={styles.listItemBox}>
+                                <div style={styles.row}>
+                                    <input
+                                        placeholder="Title (e.g. Surgery Cost)"
+                                        value={fund.title}
+                                        onChange={(e) => handleFundChange(index, 'title', e.target.value)}
+                                        style={styles.input}
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Amount"
+                                        value={fund.amount}
+                                        onChange={(e) => handleFundChange(index, 'amount', e.target.value)}
+                                        style={styles.input}
+                                    />
+                                </div>
+                                <input
+                                    placeholder="Description"
+                                    value={fund.desc}
+                                    onChange={(e) => handleFundChange(index, 'desc', e.target.value)}
+                                    style={{ ...styles.input, marginTop: '0.5rem' }}
+                                />
+                                <button type="button" onClick={() => handleRemoveFund(index)} style={styles.removeBtn}>Remove</button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={handleAddFund} style={styles.addItemBtn}>+ Add Fund Item</button>
+                    </div>
+
+                    {/* Updates Section */}
+                    <div style={styles.section}>
+                        <h4 style={styles.sectionHeader}>Campaign Updates</h4>
+                        {formData.updates.map((update, index) => (
+                            <div key={index} style={styles.listItemBox}>
+                                <div style={styles.row}>
+                                    <input
+                                        placeholder="Title (e.g. Surgery Successful)"
+                                        value={update.title}
+                                        onChange={(e) => handleUpdateChange(index, 'title', e.target.value)}
+                                        style={styles.input}
+                                    />
+                                    <input
+                                        placeholder="Date (DD.MM.YYYY)"
+                                        value={update.date}
+                                        onChange={(e) => handleUpdateChange(index, 'date', e.target.value)}
+                                        style={styles.input}
+                                    />
+                                </div>
+                                <textarea
+                                    placeholder="Update Content..."
+                                    value={update.content}
+                                    onChange={(e) => handleUpdateChange(index, 'content', e.target.value)}
+                                    style={{ ...styles.input, height: '80px', marginTop: '0.5rem' }}
+                                />
+                                <button type="button" onClick={() => handleRemoveUpdate(index)} style={styles.removeBtn}>Remove</button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={handleAddUpdate} style={styles.addItemBtn}>+ Add Update</button>
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Organizer Name</label>
+                        <input
+                            value={formData.organizerName}
+                            onChange={e => setFormData({ ...formData, organizerName: e.target.value })}
+                            style={styles.input}
+                            placeholder="Mr. Rashid Hassan"
+                        />
+                    </div>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Hospital/Center Name</label>
+                        <input
+                            value={formData.hospitalName}
+                            onChange={e => setFormData({ ...formData, hospitalName: e.target.value })}
+                            style={styles.input}
+                            placeholder="Base Hospital Welimada"
+                        />
                     </div>
 
                     <div style={styles.field}>
@@ -162,7 +321,7 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                         </label>
                     </div>
 
-                    <div style={styles.footer}>
+                    <div style={styles.actions}>
                         <button type="button" onClick={onClose} style={styles.cancelBtn}>Cancel</button>
                         <button type="submit" style={styles.saveBtn}>
                             <Save size={18} /> {campaign ? 'Update Campaign' : 'Create Campaign'}
@@ -187,7 +346,24 @@ const styles = {
     input: { padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem', outline: 'none' },
     footer: { marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' },
     cancelBtn: { padding: '0.75rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: 'white', fontWeight: '600', cursor: 'pointer' },
-    saveBtn: { padding: '0.75rem 2rem', borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: 'white', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }
+    saveBtn: { padding: '0.75rem 2rem', borderRadius: '12px', border: 'none', backgroundColor: '#2563eb', color: 'white', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' },
+    uploadBtn: {
+        display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem',
+        backgroundColor: '#f1f5f9', borderRadius: '8px', cursor: 'pointer',
+        fontSize: '0.9rem', color: '#64748b', border: '1px solid #cbd5e1'
+    },
+    section: { marginBottom: '1.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' },
+    sectionHeader: { margin: '0 0 1rem 0', color: '#334155', fontSize: '1rem' },
+    listItemBox: { backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' },
+    addItemBtn: {
+        backgroundColor: '#eff6ff', color: '#2563eb', border: '1px dashed #bfdbfe',
+        padding: '0.75rem', borderRadius: '8px', width: '100%', cursor: 'pointer', fontWeight: 600
+    },
+    removeBtn: {
+        backgroundColor: 'transparent', color: '#ef4444', border: 'none',
+        fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.5rem', textDecoration: 'underline'
+    },
+    actions: { display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' },
 };
 
 export default AdminCampaignForm;

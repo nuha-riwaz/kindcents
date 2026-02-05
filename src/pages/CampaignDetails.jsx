@@ -16,7 +16,9 @@ import {
     ShieldCheck,
     Briefcase,
     Globe,
-    FileText
+    FileText,
+    Building2,
+    ClipboardCheck
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
@@ -29,6 +31,7 @@ import orgSmile from '../assets/org-smile.jpg';
 import orgLotus from '../assets/org-lotus.jpg';
 import templeRenovation from '../assets/temple-renovation.png';
 import ruralMedical from '../assets/rural-medical.jpg';
+import orphanCare from '../assets/orphan-care.png';
 
 // Image mapping to resolve Firestore strings to local assets
 const imageMap = {
@@ -41,7 +44,8 @@ const imageMap = {
     orgSmile,
     orgLotus,
     templeRenovation,
-    ruralMedical
+    ruralMedical,
+    orphanCare
 };
 
 import { useCampaigns } from '../context/CampaignContext';
@@ -56,7 +60,7 @@ const CampaignDetails = () => {
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
-    const campaign = campaignStore[id] || campaignStore["1"];
+    const campaign = campaignStore[id] || (Object.values(campaignStore).find(c => c.id === id));
     const isNGO = campaign.type === 'ngo';
 
     const handleShare = async () => {
@@ -79,7 +83,6 @@ const CampaignDetails = () => {
         if (!campaign) return;
         try {
             await donateToCampaign(campaign.id, amount, user ? user.uid : 'anonymous');
-            // Additional success logic happens inside the modal (showing success step)
         } catch (error) {
             alert("Donation failed. Please try again.");
         }
@@ -87,109 +90,166 @@ const CampaignDetails = () => {
 
     if (!campaign) return <div>Loading...</div>;
 
+    const raisedPercent = Math.min((campaign.raised / campaign.goal) * 100, 100);
+
     return (
         <div style={styles.page}>
             <Navbar />
             <div className="container" style={styles.container}>
-                <div style={styles.heroCard}>
+                {/* Hero Section */}
+                <div
+                    style={{
+                        ...styles.heroCard,
+                        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(${imageMap[campaign.image] || campaign.image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}>
                     <div style={styles.heroLayout}>
-                        <div style={styles.heroImageContainer}>
-                            <img
-                                src={imageMap[campaign.image] || campaign.image}
-                                alt={campaign.title}
-                                style={styles.heroImage}
-                            />
-                            <div style={isNGO ? styles.verifiedNGOBadge : styles.verifiedBadge}>
+                        {/* Hero Left Content */}
+                        <div style={styles.heroMain}>
+                            <div style={isNGO ? styles.heroBadgeNGO : styles.heroBadge}>
                                 <CheckCircle2 size={16} /> {isNGO ? 'Verified NGO' : 'Verified Cause'}
                             </div>
-                            {isNGO && (
-                                <div style={styles.logoOverlay}>
-                                    <div style={styles.logoPlaceholder}>{campaign.organizer.initials}</div>
+
+                            <h1 style={styles.titleCompact}>{campaign.title}</h1>
+
+                            <div style={styles.progressSectionCompact}>
+                                <div style={styles.progressContainerCompact}>
+                                    <div style={{ ...styles.progressBarCompact, width: `${raisedPercent}%` }} />
                                 </div>
-                            )}
+                                <div style={styles.amountLabelsCompact}>
+                                    <div style={styles.amountItem}>
+                                        <span style={styles.amountLabel}>Rs. {campaign.raised.toLocaleString()}</span>
+                                    </div>
+                                    <div style={styles.amountItem}>
+                                        <span style={styles.amountLabel}>Rs. {campaign.goal.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div style={styles.metaRowCompact}>
+                                    <span style={styles.metaBadge}>{campaign.date || (campaign.deadline ? new Date(campaign.deadline).toLocaleDateString() : 'Ongoing')}</span>
+                                    <span style={styles.metaBadge}><Users size={14} /> Contributors - {campaign.contributors || 0}</span>
+                                </div>
+                                <div style={styles.metaRowCompact}>
+                                    {(campaign.deadline || campaign.daysLeft) && (
+                                        <span style={styles.daysBadgeCompact}>
+                                            {campaign.deadline
+                                                ? (() => {
+                                                    const diffTime = new Date(campaign.deadline) - new Date();
+                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                    return diffDays > 0 ? `${diffDays} days left` : 'Ended';
+                                                })()
+                                                : `${campaign.daysLeft} days left`
+                                            }
+                                        </span>
+                                    )}
+                                    <button style={styles.shareBtnCompact} onClick={handleShare}>
+                                        <Share2 size={16} /> Share Campaign
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div style={styles.heroContent}>
-                            <div style={styles.headerTop}>
-                                <h1 style={styles.title}>{campaign.title}</h1>
-                                <div style={styles.ratingStars}>
-                                    {[...Array(campaign.rating)].map((_, i) => <Star key={i} size={24} fill="#fbbf24" color="#fbbf24" />)}
-                                    {[...Array(5 - campaign.rating)].map((_, i) => <Star key={i} size={24} color="#cbd5e1" />)}
-                                </div>
+
+                        {/* Hero Right Content */}
+                        <div style={styles.heroActions}>
+                            <div style={styles.ratingStarsBox}>
+                                {[...Array(5)].map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        size={32}
+                                        fill={i < campaign.rating ? "#fbbf24" : "none"}
+                                        color={i < campaign.rating ? "#fbbf24" : "#cbd5e1"}
+                                        strokeWidth={1.5}
+                                    />
+                                ))}
                             </div>
-                            <div style={styles.progressSection}>
-                                <div style={styles.progressContainer}>
-                                    <div style={{ ...styles.progressBar, width: `${(campaign.raised / campaign.goal) * 100}%` }} />
-                                </div>
-                                <div style={styles.amountLabels}>
-                                    <span>Rs. {campaign.raised.toLocaleString()}</span>
-                                    <span>Rs. {campaign.goal.toLocaleString()}</span>
-                                </div>
-                                <div style={styles.metaRow}>
-                                    <span style={styles.dateLabel}>{campaign.date}</span>
-                                    <span style={styles.contributorsBadge}><Users size={14} /> {campaign.contributors} Contributors</span>
-                                </div>
-                                <div style={styles.lowerMeta}>
-                                    {campaign.daysLeft && <span style={styles.daysLeft}>{campaign.daysLeft} days left</span>}
-                                    <button style={styles.shareBtn} onClick={handleShare}><Share2 size={16} /> Share</button>
-                                </div>
-                            </div>
-                            <button style={styles.donateBtn} onClick={() => setIsDonationModalOpen(true)}>
-                                Donate Now <ArrowRight size={20} />
+                            <button style={styles.donateBtnHero} onClick={() => setIsDonationModalOpen(true)}>
+                                Donate Now <ArrowRight size={24} />
                             </button>
                         </div>
                     </div>
                 </div>
+
                 <div style={styles.mainGrid}>
                     <div style={styles.leftCol}>
+                        {/* About Section */}
                         <div style={styles.sectionCard}>
                             <h2 style={styles.sectionTitle}>About This {isNGO ? 'Organization' : 'Cause'}</h2>
                             {campaign.about.map((p, i) => <p key={i} style={styles.aboutText}>{p}</p>)}
                         </div>
-                        <div style={styles.sectionNoCard}>
-                            <h2 style={styles.sectionTitle}>Verification Status</h2>
-                            <div style={styles.verificationList}>
-                                {campaign.verification.map((item, i) => (
-                                    <div key={i} style={styles.verificationItem}>
-                                        <div style={styles.vIconCircle}>{item.icon}</div>
-                                        <div style={styles.vInfo}>
-                                            <div style={styles.vTitleRow}><strong>{item.title}</strong> <CheckCircle2 size={16} color="#10b981" /></div>
-                                            <p style={styles.vDesc}>{item.desc}</p>
-                                            <span style={styles.vDate}>{item.date}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
 
-                        {campaign.fundUtilization && (
-                            <div style={styles.sectionCard}>
-                                <h2 style={styles.sectionTitle}>Fund Utilization</h2>
-                                <div style={styles.fundList}>
-                                    {campaign.fundUtilization.map((fund, i) => (
-                                        <div key={i} style={styles.fundItem}>
-                                            <div style={styles.fundHeader}>
-                                                <span style={styles.fundTitle}>{fund.title}</span>
-                                                <span style={styles.fundAmount}>Rs. {fund.amount.toLocaleString()}</span>
+                        {/* Verification Status Section */}
+                        {campaign.verification && (
+                            <div style={styles.sectionNoCard}>
+                                <h2 style={styles.sectionTitle}>Verification Status</h2>
+                                <div style={styles.verificationGrid}>
+                                    {campaign.verification.map((item, i) => (
+                                        <div key={i} style={styles.verifCardCompact}>
+                                            <div style={styles.verifIconBox}>
+                                                {i === 0 && <User size={20} color="#64748b" />}
+                                                {i === 1 && <FileText size={20} color="#64748b" />}
+                                                {i === 2 && <Building2 size={20} color="#64748b" />}
+                                                {i === 3 && <ClipboardCheck size={20} color="#64748b" />}
                                             </div>
-                                            <p style={styles.fundDesc}>{fund.desc}</p>
-                                            <span style={styles.fundDate}>{fund.date}</span>
+                                            <div style={styles.verifContentBox}>
+                                                <div style={styles.verifTitleRow}>
+                                                    <strong style={styles.verifTitleText}>{item.title}</strong>
+                                                    <CheckCircle2 size={16} color="#10b981" />
+                                                </div>
+                                                <p style={styles.verifDescText}>{item.desc}</p>
+                                                <span style={styles.verifDateText}>{item.date}</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
 
+                        {/* Fund Utilization Section */}
+                        {(campaign.fundUtilization || (isNGO && campaign.fundUtilization)) && (
+                            <div style={styles.sectionCardLarge}>
+                                <div style={styles.fundHeaderRow}>
+                                    <h2 style={styles.sectionTitleNoMargin}>Fund Utilization</h2>
+                                    <div style={styles.verifiedExpensesPill}>
+                                        <CheckCircle2 size={16} color="#10b981" />
+                                        <span>Verified Expenses</span>
+                                        <span style={styles.expenseRatio}>Rs.{(campaign.fundUtilization || []).reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}/ Rs.{campaign.goal.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div style={styles.fundListGrid}>
+                                    {(campaign.fundUtilization || []).map((fund, i) => (
+                                        <div key={i} style={styles.fundCardCompact}>
+                                            <div style={styles.fundInfoCompact}>
+                                                <div style={styles.fundTitleLine}>
+                                                    <span style={styles.fundTitleName}>{fund.title}</span>
+                                                    <span style={fund.date.includes('Pending') ? styles.pendingTag : styles.verifiedTagMini}>
+                                                        <CheckCircle2 size={12} /> {fund.date}
+                                                    </span>
+                                                </div>
+                                                <p style={styles.fundDescMini}>{fund.desc}</p>
+                                            </div>
+                                            <div style={styles.fundAmountCompact}>
+                                                Rs. {fund.amount.toLocaleString()}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Updates Section */}
                         {campaign.updates && (
-                            <div style={styles.sectionNoCard}>
-                                <h2 style={styles.sectionTitle}>Recent Updates</h2>
-                                <div style={styles.updateList}>
+                            <div style={styles.sectionCardLarge}>
+                                <h2 style={styles.sectionTitle}>Updates</h2>
+                                <div style={styles.timelineCompact}>
                                     {campaign.updates.map((update, i) => (
-                                        <div key={i} style={styles.updateItem}>
-                                            <div style={styles.updateMarker}></div>
-                                            <div style={styles.updateContent}>
-                                                <span style={styles.updateDate}>{update.date}</span>
-                                                <h4 style={styles.updateTitle}>{update.title}</h4>
-                                                <p style={styles.updateText}>{update.content}</p>
+                                        <div key={i} style={styles.timelineItemCompact}>
+                                            <div style={styles.timelineIconBox}>
+                                                <Calendar size={20} color="#64748b" />
+                                            </div>
+                                            <div style={styles.timelineCard}>
+                                                <div style={styles.updateDateCompact}>{update.date}</div>
+                                                <h4 style={styles.updateTitleCompact}>{update.title}</h4>
+                                                <p style={styles.updateTextCompact}>{update.content}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -197,13 +257,34 @@ const CampaignDetails = () => {
                             </div>
                         )}
                     </div>
+
                     <div style={styles.rightCol}>
-                        <div style={styles.sideCard}>
-                            <p style={styles.sideLabel}>{isNGO ? 'Organization' : 'Organizer'}</p>
-                            <div style={styles.avatar}>{campaign.organizer.initials}</div>
-                            <strong style={styles.sideName}>{campaign.organizer.name}</strong>
-                            <p style={styles.sideSub}>{campaign.organizer.sub}</p>
-                            <div style={styles.verifiedTag}><CheckCircle2 size={14} /> Verified</div>
+                        {/* Organizer Card */}
+                        <div style={styles.sideCardCompact}>
+                            <p style={styles.sideLabelCompact}>Campaign organizer</p>
+                            <div style={styles.organizerInfoBox}>
+                                <div style={styles.avatarCompact}>{campaign.organizer.initials}</div>
+                                <div style={styles.organizerMetaBox}>
+                                    <strong style={styles.sideNameCompact}>{campaign.organizer.name}</strong>
+                                    <p style={styles.sideSubCompact}>{campaign.organizer.sub}</p>
+                                </div>
+                            </div>
+                            <div style={styles.verifiedTagAction}><CheckCircle2 size={14} /> Verified Identity</div>
+                        </div>
+
+                        {/* Hospital/Center Card */}
+                        <div style={styles.sideCardCompact}>
+                            <p style={styles.sideLabelCompact}>{campaign.hospital?.isCenter ? 'Care Center' : 'Treatment Hospital'}</p>
+                            <div style={styles.organizerInfoBox}>
+                                <div style={styles.hospitalIconCircle}>
+                                    {campaign.hospital?.isCenter ? <Users size={24} color="#64748b" /> : <Hospital size={24} color="#64748b" />}
+                                </div>
+                                <div style={styles.organizerMetaBox}>
+                                    <strong style={styles.sideNameCompact}>{campaign.hospital?.name}</strong>
+                                    <p style={styles.sideSubCompact}>{campaign.hospital?.sub}</p>
+                                </div>
+                            </div>
+                            <div style={styles.verifiedTagAction}><CheckCircle2 size={14} /> {campaign.hospital?.isCenter ? 'Center Verified' : 'Hospital Verified'}</div>
                         </div>
                     </div>
                 </div>
@@ -221,69 +302,150 @@ const CampaignDetails = () => {
 };
 
 const styles = {
-    page: { backgroundColor: '#f8fafc', minHeight: '100vh' },
+    page: { backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'Inter, sans-serif' },
     container: { paddingTop: '100px', paddingBottom: '4rem' },
-    heroCard: { backgroundColor: '#D6E6FF', borderRadius: '32px', padding: '2.5rem', marginBottom: '2rem' },
-    heroLayout: { display: 'flex', gap: '2.5rem', alignItems: 'center' },
-    heroImageContainer: { flex: '1', position: 'relative', borderRadius: '24px', overflow: 'hidden', height: '350px' },
-    heroImage: { width: '100%', height: '100%', objectFit: 'cover' },
-    verifiedBadge: { position: 'absolute', top: '1.5rem', left: '1.5rem', backgroundColor: 'rgba(255,255,255,0.9)', padding: '0.5rem 1rem', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: '600', color: '#10b981' },
-    verifiedNGOBadge: { position: 'absolute', top: '1.5rem', left: '1.5rem', backgroundColor: 'rgba(209,250,229,0.9)', padding: '0.5rem 1rem', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: '600', color: '#059669', border: '1px solid #10b981' },
-    logoOverlay: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100px', height: '100px', backgroundColor: '#fff', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
-    logoPlaceholder: { fontSize: '2rem', fontWeight: '800' },
-    heroContent: { flex: '1.2', display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-    headerTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' },
-    title: { fontSize: '2.25rem', fontWeight: '700', color: '#1e293b', margin: 0 },
-    ratingStars: { display: 'flex', gap: '0.25rem' },
-    progressSection: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
-    progressContainer: { width: '100%', height: '10px', backgroundColor: '#fff', borderRadius: '5px', overflow: 'hidden' },
-    progressBar: { height: '100%', backgroundColor: '#2563eb' },
-    amountLabels: { display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: '600', color: '#475569' },
-    metaRow: { display: 'flex', gap: '1rem', marginTop: '0.25rem' },
-    dateLabel: { backgroundColor: 'rgba(255,255,255,0.6)', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.8rem' },
-    contributorsBadge: { backgroundColor: 'rgba(255,255,255,0.6)', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' },
-    lowerMeta: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    daysLeft: { backgroundColor: '#fca5a5', color: '#fff', padding: '0.3rem 1rem', borderRadius: '50px', fontSize: '0.85rem', fontWeight: '600' },
-    shareBtn: { background: 'none', border: '1px solid #e2e8f0', backgroundColor: '#fff', padding: '0.4rem 1rem', borderRadius: '50px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' },
-    donateBtn: { backgroundColor: '#10b981', color: '#fff', border: 'none', padding: '1rem 2rem', borderRadius: '50px', fontSize: '1.25rem', fontWeight: '700', cursor: 'pointer', width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.75rem' },
-    mainGrid: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginTop: '2rem' },
+
+    // Hero Section Styles
+    heroCard: {
+        borderRadius: '32px',
+        padding: '3rem',
+        marginBottom: '2.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.05)'
+    },
+    heroLayout: { display: 'flex', gap: '3rem', alignItems: 'flex-end', justifyContent: 'space-between' },
+    heroMain: { flex: '1', display: 'flex', flexDirection: 'column', gap: '1rem' },
+    heroBadge: {
+        backgroundColor: 'rgba(236, 253, 245, 0.9)',
+        color: '#059669',
+        padding: '0.4rem 1rem',
+        borderRadius: '50px',
+        width: 'fit-content',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        fontSize: '0.85rem',
+        fontWeight: '600',
+        border: '1px solid #10b981'
+    },
+    heroBadgeNGO: {
+        backgroundColor: 'rgba(219, 234, 254, 0.9)',
+        color: '#2563eb',
+        padding: '0.4rem 1rem',
+        borderRadius: '50px',
+        width: 'fit-content',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        fontSize: '0.85rem',
+        fontWeight: '600',
+        border: '1px solid #3b82f6'
+    },
+    titleCompact: { fontSize: '2.5rem', fontWeight: '800', color: '#1e293b', margin: 0, lineHeight: '1.1' },
+
+    progressSectionCompact: { display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '500px' },
+    progressContainerCompact: { width: '100%', height: '8px', backgroundColor: '#fff', borderRadius: '4px', overflow: 'hidden' },
+    progressBarCompact: { height: '100%', backgroundColor: '#2563eb' },
+    amountLabelsCompact: { display: 'flex', gap: '2rem', marginTop: '0.25rem' },
+    amountLabel: { fontSize: '1.1rem', fontWeight: '700', color: '#1e293b' },
+    metaRowCompact: { display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' },
+    metaBadge: { backgroundColor: 'rgba(241, 245, 249, 0.8)', padding: '0.3rem 0.8rem', borderRadius: '50px', fontSize: '0.8rem', color: '#64748b', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.4rem' },
+    daysBadgeCompact: { backgroundColor: '#fca5a5', color: '#fff', padding: '0.3rem 0.8rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '700' },
+    shareBtnCompact: { background: 'rgba(241, 245, 249, 0.8)', border: '1px solid #e2e8f0', padding: '0.3rem 0.8rem', borderRadius: '50px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e293b', fontWeight: '600' },
+
+    heroActions: { flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' },
+    ratingStarsBox: { display: 'flex', gap: '0.5rem', justifyContent: 'center' },
+    donateBtnHero: {
+        backgroundColor: '#22c55e',
+        color: '#fff',
+        border: 'none',
+        padding: '1rem 2rem',
+        borderRadius: '20px',
+        fontSize: '1.75rem',
+        fontWeight: '800',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        width: 'fit-content',
+        boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
+        transition: 'transform 0.2s'
+    },
+
+    mainGrid: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginTop: '1rem' },
     leftCol: { display: 'flex', flexDirection: 'column', gap: '2rem' },
-    sectionCard: { backgroundColor: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' },
-    sectionNoCard: { padding: '0 1rem' },
-    sectionTitle: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' },
-    aboutText: { fontSize: '1rem', lineHeight: '1.6', color: '#475569', marginBottom: '1rem' },
-    verificationList: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-    verificationItem: { backgroundColor: '#f0fdf4', border: '1px solid #10b981', borderRadius: '20px', padding: '1.25rem', display: 'flex', gap: '1rem' },
-    vIconCircle: { width: '40px', height: '40px', backgroundColor: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    vInfo: { flex: 1 },
-    vTitleRow: { display: 'flex', alignItems: 'center', gap: '0.5rem' },
-    vDesc: { fontSize: '0.9rem', color: '#64748b', margin: '0.25rem 0' },
-    vDate: { fontSize: '0.8rem', color: '#94a3b8' },
-    rightCol: { display: 'flex', flexDirection: 'column', gap: '2rem' },
-    sideCard: { backgroundColor: '#fff', borderRadius: '24px', padding: '2rem', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' },
-    sideLabel: { fontSize: '0.85rem', color: '#64748b', marginBottom: '1rem', textTransform: 'uppercase' },
-    avatar: { width: '60px', height: '60px', backgroundColor: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.25rem', fontWeight: '700' },
-    sideName: { display: 'block', fontSize: '1.1rem', marginBottom: '0.25rem' },
-    sideSub: { fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' },
-    verifiedTag: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.85rem' },
+
+    sectionCard: { backgroundColor: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },
+    sectionCardLarge: { backgroundColor: '#f1f5f9', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },
+    sectionNoCard: { padding: '0 0.5rem' },
+    sectionTitle: { fontSize: '1.5rem', fontWeight: '800', color: '#1e293b', marginBottom: '1.5rem' },
+    sectionTitleNoMargin: { fontSize: '1.5rem', fontWeight: '800', color: '#1e293b', margin: 0 },
+    aboutText: { fontSize: '1rem', lineHeight: '1.6', color: '#444', marginBottom: '1rem' },
+
+    // Verification Grid Styles
+    verificationGrid: { display: 'flex', flexDirection: 'column', gap: '0.75rem' },
+    verifCardCompact: {
+        backgroundColor: '#ecfdf5',
+        border: '1px solid #10b981',
+        borderRadius: '20px',
+        padding: '1rem 1.5rem',
+        display: 'flex',
+        gap: '1.25rem',
+        alignItems: 'center'
+    },
+    verifIconBox: { width: '48px', height: '48px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+    verifContentBox: { flex: 1 },
+    verifTitleRow: { display: 'flex', alignItems: 'center', gap: '0.5rem' },
+    verifTitleText: { fontSize: '1.1rem', fontWeight: '700', color: '#064e3b' },
+    verifDescText: { fontSize: '0.9rem', color: '#374151', margin: '0.1rem 0' },
+    verifDateText: { fontSize: '0.85rem', color: '#10b981', fontWeight: '600' },
 
     // Fund Utilization Styles
-    fundList: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-    fundItem: { borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' },
-    fundHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' },
-    fundTitle: { fontWeight: '600', color: '#1e293b' },
-    fundAmount: { fontWeight: '700', color: '#10b981' },
-    fundDesc: { fontSize: '0.9rem', color: '#64748b', marginBottom: '0.25rem' },
-    fundDate: { fontSize: '0.8rem', color: '#94a3b8' },
+    fundHeaderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' },
+    verifiedExpensesPill: {
+        backgroundColor: '#dcfce7',
+        padding: '0.5rem 1.25rem',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        fontSize: '1rem',
+        fontWeight: '700',
+        color: '#059669',
+        border: '1px solid #10b981'
+    },
+    expenseRatio: { marginLeft: '1rem' },
+    fundListGrid: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+    fundCardCompact: { backgroundColor: '#fff', borderRadius: '16px', padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e2e8f0' },
+    fundInfoCompact: { flex: 1 },
+    fundTitleLine: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' },
+    fundTitleName: { fontWeight: '700', fontSize: '1rem', color: '#1e293b' },
+    verifiedTagMini: { fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: '700' },
+    pendingTag: { fontSize: '0.75rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: '700', opacity: 0.8 },
+    fundDescMini: { fontSize: '0.85rem', color: '#64748b', margin: 0 },
+    fundAmountCompact: { fontWeight: '800', fontSize: '1.1rem', color: '#1e293b' },
 
     // Updates Styles
-    updateList: { position: 'relative', borderLeft: '2px solid #e2e8f0', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' },
-    updateItem: { position: 'relative' },
-    updateMarker: { position: 'absolute', left: '-1.95rem', top: '0', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#2563eb', border: '3px solid #fff', boxShadow: '0 0 0 1px #e2e8f0' },
-    updateContent: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
-    updateDate: { fontSize: '0.75rem', fontWeight: '600', color: '#64748b', backgroundColor: '#f1f5f9', padding: '0.2rem 0.75rem', borderRadius: '50px', width: 'fit-content', border: '1px solid #e2e8f0' },
-    updateTitle: { fontSize: '1.1rem', fontWeight: '700', color: '#1e293b', margin: 0 },
-    updateText: { fontSize: '0.95rem', lineHeight: '1.6', color: '#475569', margin: 0 }
+    timelineCompact: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+    timelineItemCompact: { display: 'flex', gap: '1.5rem', alignItems: 'flex-start' },
+    timelineIconBox: { width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.5rem' },
+    timelineCard: { backgroundColor: '#fff', borderRadius: '16px', padding: '1.5rem', flex: 1, border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' },
+    updateDateCompact: { fontSize: '0.9rem', color: '#64748b', fontWeight: '600', marginBottom: '0.25rem' },
+    updateTitleCompact: { fontSize: '1.1rem', fontWeight: '700', color: '#4f46e5', margin: '0 0 0.75rem 0' },
+    updateTextCompact: { fontSize: '0.95rem', color: '#4b5563', lineHeight: '1.5', margin: 0 },
+
+    // Sidebar Styles
+    rightCol: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+    sideCardCompact: { backgroundColor: '#fff', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' },
+    sideLabelCompact: { fontSize: '0.9rem', color: '#64748b', marginBottom: '1.25rem', fontWeight: '600' },
+    organizerInfoBox: { display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.25rem' },
+    avatarCompact: { width: '56px', height: '56px', backgroundColor: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '800', color: '#475569' },
+    hospitalIconCircle: { width: '56px', height: '56px', backgroundColor: '#f1f5f9', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    organizerMetaBox: { flex: 1 },
+    sideNameCompact: { fontSize: '1.1rem', fontWeight: '800', color: '#1e293b', display: 'block' },
+    sideSubCompact: { fontSize: '0.9rem', color: '#64748b', margin: 0 },
+    verifiedTagAction: { display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontSize: '0.85rem', fontWeight: '700', justifyContent: 'center', backgroundColor: '#f0fdf4', padding: '0.5rem', borderRadius: '12px' }
 };
 
 export default CampaignDetails;

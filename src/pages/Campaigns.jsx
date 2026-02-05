@@ -14,6 +14,7 @@ import orgSmile from '../assets/org-smile.jpg';
 import orgLotus from '../assets/org-lotus.jpg';
 import templeRenovation from '../assets/temple-renovation.png';
 import ruralMedical from '../assets/rural-medical.jpg';
+import orphanCare from '../assets/orphan-care.png';
 
 // Image mapping to resolve Firestore strings to local assets
 const imageMap = {
@@ -26,7 +27,8 @@ const imageMap = {
     orgSmile,
     orgLotus,
     templeRenovation,
-    ruralMedical
+    ruralMedical,
+    orphanCare
 };
 
 import { useCampaigns } from '../context/CampaignContext';
@@ -165,8 +167,20 @@ const Campaigns = () => {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <div style={styles.dateBadge}>{campaign.date}</div>
-                                                    <div style={styles.daysBadge}>{campaign.daysLeft} days</div>
+                                                    <div style={styles.dateBadge}>
+                                                        {campaign.deadline
+                                                            ? `Ends: ${new Date(campaign.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                                            : (campaign.date || 'Ongoing')}
+                                                    </div>
+                                                    <div style={styles.daysBadge}>
+                                                        {campaign.deadline
+                                                            ? (() => {
+                                                                const diffTime = new Date(campaign.deadline) - new Date();
+                                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                                return diffDays > 0 ? `${diffDays} days left` : 'Ended';
+                                                            })()
+                                                            : (campaign.daysLeft ? `${campaign.daysLeft} days left` : 'Ongoing')}
+                                                    </div>
                                                 </>
                                             )}
                                         </div>

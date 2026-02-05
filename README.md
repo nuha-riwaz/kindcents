@@ -1,16 +1,64 @@
-# React + Vite
+# KindCents - Verified Donations, Real Impact
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+KindCents is a transparent, crowdfunding platform designed to eliminate fraud and restore trust in digital donations. We ensure every contribution reaches genuine causes with 100% accountability. Our mission is to bridge the trust gap in philanthropy through secure, data-driven transparency.
 
-Currently, two official plugins are available:
+## Core Features
+- **Mandatory Document Verification**: High-trust onboarding for Individuals and NGOs with mandatory document submissions.
+- **Admin Review Panel**: Advanced interface for manual verification of user identities and payment approvals.
+- **Role-Based Dashboards**: Custom-tailored dashboard experiences for Donors, NGOs, Individuals, and Administrators.
+- **Real-Time Transparency**: Automated fund utilization tracking and verified campaign updates.
+- **Donation Management**: Secure payment flow with admin-controlled fund releases.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- **Frontend**: React.js (v19)
+- **Build Tool**: Vite
+- **Styling**: Vanilla CSS (Custom tokens, Modern & Premium aesthetics)
+- **Icons**: Lucide React
+- **Backend / Database**: Firebase (Authentication, Firestore NoSQL, Hosting)
+- **Routing**: React Router DOM (v7)
 
-## React Compiler
+## Setup & Installation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
 
-## Expanding the ESLint configuration
+### Steps
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd kindcents-1
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure Firebase**:
+   - Create a new project on the [Firebase Console](https://console.firebase.google.com/).
+   - Enable **Authentication** (Email/Password and Google Sign-In).
+   - Initialize **Cloud Firestore** in test mode or with appropriate security rules.
+   - Add your Firebase configuration keys to the project (ensure `src/firebase.js` is updated).
+
+4. **Run development server**:
+   ```bash
+   npm run dev
+   ```
+   The application will be accessible at `http://localhost:5173`.
+
+5. **Build for production**:
+   ```bash
+   npm run build
+   ```
+
+## Development Team
+This project was proudly developed by:
+- **Mohamed Huraish Haadiya**
+- **Nuha Riwaz**
+- **Shabeeha Miftha**
+- **Virgin Wardini**
+
+---
+© 2026 KindCents | All Rights Reserved.

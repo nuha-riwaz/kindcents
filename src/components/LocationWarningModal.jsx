@@ -8,9 +8,6 @@ const LocationWarningModal = ({ isOpen, onClose, onConfirm }) => {
     return (
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.modal} onClick={e => e.stopPropagation()}>
-                <button style={styles.closeBtn} onClick={onClose}>
-                    <X size={20} />
-                </button>
 
                 <div style={styles.headerContent}>
                     <img src={logo} alt="KindCents" style={styles.logo} />

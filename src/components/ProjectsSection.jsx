@@ -7,6 +7,7 @@ import projectArklow from '../assets/project-arklow.png';
 import mrsPerera from '../assets/mrs-perera.jpg';
 import ayaanSurgery from '../assets/ayaan-surgery.png';
 import templeRenovation from '../assets/temple-renovation.png';
+import orphanCare from '../assets/orphan-care.png';
 import ruralMedical from '../assets/rural-medical.jpg';
 
 // Image mapping to resolve Firestore strings to local assets
@@ -16,6 +17,7 @@ const imageMap = {
     mrsPerera,
     ayaanSurgery,
     templeRenovation,
+    orphanCare,
     ruralMedical
 };
 
@@ -45,7 +47,7 @@ const ProjectsSection = () => {
         {
             id: 'arklow-boys',
             title: "Renovations in Arklow Ireland Boys Home",
-            image: projectArklow,
+            image: "orphanCare",
             raised: 80000,
             status: 'completed',
             isPastProject: true
@@ -59,7 +61,7 @@ const ProjectsSection = () => {
     const allCompletedProjects = [...pastProjects, ...realCompletedCampaigns];
 
     // Number of cards to show at once
-    const cardsToShow = 4;
+    const cardsToShow = 3;
 
     const nextSlide = () => {
         setCurrentIndex((prev) => (prev + 1) % allCompletedProjects.length);
@@ -69,13 +71,15 @@ const ProjectsSection = () => {
         setCurrentIndex((prev) => (prev === 0 ? allCompletedProjects.length - 1 : prev - 1));
     };
 
-    // Auto-slide every 5 seconds
+    // Auto-slide every 5 seconds only if there are more items than cardsToShow
     useEffect(() => {
+        if (allCompletedProjects.length <= cardsToShow) return;
+
         const interval = setInterval(() => {
             nextSlide();
         }, 5000);
         return () => clearInterval(interval);
-    }, [allCompletedProjects.length]);
+    }, [allCompletedProjects.length, cardsToShow]);
 
     // Always render (we have past projects as fallback)
 
@@ -86,24 +90,26 @@ const ProjectsSection = () => {
                 <p style={styles.subHeading}>Real projects. Real impact. See the difference your generosity makes.</p>
 
                 <div style={styles.carouselContainer}>
-                    <button
-                        onClick={prevSlide}
-                        style={styles.navButton}
-                    >
-                        <ChevronLeft size={24} />
-                    </button>
+                    {allCompletedProjects.length > cardsToShow && (
+                        <button
+                            onClick={prevSlide}
+                            style={styles.navButton}
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                    )}
 
                     <div style={styles.cardsWrapper}>
                         <div style={{
                             display: 'flex',
                             gap: '1.5rem',
+                            justifyContent: allCompletedProjects.length <= cardsToShow ? 'center' : 'flex-start',
                             transition: 'transform 0.5s ease-in-out',
-                            transform: `translateX(-${currentIndex * (100 / (allCompletedProjects.length > cardsToShow ? cardsToShow : allCompletedProjects.length))}%)`
+                            transform: `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, cardsToShow))}%)`
                         }}>
-                            {/* Render items twice to ensure continuity */}
-                            {[...allCompletedProjects, ...allCompletedProjects].map((campaign, index) => (
+                            {allCompletedProjects.map((campaign, index) => (
                                 <div
-                                    key={`${campaign.id}-${index}`}
+                                    key={campaign.id}
                                     style={{
                                         ...styles.card,
                                         minWidth: `calc(${100 / cardsToShow}% - ${(1.5 * (cardsToShow - 1)) / cardsToShow}rem)`,
@@ -136,26 +142,30 @@ const ProjectsSection = () => {
                         </div>
                     </div>
 
-                    <button
-                        onClick={nextSlide}
-                        style={styles.navButton}
-                    >
-                        <ChevronRight size={24} />
-                    </button>
+                    {allCompletedProjects.length > cardsToShow && (
+                        <button
+                            onClick={nextSlide}
+                            style={styles.navButton}
+                        >
+                            <ChevronRight size={24} />
+                        </button>
+                    )}
                 </div>
 
-                <div style={styles.dots}>
-                    {allCompletedProjects.map((_, index) => (
-                        <div
-                            key={index}
-                            style={{
-                                ...styles.dot,
-                                ...(index === currentIndex ? styles.dotActive : {})
-                            }}
-                            onClick={() => setCurrentIndex(index)}
-                        />
-                    ))}
-                </div>
+                {allCompletedProjects.length > cardsToShow && (
+                    <div style={styles.dots}>
+                        {allCompletedProjects.map((_, index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    ...styles.dot,
+                                    ...(index === currentIndex ? styles.dotActive : {})
+                                }}
+                                onClick={() => setCurrentIndex(index)}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );
@@ -203,6 +213,7 @@ const styles = {
         overflow: 'hidden',
         width: '100%',
         padding: '1rem 0',
+        justifyContent: 'center',
     },
     card: {
         backgroundColor: 'white',

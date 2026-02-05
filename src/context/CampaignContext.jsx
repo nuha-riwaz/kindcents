@@ -17,6 +17,7 @@ const CampaignContext = createContext(null);
 export const CampaignProvider = ({ children }) => {
     const [campaigns, setCampaigns] = useState({});
     const [users, setUsers] = useState([]);
+    const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Subscribe to Campaigns Collection
@@ -96,6 +97,21 @@ export const CampaignProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
+    // Subscribe to Donations Collection
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, 'donations'), (snapshot) => {
+            const donationList = [];
+            snapshot.forEach((doc) => {
+                donationList.push({ ...doc.data(), id: doc.id });
+            });
+            setDonations(donationList);
+        }, (error) => {
+            console.error("Error fetching donations:", error);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     const addCampaign = async (campaign) => {
         try {
             // If campaign has a specific ID (like 'akshay-society'), use setDoc
@@ -149,43 +165,73 @@ export const CampaignProvider = ({ children }) => {
             const campaignSnap = await getDoc(campaignRef);
             const campaignData = campaignSnap.exists() ? campaignSnap.data() : {};
 
-            // 1. Add donation record with all required fields
+            // 1. Add donation record with 'Pending' status
             await addDoc(collection(db, 'donations'), {
                 campaignId,
                 userId,
                 amount,
-                campaignTitle: campaignData.title || 'Campaign', // For Recent Donations display
-                status: 'Pending', // Pending until admin approves
-                createdAt: new Date(), // For sorting in Recent Donations
+                campaignTitle: campaignData.title || 'Campaign',
+                status: 'Pending',
+                createdAt: new Date(),
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 timestamp: new Date()
             });
 
+            // Note: Stats (raised, contributors) are NOT updated here.
+            // They will be updated in approveDonation()
+
+        } catch (error) {
+            console.error("Error in donation:", error);
+            throw error;
+        }
+    };
+
+    const approveDonation = async (donationId) => {
+        try {
+            const donationRef = doc(db, 'donations', donationId);
+            const donationSnap = await getDoc(donationRef);
+            if (!donationSnap.exists()) return;
+
+            const donationData = donationSnap.data();
+            const { campaignId, amount } = donationData;
+
+            // 1. Mark donation as Completed
+            await updateDoc(donationRef, {
+                status: 'Completed',
+                approvedAt: new Date()
+            });
+
             // 2. Update campaign stats atomically
+            const campaignRef = doc(db, 'campaigns', campaignId);
             await updateDoc(campaignRef, {
                 raised: increment(amount),
                 contributors: increment(1)
             });
 
-            // 3. Check if campaign has reached its goal and mark as completed
-            const updatedCampaignSnap = await getDoc(campaignRef);
-            if (updatedCampaignSnap.exists()) {
-                const updatedData = updatedCampaignSnap.data();
-                const updatedRaised = updatedData.raised || 0;
-                const goal = updatedData.goal || 0;
-
-                // If goal is reached and not already completed, mark as completed
-                if (updatedRaised >= goal && updatedData.status !== 'completed') {
+            // 3. Check for campaign completion
+            const campaignSnap = await getDoc(campaignRef);
+            if (campaignSnap.exists()) {
+                const data = campaignSnap.data();
+                if ((data.raised || 0) >= (data.goal || 0) && data.status !== 'completed') {
                     await updateDoc(campaignRef, {
                         status: 'completed',
                         completedAt: new Date()
                     });
-                    console.log(`🎉 Campaign ${campaignId} has been completed!`);
                 }
             }
-
         } catch (error) {
-            console.error("Error processing donation:", error);
+            console.error("Error approving donation:", error);
+            throw error;
+        }
+    };
+
+    const rejectDonation = async (donationId) => {
+        try {
+            await updateDoc(doc(db, 'donations', donationId), {
+                status: 'Rejected'
+            });
+        } catch (error) {
+            console.error("Error rejecting donation:", error);
             throw error;
         }
     };
@@ -200,7 +246,14 @@ export const CampaignProvider = ({ children }) => {
             updateCampaign,
             deleteCampaign,
             updateUserStatus,
-            donateToCampaign
+            donateToCampaign,
+            approveDonation,
+            updateUserStatus,
+            donateToCampaign,
+            approveDonation,
+            rejectDonation,
+            donations,
+            pendingDonations: donations.filter(d => d.status === 'Pending')
         }}>
             {children}
         </CampaignContext.Provider>

@@ -10,31 +10,183 @@ import {
     DollarSign,
     TrendingUp,
     Edit2,
-    CheckCircle2
+    CheckCircle2,
+    Save,
+    X,
+    Camera,
+    User as UserIcon,
+    Loader2
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import ayaanSurgery from '../assets/ayaan-surgery.png';
+import projectArklow from '../assets/project-arklow.png';
+import ruralMedical from '../assets/rural-medical.jpg';
+import templeRenovation from '../assets/temple-renovation.png';
+import orphanCare from '../assets/orphan-care.png';
+
+const imageMap = {
+    projectEmma,
+    ayaanSurgery,
+    projectArklow,
+    ruralMedical,
+    templeRenovation,
+    orphanCare
+};
 
 const IndividualDashboard = () => {
+    const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [isEditing, setIsEditing] = useState(false);
+    const [newName, setNewName] = useState(user?.name || '');
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = React.useRef(null);
+
+    const [realStats, setRealStats] = useState({
+        totalRaised: 0,
+        totalSupporters: 0,
+        activeCampaigns: 0,
+        avgDonation: 0,
+        weeklySupporters: 0,
+        raisedChange: '+Rs. 0 this month'
+    });
+    const [userCampaigns, setUserCampaigns] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+        const fetchDashboardData = async () => {
+            if (!user) return;
+            setLoading(true);
+            try {
+                const campaignsRef = collection(db, 'campaigns');
+                const q = query(campaignsRef, where('creatorId', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                let campaigns = [];
+                let campaignIds = [];
+                let totalRaised = 0;
+                let totalSupporters = 0;
+                let activeCount = 0;
+
+                querySnapshot.docs.forEach(doc => {
+                    const data = { id: doc.id, ...doc.data() };
+                    campaigns.push(data);
+                    campaignIds.push(doc.id);
+                    totalRaised += data.raised || 0;
+                    totalSupporters += data.contributors || 0;
+                    if (data.status !== 'completed') activeCount++;
+                });
+
+                // Fetch donations to calculate change indicators
+                let weeklySupporters = 0;
+                let lastMonthRaised = 0;
+
+                if (campaignIds.length > 0) {
+                    const donationsRef = collection(db, 'donations');
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+                    // Note: Firestore doesn't support 'in' with more than 10 IDs efficiently, 
+                    // but for a single individual it's likely fine.
+                    const donationsQ = query(donationsRef, where('campaignId', 'in', campaignIds.slice(0, 10)));
+                    const donationsSnap = await getDocs(donationsQ);
+
+                    donationsSnap.docs.forEach(doc => {
+                        const data = doc.data();
+                        const timestamp = data.timestamp?.toDate() || new Date(data.createdAt);
+
+                        if (timestamp > sevenDaysAgo && data.status === 'Completed') {
+                            weeklySupporters++;
+                        }
+
+                        if (timestamp > thirtyDaysAgo && data.status === 'Completed') {
+                            lastMonthRaised += data.amount || 0;
+                        }
+                    });
+                }
+
+                const prevMonthTotal = totalRaised - lastMonthRaised;
+                const raisedChange = prevMonthTotal > 0
+                    ? `+${Math.round((lastMonthRaised / prevMonthTotal) * 100)}% from last month`
+                    : `+Rs. ${lastMonthRaised.toLocaleString()} this month`;
+
+                setUserCampaigns(campaigns);
+                setRealStats({
+                    totalRaised,
+                    totalSupporters,
+                    activeCampaigns: activeCount,
+                    avgDonation: totalSupporters > 0 ? Math.floor(totalRaised / totalSupporters) : 0,
+                    weeklySupporters,
+                    raisedChange
+                });
+            } catch (error) {
+                console.error("Error fetching individual dashboard data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [user]);
 
     const stats = [
-        { label: 'Total Raised', value: 'Rs. 450,000', change: '+25% from last month', icon: <DollarSign size={24} color="#3b82f6" />, color: '#dbeafe' },
-        { label: 'Total Supporters', value: '34', change: '+7 new this week', icon: <Users size={24} color="#6366f1" />, color: '#e0e7ff' },
-        { label: 'Active Campaigns', value: '1', change: '1 active campaign running', icon: <TrendingUp size={24} color="#0ea5e9" />, color: '#e0f2fe' },
-        { label: 'Avg. Donation', value: 'Rs. 13,235', change: '+Rs. 90,000 from last month', icon: <Heart size={24} color="#94a3b8" />, color: '#f1f5f9' },
+        { label: 'Total Raised', value: `Rs. ${realStats.totalRaised.toLocaleString()}`, change: realStats.raisedChange, icon: <DollarSign size={24} color="#3b82f6" />, color: '#dbeafe' },
+        { label: 'Total Supporters', value: realStats.totalSupporters, change: `+${realStats.weeklySupporters} new this week`, icon: <Users size={24} color="#6366f1" />, color: '#e0e7ff' },
+        { label: 'Active Campaigns', value: realStats.activeCampaigns, change: `${realStats.activeCampaigns} active running`, icon: <TrendingUp size={24} color="#0ea5e9" />, color: '#e0f2fe' },
+        { label: 'Avg. Donation', value: `Rs. ${realStats.avgDonation.toLocaleString()}`, change: `Based on ${realStats.totalSupporters} donors`, icon: <Heart size={24} color="#94a3b8" />, color: '#f1f5f9' },
     ];
 
-    const campaign = {
-        title: "Help Ayaan's Surgery",
-        subtitle: "Help cover the cost of Ayaan's life-saving heart surgery",
-        image: projectEmma,
-        raised: 450000,
-        goal: 1000000,
-        donors: 34,
-        daysLeft: 9,
-        progress: 45 // 450k/1M
+    const handleImageClick = () => {
+        if (isEditing) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 1024 * 1024) {
+            alert('Image too large! Please choose an image smaller than 1MB.');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+                try {
+                    await updateUserProfile({ photoURL: base64String });
+                    alert('Profile picture updated!');
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    alert(`Failed: ${error.message}`);
+                }
+                setUploading(false);
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Error processing image:", error);
+            setUploading(false);
+        }
+    };
+
+    const saveProfile = async () => {
+        try {
+            await updateUserProfile({ name: newName });
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            alert("Failed to update profile.");
+        }
     };
 
     return (
@@ -47,17 +199,67 @@ const IndividualDashboard = () => {
                     <aside style={styles.sidebar}>
                         <div style={styles.profileSection}>
                             <img src={logo} alt="KindCents" style={styles.sideLogo} />
-                            <div style={styles.avatarWrapper}>
-                                <div style={styles.avatar}>
-                                    <Users size={40} color="#64748b" />
+                            <div style={styles.avatarWrapper} onClick={handleImageClick}>
+                                <div style={{
+                                    ...styles.avatar,
+                                    cursor: isEditing ? 'pointer' : 'default',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}>
+                                    {user?.photoURL ? (
+                                        <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <Users size={40} color="#64748b" />
+                                    )}
+                                    {isEditing && (
+                                        <div style={styles.cameraOverlay}>
+                                            <Camera size={20} color="white" />
+                                        </div>
+                                    )}
+                                    {uploading && (
+                                        <div style={styles.loaderOverlay}>
+                                            <Loader2 size={24} color="white" className="animate-spin" />
+                                        </div>
+                                    )}
                                 </div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
                             </div>
                             <div style={styles.userInfo}>
                                 <div style={styles.nameRow}>
-                                    <h3 style={styles.userName}>Rashid Hassan</h3>
-                                    <Edit2 size={14} style={{ cursor: 'pointer' }} />
+                                    {isEditing ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <input
+                                                type="text"
+                                                value={newName}
+                                                onChange={(e) => setNewName(e.target.value)}
+                                                style={styles.editInput}
+                                                autoFocus
+                                            />
+                                            <button onClick={saveProfile} style={styles.iconBtn} title="Save">
+                                                <Save size={16} color="#10b981" />
+                                            </button>
+                                            <button onClick={() => setIsEditing(false)} style={styles.iconBtn} title="Cancel">
+                                                <X size={16} color="#ef4444" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <h3 style={styles.userName}>{user?.name}</h3>
+                                            <Edit2
+                                                size={14}
+                                                style={{ cursor: 'pointer', color: '#64748b' }}
+                                                onClick={() => setIsEditing(true)}
+                                            />
+                                        </>
+                                    )}
                                 </div>
-                                <p style={styles.userEmail}>rashid.hsn@gmail.com</p>
+                                <p style={styles.userEmail}>{user?.email}</p>
                             </div>
                         </div>
 
@@ -95,7 +297,7 @@ const IndividualDashboard = () => {
                         {activeTab === 'Overview' ? (
                             <div style={styles.tabContent}>
                                 <div style={styles.welcomeSection}>
-                                    <h1 style={styles.welcomeTitle}>Welcome back, Rashid!</h1>
+                                    <h1 style={styles.welcomeTitle}>Welcome back, {(user?.name || "Rashid").split(' ')[0]}!</h1>
                                     <p style={styles.welcomeSub}>Track your fundraising progress and manage your campaigns.</p>
                                 </div>
 
@@ -124,38 +326,49 @@ const IndividualDashboard = () => {
                                     <p style={styles.welcomeSub}>Real-time tracking of donations coming in</p>
                                 </div>
 
-                                <div style={styles.activeCampaignCard}>
-                                    <div style={styles.campaignImageWrapper}>
-                                        <img src={campaign.image} alt={campaign.title} style={styles.campaignImage} />
-                                        <div style={styles.liveBadge}>
-                                            <div style={styles.pulseDot} /> Live
-                                        </div>
-                                    </div>
-                                    <div style={styles.campaignInfo}>
-                                        <h3 style={styles.campaignTitle}>{campaign.title}</h3>
-                                        <p style={styles.campaignSub}>{campaign.subtitle}</p>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+                                    {userCampaigns.length > 0 ? userCampaigns.map((campaign) => {
+                                        const progress = Math.min(100, Math.floor(((campaign.raised || 0) / (campaign.goal || 1)) * 100));
+                                        return (
+                                            <div key={campaign.id} style={styles.activeCampaignCard}>
+                                                <div style={styles.campaignImageWrapper}>
+                                                    <img src={imageMap[campaign.image] || projectEmma} alt={campaign.title} style={styles.campaignImage} />
+                                                    <div style={styles.liveBadge}>
+                                                        <div style={styles.pulseDot} /> {campaign.status === 'completed' ? 'Completed' : 'Live'}
+                                                    </div>
+                                                </div>
+                                                <div style={styles.campaignInfo}>
+                                                    <h3 style={styles.campaignTitle}>{campaign.title}</h3>
+                                                    <p style={styles.campaignSub}>{campaign.subtitle}</p>
 
-                                        <div style={styles.progressSection}>
-                                            <div style={styles.progressText}>
-                                                <span style={styles.raisedText}>Rs. {campaign.raised.toLocaleString()}</span>
-                                                <span style={styles.goalText}>/ Rs. {campaign.goal.toLocaleString()}</span>
-                                                <span style={styles.percentageText}>
-                                                    <TrendingUp size={14} /> 25%
-                                                </span>
-                                            </div>
-                                            <div style={styles.progressTrack}>
-                                                <div style={{ ...styles.progressFill, width: '25%' }} />
-                                            </div>
-                                            <div style={styles.campaignStats}>
-                                                <div style={styles.statItem}>
-                                                    <Users size={14} /> {campaign.donors} donors
+                                                    <div style={styles.progressSection}>
+                                                        <div style={styles.progressText}>
+                                                            <span style={styles.raisedText}>Rs. {(campaign.raised || 0).toLocaleString()}</span>
+                                                            <span style={styles.goalText}>/ Rs. {(campaign.goal || 0).toLocaleString()}</span>
+                                                            <span style={styles.percentageText}>
+                                                                <TrendingUp size={14} /> {progress}%
+                                                            </span>
+                                                        </div>
+                                                        <div style={styles.progressTrack}>
+                                                            <div style={{ ...styles.progressFill, width: `${progress}%` }} />
+                                                        </div>
+                                                        <div style={styles.campaignStats}>
+                                                            <div style={styles.statItem}>
+                                                                <Users size={14} /> {campaign.contributors || 0} donors
+                                                            </div>
+                                                            <div style={styles.statItem}>
+                                                                <TrendingUp size={14} /> {campaign.status === 'completed' ? 'Finished' : '9 days left'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div style={styles.statItem}>
-                                                    <TrendingUp size={14} /> {campaign.daysLeft} days left
-                                                </div>
                                             </div>
+                                        );
+                                    }) : (
+                                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                                            <p>You haven't created any campaigns yet.</p>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -456,6 +669,46 @@ const styles = {
         fontSize: '0.75rem',
         color: '#64748b',
         fontWeight: '600',
+    },
+    editInput: {
+        background: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '4px',
+        padding: '2px 8px',
+        fontSize: '1rem',
+        fontWeight: '700',
+        color: '#1e293b',
+        width: '140px'
+    },
+    iconBtn: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '2px',
+        display: 'flex',
+        alignItems: 'center'
+    },
+    cameraOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        left: 0,
+        background: 'rgba(0,0,0,0.5)',
+        height: '30%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    loaderOverlay: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        right: 0,
+        left: 0,
+        background: 'rgba(0,0,0,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 };
 

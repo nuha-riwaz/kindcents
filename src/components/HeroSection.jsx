@@ -1,21 +1,35 @@
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ChatBot from './ChatBot';
 import { useAuth } from '../context/AuthContext';
 import heroTextImg from '../assets/hero-text-v2.png';
 import heroBgImg from '../assets/hero-bg-new.jpg';
 
 const HeroSection = () => {
-    const { user } = useAuth();
+    const { user, openAuthModal } = useAuth();
+    const navigate = useNavigate();
 
     const ctaText = (user?.userType === 'nonprofit' || user?.userType === 'individual')
         ? "Fundraise Now"
         : "Donate Now";
 
+    const handleCtaClick = () => {
+        if (!user) {
+            openAuthModal('signup');
+            return;
+        }
+
+        if (user.userType === 'nonprofit' || user.userType === 'individual') {
+            navigate('/create-campaign');
+        } else {
+            navigate('/campaigns');
+        }
+    };
+
     return (
         <section style={{
             ...styles.section,
-            backgroundImage: `linear-gradient(rgba(224, 242, 254, 0.9), rgba(224, 242, 254, 0.9)), url(${heroBgImg})`
+            backgroundImage: `linear-gradient(rgba(224, 242, 254, 0.75), rgba(224, 242, 254, 0.75)), url(${heroBgImg})`
         }}>
             <div className="container" style={styles.container}>
                 <div style={styles.content}>
@@ -27,7 +41,13 @@ const HeroSection = () => {
                     <p style={styles.subheadline}>
                         Watch your contributions create real change in real-time.
                     </p>
-                    <button className="btn btn-primary" style={styles.ctaButton}>{ctaText}</button>
+                    <button
+                        className="btn btn-primary"
+                        style={styles.ctaButton}
+                        onClick={handleCtaClick}
+                    >
+                        {ctaText}
+                    </button>
                 </div>
 
                 <ChatBot />

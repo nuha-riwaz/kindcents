@@ -134,18 +134,41 @@ export const AuthProvider = ({ children }) => {
     };
 
     const saveUserRole = async (role) => {
-        if (!user) return;
+        const currentUser = user || auth.currentUser;
+        if (!currentUser) {
+            console.error("No user found to save role for");
+            return;
+        }
         try {
-            const userRef = doc(db, 'users', user.uid);
+            const userRef = doc(db, 'users', currentUser.uid);
             await setDoc(userRef, {
                 role,
                 status: role === 'donor' ? 'Verified' : 'Pending' // NGOs/Individuals need verification
             }, { merge: true });
 
             // Update local state
-            setUser(prev => ({ ...prev, role, status: role === 'donor' ? 'Verified' : 'Pending' }));
+            setUser(prev => prev ? { ...prev, role, status: role === 'donor' ? 'Verified' : 'Pending' } : null);
         } catch (error) {
             console.error("Error saving user role:", error);
+            throw error;
+        }
+    };
+
+    const updateUserDocuments = async (uploadedFiles) => {
+        const currentUser = user || auth.currentUser;
+        if (!currentUser) return;
+        try {
+            const userRef = doc(db, 'users', currentUser.uid);
+            await setDoc(userRef, {
+                uploadedFiles: uploadedFiles,
+                documentsSubmittedAt: new Date(),
+                status: 'Pending' // Reset status to pending for re-verification
+            }, { merge: true });
+
+            // Update local state
+            setUser(prev => prev ? { ...prev, uploadedFiles, status: 'Pending' } : null);
+        } catch (error) {
+            console.error("Error updating user documents:", error);
             throw error;
         }
     };
@@ -179,8 +202,26 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [authMode, setAuthMode] = useState('signup');
+
+    const openAuthModal = (mode) => {
+        if (mode === 'signup') {
+            setIsLocationModalOpen(true);
+        } else {
+            setAuthMode(mode);
+            setIsAuthModalOpen(true);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, signup, loginEmail, saveUserRole, updateUserProfile }}>
+        <AuthContext.Provider value={{
+            user, login, logout, signup, loginEmail, saveUserRole, updateUserDocuments, updateUserProfile,
+            isAuthModalOpen, setIsAuthModalOpen,
+            isLocationModalOpen, setIsLocationModalOpen,
+            authMode, setAuthMode, openAuthModal
+        }}>
             {!loading && children}
         </AuthContext.Provider>
     );

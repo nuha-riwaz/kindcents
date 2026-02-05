@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
 import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
+import orphanCare from '../assets/orphan-care.png';
 
 const DatabaseSeeder = () => {
     const [status, setStatus] = useState('Idle');
@@ -21,7 +22,7 @@ const DatabaseSeeder = () => {
             // For now, let's store a string that the frontend can map back to an import or a fixed URL.
             // We'll use the variable name as a string for now.
             image: "ayaanSurgery",
-            raised: 450000,
+            raised: 960000,
             goal: 1000000,
             contributors: 34,
             rating: 4,
@@ -32,7 +33,7 @@ const DatabaseSeeder = () => {
             isCompleted: false,
             about: [
                 "Ayaan, a bright 3 year old boy from Welimada, was diagnosed with a congenital heart defect (Ventricular Septal Defect) that requires immediate surgical intervention. Without this life-saving surgery, his condition will continue to deteriorate.",
-                "Ayaan's father works as a daily-wage laborer, and the family cannot afford the Rs. 1,000,000 needed for the surgery at Goodwill Hospital, Welimada. The surgical team has confirmed that with timely intervention, Ayaan can lead a completely normal life.",
+                "Ayaan's father works as a daily-wage laborer, and the family cannot afford the Rs. 1,000,000 needed for the surgery at Base Hospital, Welimada. The surgical team has confirmed that with timely intervention, Ayaan can lead a completely normal life.",
                 "The funds will be transferred directly to Hospital's account to ensure complete transparency. Every rupee donated goes toward saving Ayaan's life."
             ],
             verification: [
@@ -42,17 +43,29 @@ const DatabaseSeeder = () => {
                 { title: "Bank Account Verified", desc: "Direct hospital account linked for fund disbursement.", date: "Verified on Dec 11, 2025" }
             ],
             organizer: { initials: "RS", name: "Mr. Rashid Hassan", sub: "Father of Ayaan", tag: "Verified Identity" },
-            hospital: { name: "Base Hospital Welimada", sub: "Welimada", tag: "Hospital Verified" }
+            hospital: { name: "Base Hospital Welimada", sub: "Welimada", tag: "Hospital Verified" },
+            fundUtilization: [
+                { title: "Surgery Cost", amount: 850000, desc: "Cardiac valve repair surgery (hospital quote verified)", date: "Verified" },
+                { title: "Hospital Stay", amount: 10000, desc: "15 days ICU + General ward recovery", date: "Verified" },
+                { title: "Post-Op Care", amount: 60000, desc: "Medications, follow-ups, and rehabilitation", date: "Verified" },
+                { title: "Emergency Buffer", amount: 40000, desc: "Reserved for unforeseen complications", date: "Pending Verification" }
+            ],
+            updates: [
+                { title: "Surgery date confirmed.", date: "14.01.2026", content: "Great news! Base Hospitals has confirmed Ayaan's surgery date for February 10th. The surgical team has reviewed all reports and is optimistic about the outcome." },
+                { title: "Pre-Surgery Tests Completed.", date: "10.01.2026", content: "Ayaan completed all pre-surgery diagnostic tests today. His cardiac assessment shows the surgery can proceed as planned. Thank you all for your support!" },
+                { title: "Hospital Admission Scheduled.", date: "05.01.2026", content: "Ayaan has been scheduled for admission on January 23rd for pre-operative preparation. The family is grateful for the overwhelming support from donors" },
+                { title: "Fundraiser Started.", date: "Dec 28, 2025", content: "Campaign launched to help Ayaan receive life-saving cardiac surgery. Initial medical documents and hospital verification completed." }
+            ]
         },
         "2": {
             id: "2",
             type: "campaign",
             title: "Orphan Care Essentials",
-            image: "projectArklow",
+            image: "orphanCare",
             raised: 50000,
             goal: 70000,
             contributors: 21,
-            rating: 3,
+            rating: 4,
             date: "Jan 31, 2026",
             daysLeft: 15,
             category: "Social",
@@ -70,7 +83,18 @@ const DatabaseSeeder = () => {
                 { title: "Bank Account Verified", desc: "The orphanage account is linked for secure transfers.", date: "Verified on Jan 18, 2026" }
             ],
             organizer: { initials: "SO", name: "Sunshine Orphanage", sub: "Children's Care", tag: "Verified Identity" },
-            hospital: { name: "Happy Hearts Orphanage", sub: "Gampola", tag: "Center Verified", isCenter: true }
+            hospital: { name: "Happy Hearts Orphanage", sub: "Gampola", tag: "Center Verified", isCenter: true },
+            fundUtilization: [
+                { title: "Food Essentials", amount: 24000, desc: "Monthly groceries and nutrition supplies", date: "Verified" },
+                { title: "Hygiene Kits", amount: 9000, desc: "Soap, toothpaste, sanitary items, and cleaning supplies", date: "Verified" },
+                { title: "Clothing & Bedding", amount: 12000, desc: "Basic clothing and bedding essentials", date: "Verified" },
+                { title: "Educational Supplies", amount: 5000, desc: "Books, stationery, and learning materials", date: "Verified" }
+            ],
+            updates: [
+                { title: "Supplies procurement initiated.", date: "20.01.2026", content: "Good news! We've started procuring essential items for the children. The care center confirmed the final list, making sure every donation helps where it's needed most." },
+                { title: "Verification Completed.", date: "15.01.2026", content: "Everything's been verified! Documents and bank details are confirmed, so you can trust that every contribution goes directly to supporting the children's daily needs." },
+                { title: "Fundraiser Launched.", date: "31.01.2026", content: "The campaign is live! Your support will provide food, hygiene items, clothing, and educational materials, making a real difference for orphaned children every day." }
+            ]
         },
         "3": {
             id: "3",
@@ -98,7 +122,17 @@ const DatabaseSeeder = () => {
                 { title: "Bank Account Verified", desc: "The hospital account is linked for secure transfers.", date: "Verified on Jan 18, 2026" }
             ],
             organizer: { initials: "RF", name: "Rural Health Foundation", sub: "Healthcare Support", tag: "Verified Identity" },
-            hospital: { name: "Rural General Hospital", sub: "Trincomalee", tag: "Hospital Verified" }
+            hospital: { name: "Rural General Hospital", sub: "Trincomalee", tag: "Hospital Verified" },
+            fundUtilization: [
+                { title: "Diagnostic Equipment", amount: 110000, desc: "Ultrasound, ECG machines, and monitors", date: "Verified" },
+                { title: "Life Support Devices", amount: 50000, desc: "Soap, toothpaste, sanitary items, and cleaning supplies", date: "Verified" },
+                { title: "Consumables & Accessories", amount: 30000, desc: "Cables, sensors, and spare parts", date: "Verified" }
+            ],
+            updates: [
+                { title: "Equipment List Finalized.", date: "02.02.2026", content: "The hospital confirmed the final list of equipment needed to ensure donations are used where they are most required." },
+                { title: "Verification Completed.", date: "28.01.2026", content: "All NGO documents, hospital requirements, and bank details have been fully verified for transparency." },
+                { title: "Fundraiser Launched.", date: "06.02.2026", content: "Campaign is live! Donations will help purchase essential medical equipment for the rural hospital, improving care for the community." }
+            ]
         },
         "4": {
             id: "4",
@@ -125,6 +159,16 @@ const DatabaseSeeder = () => {
                 { title: "Bank Account Verified", desc: "The temple account is linked for secure transfers.", date: "Verified on Jan 18, 2026" }
             ],
             organizer: { initials: "PC", name: "Panagama Temple Committee", sub: "Community Care", tag: "Verified Identity" },
+            fundUtilization: [
+                { title: "Structural Repairs", amount: 10000, desc: "Ultrasound, ECG machines, and monitors", date: "Verified" },
+                { title: "Painting & Maintenance", amount: 7000, desc: "Soap, toothpaste, sanitary items, and cleaning supplies", date: "Verified" },
+                { title: "Basic Amenities & Supplies", amount: 3000, desc: "Cables, sensors, and spare parts", date: "Verified" }
+            ],
+            updates: [
+                { title: "Renovation Plan Finalized.", date: "15.02.2026", content: "The temple committee finalized repairs and budget to ensure donations are used effectively." },
+                { title: "Verification Completed.", date: "10.01.2026", content: "All documents and bank details are verified for transparency and donor confidence." },
+                { title: "Fundraiser Launched.", date: "22.02.2026", content: "Campaign is live! Donations will help renovate Panagama Temple and maintain it for the community." }
+            ],
             hospital: { name: "Panagama Temple", sub: "Panagama", tag: "Temple Verified", isCenter: true }
         },
         "akshay-society": {
@@ -148,118 +192,140 @@ const DatabaseSeeder = () => {
                 { title: "Statutory Compliance", desc: "Legal registration and regulatory compliance verified.", date: "Verified on Jan 5, 2026" },
                 { title: "Performance Audit", desc: "Independent audits and project outcomes reviewed.", date: "Verified on Jan 8, 2026" },
                 { title: "Financial Transparency", desc: "Transparent fund tracking with verified utilization.", date: "Verified on Jan 10, 2026" },
-                { title: "Community Impact Verified", desc: "15,000+ beneficiaries served through health and education programs confirmed.", date: "Verified on Jan 12, 2026" },
-                { title: "Reports", desc: "Medical, education, and rural development reports documented.", date: "Verified on Jan 12, 2026" }
+                { title: "Community Impact Verified", desc: "Health and education programs benefiting 15,000+ individuals confirmed.", date: "Verified on Jan 12, 2026" },
+                { title: "Environmental Reports", desc: "Medical, education, and rural development reports documented.", date: "Verified on Jan 12, 2026" }
             ],
             organizer: { initials: "AS", name: "Akshay Society", sub: "Health & Education", tag: "Verified NGO" },
             fundUtilization: [
-                { title: "Medical Camps", amount: 850000, desc: "Organized 12 free medical camps in rural districts providing checkups and medicine.", date: "Jan 2026" },
-                { title: "Educational Support", amount: 620000, desc: "Provided books, bags, and uniforms to 850 students in remote schools.", date: "Dec 2025" },
-                { title: "Rural Infrastructure", amount: 350000, desc: "Repaired 3 clean water wells in drought-affected villages.", date: "Nov 2025" }
+                { title: "Community Health Programs", amount: 750000, desc: "Medical camps, health screenings, and essential medicines", date: "Verified" },
+                { title: "Educational Support", amount: 520000, desc: "School supplies, learning materials, and student support", date: "Verified" },
+                { title: "Rural Development Projects", amount: 350000, desc: "Sanitation support and basic community infrastructure", date: "Verified" },
+                { title: "Monitoring & Evaluation", amount: 200000, desc: "Program tracking, reporting, and impact assessment", date: "Verified" }
             ],
             updates: [
-                { title: "New Medical Camp Success", date: "Feb 2, 2026", content: "Successfully treated over 450 patients in our latest camp in Monaragala." },
-                { title: "Scholarship Program Launch", date: "Jan 20, 2026", content: "Launched 'Rural Scholars' program to support 50 high-performing students." }
-            ]
+                { title: "New District Program Approved", date: "Jan 12, 2026", content: "Exciting news! The expansion has been approved to reach over 5,000 additional beneficiaries, bringing health and education programs to more rural communities in need." },
+                { title: "Annual Audit Report Published", date: "Jan 5, 2026", content: "Our independent audit confirms full transparency and proper fund usage across all projects, ensuring every donation directly supports health, education, and development programs." },
+                { title: "Education Milestone Achieved", date: "Dec 20, 2025", content: "We're proud to support our 3,500th rural student with educational materials and resources, helping them access quality learning opportunities and brighter futures." },
+                { title: "60th Medical Camp Completed", date: "Nov 15, 2025", content: "Our 60th free medical camp successfully delivered essential healthcare services, including check-ups and treatments, to underserved rural communities across multiple districts." }
+            ],
+            hospital: { name: "Akshay Society HQ", sub: "Colombo", tag: "Organization Verified", isCenter: true }
         },
         "keithston-foundation": {
             id: "keithston-foundation",
             type: "ngo",
             title: "Keithston Foundation",
             image: "orgKeithston",
-            raised: 2100000,
-            goal: 6000000,
-            contributors: 215,
-            rating: 5,
+            raised: 2450000,
+            goal: 5000000,
+            contributors: 245,
+            rating: 4,
             date: "Verified NGO",
             isActive: true,
             isCompleted: false,
             about: [
-                "Keithston Foundation is dedicated to environmental conservation and sustainable living practices. We work with local communities to restore ecosystems and promote green energy.",
-                "Our primary focus is on reforestation, waste management education, and solar energy adoption in rural villages. We have planted over 50,000 trees and helped 20 villages switch to solar street lighting.",
-                "Transparency is our core value. All donations are utilized for project implementation with regular audits and community feedback sessions."
+                "Established in 2022, Keithston Foundation implements sustainable water solutions and reforestation projects across Sri Lanka's dry zones. The organization works to mitigate the effects of drought and industrial pollution on rural farming communities.",
+                "To date, the initiative has installed 45 community filtration systems in Anuradhapura, providing clean drinking water to over 10,000 residents. Additionally, the group has overseen the planting of 25,000 native trees in Monaragala to restore local watersheds and prevent soil erosion.",
+                "All project funding is tracked through public ledgers, with 100% of donations utilized for raw materials and technical installation. This platform allows the organization to scale its environmental restoration efforts to new districts."
             ],
             verification: [
-                { title: "Environmental Clearance", desc: "Projects approved by local environmental authorities.", date: "Verified on Feb 1, 2026" },
-                { title: "Financial Audit", desc: "Annual accounts audited by certified external auditors.", date: "Verified on Jan 25, 2026" },
-                { title: "Project Site Verified", desc: "Physical inspection of reforestation sites completed.", date: "Verified on Jan 20, 2026" }
+                { title: "Statutory Compliance", desc: "Valid legal registration certificates and regulatory compliance verified.", date: "Verified on Jan 5, 2026" },
+                { title: "Performance Audit", desc: "Independent audit reports and project completion rates reviewed.", date: "Verified on Jan 8, 2026" },
+                { title: "Financial Transparency", desc: "Public ledger tracking with 100% fund utilization verification.", date: "Verified on Jan 10, 2026" },
+                { title: "Community Impact Verified", desc: "45 filtration systems serving 10,000+ residents confirmed.", date: "Verified on Jan 12, 2026" },
+                { title: "Environmental Reports", desc: "25,000 native trees planted in Monaragala documented.", date: "Verified on Jan 12, 2026" }
             ],
             organizer: { initials: "KF", name: "Keithston Foundation", sub: "Environment & Sustainability", tag: "Verified NGO" },
             fundUtilization: [
-                { title: "Reforestation Project", amount: 1200000, desc: "Planted 15,000 saplings in deforested zones of Sinharaja buffer zone.", date: "Jan 2026" },
-                { title: "Solar Street Lights", amount: 800000, desc: "Installed 45 solar street lights in 3 off-grid villages.", date: "Dec 2025" },
-                { title: "Waste Management Workshop", amount: 100000, desc: "Conducted workshops for 500 households on waste segregation.", date: "Nov 2025" }
+                { title: "Water Filtration Systems", amount: 2000000, desc: "15 community filtration units for Polonnaruwa district", date: "Verified" },
+                { title: "Reforestation Materials", amount: 1200000, desc: "10,000 native tree saplings and irrigation infrastructure", date: "Verified" },
+                { title: "Technical Installation", amount: 800000, desc: "Labor, equipment, and professional installation services", date: "Verified" },
+                { title: "Monitoring & Evaluation", amount: 550000, desc: "Long-term impact assessment and sustainability tracking", date: "Verified" }
             ],
             updates: [
-                { title: "50,000 Trees Milestone", date: "Jan 30, 2026", content: "We crossed the milestone of planting 50,000 trees across the island!" },
-                { title: "Solar Village Project", date: "Jan 15, 2026", content: "Completed solar lighting installation in Kalawana village." }
-            ]
+                { title: "New District Expansion Approved", date: "Jan 12, 2026", content: "Exciting news! The government of Sri Lanka has approved our expansion into Polonnaruwa district. This will bring clean water access to 5,000 additional residents in 8 villages." },
+                { title: "Annual Audit Report Published", date: "Jan 5, 2026", content: "Our 2025 annual audit has been completed by KPMG Sri Lanka. Full transparency report showing 100% fund utilization for raw materials and installation is now available on our public ledger" },
+                { title: "10,000th Tree Planted Milestone", date: "Dec 20, 2025", content: "We've reached a major milestone in our Monaragala reforestation project! The 10,000th native tree was planted today, with local school children participating in the ceremony." },
+                { title: "45th Filtration System Operational", date: "Nov 15, 2025", content: "Our 45th community water filtration system is now operational in Anuradhapura. This completes Phase 2 of our clean water initiative, serving the entire eastern corridor." }
+            ],
+            hospital: { name: "Keithston Foundation", sub: "Monaragala", tag: "Organization Verified", isCenter: true }
         },
         "smile-foundation": {
             id: "smile-foundation",
             type: "ngo",
             title: "Smile Foundation",
             image: "orgSmile",
-            raised: 3500000,
-            goal: 8000000,
-            contributors: 420,
+            raised: 2150000,
+            goal: 5000000,
+            contributors: 210,
             rating: 5,
             date: "Verified NGO",
             isActive: true,
             isCompleted: false,
             about: [
-                "Smile Foundation works to empower women and children through vocational training, healthcare, and legal aid support. We believe in creating self-reliant communities.",
-                "Our programs include sewing and handicraft workshops for women, after-school tuition for children, and mobile health clinics for maternal care. We have empowered over 2,000 women to start their own small businesses.",
-                "Every donation creates a direct impact. We track beneficiary progress and ensure funds are improving livelihoods effectively."
+                "Established in 2000, Smile Foundation works to uplift underserved communities through healthcare, education, and women & child development programs across Sri Lanka.",
+                "The organization runs mobile health clinics, vaccination drives, school improvement initiatives, and vocational training programs. To date, Smile Foundation has reached over 18,000 individuals with healthcare services and provided educational support to more than 4,000 children, while training 500+ women in skill development programs.",
+                "All donations are 100% tracked and used for verified projects, ensuring transparency. Contributions help Smile Foundation expand its programs to more rural areas and strengthen existing community initiatives."
             ],
             verification: [
-                { title: "Social Service Registration", desc: "Registered with the Ministry of Social Services.", date: "Verified on Feb 5, 2026" },
-                { title: "Beneficiary Verification", desc: "Random checks on reported beneficiaries conducted.", date: "Verified on Jan 28, 2026" },
-                { title: "Legal Compliance", desc: "All operational licenses and permits are up to date.", date: "Verified on Jan 15, 2026" }
+                { title: "Statutory Compliance", desc: "Legal registration and regulatory compliance verified.", date: "Verified on Jan 10, 2026" },
+                { title: "Performance Audit", desc: "Independent audits and program outcomes reviewed.", date: "Verified on Jan 12, 2026" },
+                { title: "Financial Transparency", desc: "Transparent fund tracking with verified utilization.", date: "Verified on Jan 14, 2026" },
+                { title: "Community Impact Verified", desc: "18,000+ beneficiaries served through health, education, and skill development programs confirmed.", date: "Verified on Jan 15, 2026" },
+                { title: "Program Reports", desc: "Medical camps, school projects, and vocational training reports documented.", date: "Verified on Jan 15, 2026" }
             ],
             organizer: { initials: "SF", name: "Smile Foundation", sub: "Women & Child Welfare", tag: "Verified NGO" },
             fundUtilization: [
-                { title: "Vocational Training Center", amount: 1500000, desc: "Constructed a new training hall for sewing classes.", date: "Jan 2026" },
-                { title: "Mobile Health Clinic", amount: 1200000, desc: "Operational costs for mobile clinic serving 12 villages.", date: "Dec 2025" },
-                { title: "School Supplies", amount: 800000, desc: "Distributed school packs to 2,000 children.", date: "Jan 2026" }
+                { title: "Healthcare Programs", amount: 900000, desc: "Mobile clinics, vaccination drives, and medical supplies", date: "Verified" },
+                { title: "Education Initiatives", amount: 650000, desc: "School renovation, books, uniforms, and learning materials", date: "Verified" },
+                { title: "Women & Child Development", amount: 400000, desc: "Skill training workshops, hygiene kits, and community support", date: "Verified" },
+                { title: "Monitoring & Evaluation", amount: 200000, desc: "Tracking program progress, reporting, and measuring outcomes", date: "Verified" }
             ],
             updates: [
-                { title: "New Batch Giveaway", date: "Feb 1, 2026", content: "Distributed 50 sewing machines to the graduating batch of our training program." },
-                { title: "Health Camp Impact", date: "Jan 25, 2026", content: "Screened 300 women for early detection of health issues in Puttalam." }
-            ]
+                { title: "New School Renovation Completed", date: "Jan 15, 2026", content: "A rural school in Monaragala was renovated with new classrooms and learning materials, benefiting over 200 children." },
+                { title: "Annual Audit Published", date: "Jan 5, 2026", content: "Independent audit confirms full transparency and proper utilization of funds across all programs." },
+                { title: "Health Camp Milestone", date: "Dec 22, 2025", content: "The 65th mobile health clinic was conducted, serving 1,500 rural residents with check-ups and essential medicines." },
+                { title: "Women's Skill Workshop Completed", date: "Nov 30, 2025", content: "Over 50 women received vocational training in sewing and handicrafts, helping them generate sustainable income for their families." }
+            ],
+            hospital: { name: "Smile Foundation Center", sub: "Kandy", tag: "Organization Verified", isCenter: true }
         },
         "lotus-born-foundation": {
             id: "lotus-born-foundation",
             type: "ngo",
             title: "Lotus Born Foundation",
             image: "orgLotus",
-            raised: 950000,
-            goal: 2500000,
-            contributors: 85,
+            raised: 1950000,
+            goal: 5000000,
+            contributors: 185,
             rating: 4,
             date: "Verified NGO",
             isActive: true,
             isCompleted: false,
             about: [
-                "Lotus Born Foundation focuses on elder care and supporting differently-abled individuals. Our mission is to provide dignity and care to the most vulnerable in society.",
-                "We operate two elders' homes and a vocational center for differently-abled youth. We provide medical care, therapy, and skill development to help them live independent lives.",
-                "Your donations go directly to food, medicine, and facility maintenance. We maintain open books for all our donors."
+                "Established in 2015, Lotus Born Foundation works to empower marginalized communities through child education, women's empowerment, and community health initiatives across rural Sri Lanka.",
+                "The organization runs after-school programs, literacy and STEM initiatives, health awareness workshops, and nutrition programs. To date, Lotus Born Foundation has supported over 12,000 children with educational programs, trained 350 women in vocational and entrepreneurial skills, and conducted 40 community health workshops, reaching more than 10,000 residents.",
+                "All donations are 100% tracked and used for verified projects, ensuring transparency. Contributions help Lotus Born Foundation expand programs to new villages and strengthen ongoing community initiatives."
             ],
             verification: [
-                { title: "Elder Care Certification", desc: "Certified by the Department of Social Services for elder care.", date: "Verified on Feb 8, 2026" },
-                { title: "Facility Inspection", desc: "Safety and hygiene standards of homes verified.", date: "Verified on Feb 2, 2026" },
-                { title: "Staff Credential Check", desc: "Nursing and care staff qualifications verified.", date: "Verified on Jan 20, 2026" }
+                { title: "Statutory Compliance", desc: "Legal registration and regulatory compliance verified.", date: "Verified on Jan 10, 2026" },
+                { title: "Performance Audit", desc: "Independent audits and program outcomes reviewed.", date: "Verified on Jan 12, 2026" },
+                { title: "Financial Transparency", desc: "Transparent fund tracking with verified utilization.", date: "Verified on Jan 14, 2026" },
+                { title: "Community Impact Verified", desc: "12,000+ children and 350 women served through education, skills, and health programs.", date: "Verified on Jan 15, 2026" },
+                { title: "Program Reports", desc: "After-school programs, workshops, and vocational training documented.", date: "Verified on Jan 15, 2026" }
             ],
-            organizer: { initials: "LB", name: "Lotus Born Foundation", sub: "Elder & Disability Care", tag: "Verified NGO" },
+            organizer: { initials: "LB", name: "Lotus Born Foundation", sub: "Education & Empowerment", tag: "Verified NGO" },
             fundUtilization: [
-                { title: "Home Renovation", amount: 500000, desc: "Renovated the dormitories in the Kandy elders' home.", date: "Jan 2026" },
-                { title: "Medical Supplies", amount: 300000, desc: "Purchased 3 months supply of essential medicines.", date: "Feb 2026" },
-                { title: "Wheelchairs", amount: 150000, desc: "Purchased 10 customized wheelchairs for the youth center.", date: "Jan 2026" }
+                { title: "Child Education Programs", amount: 800000, desc: "After-school classes, STEM kits, books, and learning materials", date: "Verified" },
+                { title: "Women's Empowerment Initiatives", amount: 550000, desc: "Vocational training, micro-business support, and skill workshops", date: "Verified" },
+                { title: "Community Health Programs", amount: 400000, desc: "Health awareness workshops, nutrition programs, and basic check-ups", date: "Verified" },
+                { title: "Monitoring & Evaluation", amount: 200000, desc: "Program tracking, progress reports, and impact assessment", date: "Verified" }
             ],
             updates: [
-                { title: "New Wing Opening", date: "Feb 5, 2026", content: "Opened a new physiotherapy wing for our residents." },
-                { title: "Donation Drive", date: "Jan 15, 2026", content: "Received a generous donation of dry rations from the community." }
-            ]
+                { title: "New Community Learning Center Opened", date: "Jan 15, 2026", content: "A new center in Batticaloa now provides after-school classes, STEM programs, and library access for 150 children in the area." },
+                { title: "Annual Audit Completed", date: "Jan 5, 2026", content: "Independent audit confirms proper fund usage and full transparency for all ongoing programs." },
+                { title: "Health Workshop Milestone", date: "Dec 22, 2025", content: "The 40th community health workshop was conducted, providing health awareness and basic check-ups to 1,200 rural residents." },
+                { title: "Women's Skill Training Completed", date: "Nov 30, 2025", content: "Over 50 women completed vocational training, learning sewing, handicrafts, and small-business skills to improve household income." }
+            ],
+            hospital: { name: "Lotus Born HQ", sub: "Batticaloa", tag: "Organization Verified", isCenter: true }
         }
     };
 

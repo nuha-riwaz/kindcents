@@ -2,8 +2,21 @@ import React from 'react';
 import { Instagram, Youtube, Linkedin, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
+    const { user } = useAuth();
+
+    const getUserDashboardPath = () => {
+        if (!user) return '/';
+        const role = (user.role || 'donor').toLowerCase();
+
+        if (role === 'admin') return '/dashboard/admin';
+        if (role === 'ngo' || role === 'nonprofit') return '/dashboard/ngo';
+        if (role === 'individual') return '/dashboard/individual';
+        return '/dashboard/donor';
+    };
+
     return (
         <footer id="contact" style={styles.footer}>
             <div className="container" style={styles.container}>
@@ -28,7 +41,7 @@ const Footer = () => {
                         <h4 style={styles.heading}>Quick Links</h4>
                         <ul style={styles.list}>
                             <li><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
-                            <li><Link to="/campaigns" style={styles.footerLink}>Dashboard</Link></li>
+                            {user && <li><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
                         </ul>
                     </div>
 

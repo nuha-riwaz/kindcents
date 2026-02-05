@@ -17,9 +17,36 @@ import {
     Check,
     X,
     TrendingUp,
-    Shield
+    Shield,
+    CreditCard,
+    User
 } from 'lucide-react';
 import logo from '../assets/logo.png';
+import projectEmma from '../assets/project-emma.jpg';
+import projectArklow from '../assets/project-arklow.png';
+import ayaanSurgery from '../assets/ayaan-surgery.png';
+import mrsPerera from '../assets/mrs-perera.jpg';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgSmile from '../assets/org-smile.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
+import templeRenovation from '../assets/temple-renovation.png';
+import ruralMedical from '../assets/rural-medical.jpg';
+import orphanCare from '../assets/orphan-care.png';
+
+const imageMap = {
+    projectEmma,
+    projectArklow,
+    ayaanSurgery,
+    mrsPerera,
+    orgAkshay,
+    orgKeithston,
+    orgSmile,
+    orgLotus,
+    templeRenovation,
+    ruralMedical,
+    orphanCare
+};
 
 const AdminDashboard = () => {
     const { user } = useAuth();
@@ -32,7 +59,17 @@ const AdminDashboard = () => {
         return <div style={{ padding: '2rem', textAlign: 'center' }}>Error: System context not initialized.</div>;
     }
 
-    const { campaigns = [], users = [], addCampaign, updateCampaign, deleteCampaign, updateUserStatus } = campaignsData;
+    const {
+        campaigns = [],
+        users = [],
+        addCampaign,
+        updateCampaign,
+        deleteCampaign,
+        updateUserStatus,
+        approveDonation,
+        rejectDonation,
+        pendingDonations = []
+    } = campaignsData;
 
     const [activeTab, setActiveTab] = useState('Campaigns');
     const [searchQuery, setSearchQuery] = useState('');
@@ -67,12 +104,12 @@ const AdminDashboard = () => {
     ];
 
     const filteredCampaigns = campaigns.filter(c =>
-        c.title.toLowerCase().includes(searchQuery.toLowerCase())
+        (c.title || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const filteredUsers = users.filter(u =>
-        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase())
+        (u.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleAddCampaign = () => {
@@ -85,13 +122,13 @@ const AdminDashboard = () => {
         setIsFormOpen(true);
     };
 
-    const handleSaveCampaign = (data) => {
+    const handleSaveCampaign = async (data) => {
         if (editingCampaign) {
-            updateCampaign(editingCampaign.id, data);
+            await updateCampaign(editingCampaign.id, data);
         } else {
-            addCampaign({
+            await addCampaign({
                 ...data,
-                image: campaigns[0]?.image // Placeholder image for new campaigns
+                image: data.image || campaigns[0]?.image // Use uploaded image or placeholder for new campaigns
             });
         }
     };
@@ -104,9 +141,12 @@ const AdminDashboard = () => {
                 <div style={styles.dashboardLayout}>
                     {/* Admin Sidebar */}
                     <aside style={styles.sidebar}>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <img src={logo} alt="KindCents" style={{ height: '60px' }} />
+                        </div>
                         <div style={styles.adminProfile}>
                             <div style={styles.adminAvatar}>
-                                <Shield size={32} color="white" />
+                                <Users size={32} color="white" />
                             </div>
                             <div style={styles.adminInfo}>
                                 <p style={styles.adminRole}>System Administrator</p>
@@ -139,11 +179,16 @@ const AdminDashboard = () => {
                             >
                                 <Users size={20} /> User Management
                             </button>
+                            <button
+                                onClick={() => setActiveTab('Payments')}
+                                style={{ ...styles.navItem, ...(activeTab === 'Payments' ? styles.activeNavItem : {}) }}
+                            >
+                                <CreditCard size={20} /> Payment Approvals
+                                {pendingDonations.length > 0 && (
+                                    <span style={styles.tabBadge}>{pendingDonations.length}</span>
+                                )}
+                            </button>
                         </nav>
-
-                        <div style={styles.sidebarFooter}>
-                            <img src={logo} alt="KindCents" style={{ height: '60px', opacity: 0.7 }} />
-                        </div>
                     </aside>
 
                     {/* Main Content Area */}
@@ -200,7 +245,7 @@ const AdminDashboard = () => {
                                             <tr key={c.id} style={styles.tr}>
                                                 <td style={styles.td}>
                                                     <div style={styles.campaignCell}>
-                                                        <img src={c.image} alt="" style={styles.tableImg} />
+                                                        <img src={imageMap[c.image] || c.image} alt="" style={styles.tableImg} />
                                                         <div>
                                                             <div style={styles.tableMainText}>{c.title}</div>
                                                             <div style={styles.tableSubText}>{c.category}</div>
@@ -247,10 +292,10 @@ const AdminDashboard = () => {
 
                             {activeTab === 'Verification' && (
                                 <div style={styles.verificationList}>
-                                    {users.filter(u => u.status === 'Pending').length === 0 ? (
-                                        <div style={styles.emptyState}>No pending verifications</div>
+                                    {filteredUsers.filter(u => u.status === 'Pending').length === 0 ? (
+                                        <div style={styles.emptyState}>No pending verifications matching your search</div>
                                     ) : (
-                                        users.filter(u => u.status === 'Pending').map(u => (
+                                        filteredUsers.filter(u => u.status === 'Pending').map(u => (
                                             <div key={u.id} style={styles.verificationCard}>
                                                 <div style={styles.userMain}>
                                                     <div style={styles.userAvatar}>{u.name.charAt(0)}</div>
@@ -260,8 +305,23 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
                                                 <div style={styles.docsList}>
-                                                    <button style={styles.docLink}><Plus size={14} /> View Gov ID</button>
-                                                    <button style={styles.docLink}><Plus size={14} /> View Medical Records</button>
+                                                    {u.uploadedFiles && Object.entries(u.uploadedFiles).map(([key, filename]) => (
+                                                        <button key={key} style={styles.docLink} title={filename}>
+                                                            <FileCheck size={14} />
+                                                            {key === 'govId' ? 'Gov ID' :
+                                                                key === 'birthCert' ? 'Birth Cert' :
+                                                                    key === 'medicalRecords' ? 'Medical' :
+                                                                        key === 'doctorLetter' ? 'Doctor Letter' :
+                                                                            key === 'attestation' ? 'Attestation' :
+                                                                                key === 'cert' ? 'NGO Cert' :
+                                                                                    key === 'proposal' ? 'Proposal' :
+                                                                                        key === 'projects' ? 'Projects' :
+                                                                                            key === 'finance' ? 'Finance' : key}: {filename.length > 15 ? filename.substring(0, 12) + '...' : filename}
+                                                        </button>
+                                                    ))}
+                                                    {(!u.uploadedFiles || Object.keys(u.uploadedFiles).length === 0) && (
+                                                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No documents uploaded</span>
+                                                    )}
                                                 </div>
                                                 <div style={styles.vActions}>
                                                     <button
@@ -335,6 +395,66 @@ const AdminDashboard = () => {
                                 </div>
                             )}
 
+                            {activeTab === 'Payments' && (
+                                <div style={styles.paymentApprovalList}>
+                                    {(pendingDonations || []).length === 0 ? (
+                                        <div style={styles.emptyState}>No pending payment approvals</div>
+                                    ) : (
+                                        <table style={styles.table}>
+                                            <thead>
+                                                <tr style={styles.tableHeader}>
+                                                    <th style={styles.th}>Donor</th>
+                                                    <th style={styles.th}>Campaign</th>
+                                                    <th style={styles.th}>Amount</th>
+                                                    <th style={styles.th}>Date</th>
+                                                    <th style={styles.th}>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(pendingDonations || []).map(d => (
+                                                    <tr key={d.id} style={styles.tr}>
+                                                        <td style={styles.td}>
+                                                            <div style={styles.donorCell}>
+                                                                <div style={styles.donorIcon}><User size={16} /></div>
+                                                                <div>
+                                                                    <div style={styles.tableMainText}>{d.cardName || 'Anonymous'}</div>
+                                                                    <div style={styles.tableSubText}>{d.email || d.userId}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td style={styles.td}>
+                                                            <div style={styles.tableMainText}>{d.campaignTitle}</div>
+                                                        </td>
+                                                        <td style={styles.td}>
+                                                            <strong style={{ color: '#2563eb' }}>Rs. {(d.amount || 0).toLocaleString()}</strong>
+                                                        </td>
+                                                        <td style={styles.td}>{d.date}</td>
+                                                        <td style={styles.td}>
+                                                            <div style={styles.actionRow}>
+                                                                <button
+                                                                    onClick={() => approveDonation(d.id)}
+                                                                    style={styles.approveIconBtn}
+                                                                    title="Approve"
+                                                                >
+                                                                    <Check size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => rejectDonation(d.id)}
+                                                                    style={styles.rejectIconBtn}
+                                                                    title="Reject"
+                                                                >
+                                                                    <X size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                            )}
+
                             {activeTab === 'Users' && (
                                 <table style={styles.table}>
                                     <thead>
@@ -379,7 +499,7 @@ const AdminDashboard = () => {
                 onSave={handleSaveCampaign}
                 campaign={editingCampaign}
             />
-        </div>
+        </div >
     );
 };
 
@@ -398,10 +518,10 @@ const styles = {
         border: '1px solid #e2e8f0',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
     },
-    adminProfile: { display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '3rem' },
-    adminAvatar: { width: '56px', height: '56px', backgroundColor: '#4F96FF', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    adminProfile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginBottom: '3rem', textAlign: 'center' },
+    adminAvatar: { width: '80px', height: '80px', backgroundColor: '#cbd5e1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' },
     adminRole: { fontSize: '0.75rem', color: '#64748b', margin: 0, textTransform: 'uppercase', fontWeight: 700 },
-    adminName: { fontSize: '1.1rem', fontWeight: '700', margin: 0, color: '#1e293b' },
+    adminName: { fontSize: '1.25rem', fontWeight: '700', margin: 0, color: '#1e293b' },
     sideNav: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
     navItem: {
         display: 'flex',
@@ -418,7 +538,7 @@ const styles = {
         textAlign: 'left',
         transition: 'all 0.2s'
     },
-    activeNavItem: { backgroundColor: '#e0f2fe', color: '#4F96FF', fontWeight: 600 },
+    activeNavItem: { backgroundColor: '#eff6ff', color: '#2563eb', fontWeight: 600 },
     sidebarFooter: { marginTop: 'auto', textAlign: 'center' },
     mainArea: { flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem' },
     areaHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -437,7 +557,7 @@ const styles = {
     searchInput: { border: 'none', outline: 'none', fontSize: '0.9rem', color: '#1e293b', width: '100%' },
     addBtn: {
         padding: '0.6rem 1.25rem',
-        backgroundColor: '#1e293b',
+        backgroundColor: '#2563eb',
         color: 'white',
         border: 'none',
         borderRadius: '12px',
@@ -502,9 +622,37 @@ const styles = {
     docsList: { display: 'flex', gap: '0.75rem' },
     docLink: { border: '1px solid #cbd5e1', background: 'white', padding: '0.4rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
     vActions: { display: 'flex', gap: '0.75rem' },
-    approveBtn: { backgroundColor: '#10b981', color: 'white', border: 'none', padding: '0.5rem 1.25rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
+    approveBtn: { backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1.25rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
     rejectBtn: { backgroundColor: 'white', color: '#ef4444', border: '1px solid #ef4444', padding: '0.5rem 1.25rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
     emptyState: { textAlign: 'center', padding: '3rem', color: '#94a3b8' },
+    tabBadge: {
+        backgroundColor: '#ef4444',
+        color: 'white',
+        fontSize: '0.7rem',
+        padding: '0.1rem 0.4rem',
+        borderRadius: '50px',
+        marginLeft: '0.5rem',
+        fontWeight: 'bold'
+    },
+
+    // Payment Approval Styles
+    paymentApprovalList: { padding: '1rem' },
+    donorCell: { display: 'flex', alignItems: 'center', gap: '1rem' },
+    donorIcon: {
+        width: '32px', height: '32px', backgroundColor: '#f1f5f9',
+        borderRadius: '50%', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', color: '#64748b'
+    },
+    approveIconBtn: {
+        border: '1px solid #bfdbfe', background: '#eff6ff', padding: '0.4rem',
+        borderRadius: '8px', cursor: 'pointer', color: '#2563eb',
+        transition: 'all 0.2s'
+    },
+    rejectIconBtn: {
+        border: '1px solid #fee2e2', background: '#fef2f2', padding: '0.4rem',
+        borderRadius: '8px', cursor: 'pointer', color: '#ef4444',
+        transition: 'all 0.2s'
+    },
 
     // Dashboard Overview Styles
     dashboardOverview: { padding: '1rem' },
@@ -516,7 +664,7 @@ const styles = {
     // Activity Feed
     activityList: { display: 'flex', flexDirection: 'column', gap: '1rem' },
     activityItem: { display: 'flex', gap: '0.75rem', alignItems: 'flex-start' },
-    activityDot: { width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4F96FF', marginTop: '0.4rem', flexShrink: 0 },
+    activityDot: { width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2563eb', marginTop: '0.4rem', flexShrink: 0 },
     activityText: { margin: 0, fontSize: '0.9rem', color: '#1e293b', fontWeight: '500' },
     activityTime: { margin: 0, fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' },
 
@@ -524,7 +672,7 @@ const styles = {
     quickStats: { display: 'flex', flexDirection: 'column', gap: '1rem' },
     quickStatItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '8px' },
     quickStatLabel: { fontSize: '0.9rem', color: '#64748b', fontWeight: '500' },
-    quickStatValue: { fontSize: '1.25rem', fontWeight: '700', color: '#4F96FF' }
+    quickStatValue: { fontSize: '1.25rem', fontWeight: '700', color: '#2563eb' }
 };
 
 export default AdminDashboard;

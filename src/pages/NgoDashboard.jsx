@@ -13,22 +13,85 @@ import {
     DollarSign,
     Heart,
     ChevronRight,
-    Clock
+    Clock,
+    FileCheck,
+    Check,
+    X,
+    Camera
 } from 'lucide-react';
+import { useCampaigns } from '../context/CampaignContext';
 import logo from '../assets/logo.png';
 import projectImage from '../assets/project-emma.jpg';
 
 const NgoDashboard = () => {
-    const { user } = useAuth();
+    const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
+    const { campaigns } = useCampaigns();
     const [activeTab, setActiveTab] = useState('Overview');
 
-    // Mock data for Smile Foundation (from images)
-    const ngoInfo = {
-        name: "Smile Foundation",
-        email: "smile.fnd@gmail.com",
-        avatar: logo // Using logo as avatar placeholder
+    // Profile Editing State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState('');
+    const [previewImage, setPreviewImage] = useState(null);
+    const fileInputRef = React.useRef(null);
+
+    // Initial load of user data
+    React.useEffect(() => {
+        if (user) {
+            setEditName(user.name || '');
+            setPreviewImage(user.photoURL || null);
+        }
+    }, [user]);
+
+    const handleEditClick = () => {
+        setIsEditing(true);
+        setEditName(user.name || '');
+        setPreviewImage(user.photoURL || null);
     };
+
+    const handleCancelClick = () => {
+        setIsEditing(false);
+        setEditName(user.name || '');
+        setPreviewImage(user.photoURL || null);
+    };
+
+    const handleSaveClick = async () => {
+        try {
+            await updateUserProfile({
+                name: editName,
+                photoURL: previewImage
+            });
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Failed to save profile:", error);
+            alert("Failed to save changes.");
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Convert to Base64
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const triggerFileInput = () => {
+        if (isEditing && fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    // Filter campaigns for this NGO
+    // We match by name for seeded data, but we should ideally use user.uid
+    const myCampaigns = campaigns.filter(c =>
+        (c.userId === user?.uid) ||
+        (c.organizer?.name?.toLowerCase() === user?.name?.toLowerCase())
+    );
 
     const navItems = [
         { id: 'Overview', icon: <Home size={20} />, label: 'Overview' },
@@ -38,11 +101,11 @@ const NgoDashboard = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Overview':
-                return <OverviewView name={ngoInfo.name} />;
+                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} />;
             case 'My Active Campaigns':
-                return <MyCampaignsView />;
+                return <MyCampaignsView campaigns={myCampaigns} />;
             default:
-                return <OverviewView name={ngoInfo.name} />;
+                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} />;
         }
     };
 
@@ -57,17 +120,81 @@ const NgoDashboard = () => {
                             <div style={styles.logoContainer}>
                                 <img src={logo} alt="KindCents" style={styles.sidebarLogo} />
                             </div>
+
+                            {/* Avatar Section */}
                             <div style={styles.avatarWrapper}>
-                                <div style={styles.avatar}>
-                                    <Users size={30} color="#64748b" />
+                                <div
+                                    style={{
+                                        ...styles.avatar,
+                                        cursor: isEditing ? 'pointer' : 'default',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                    onClick={triggerFileInput}
+                                >
+                                    {previewImage ? (
+                                        <img src={previewImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <Users size={30} color="#64748b" />
+                                    )}
+
+                                    {/* Camera Overlay for Edit Mode */}
+                                    {isEditing && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: '30%',
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Camera size={12} color="white" />
+                                        </div>
+                                    )}
                                 </div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                />
                             </div>
+
+                            {/* Profile Info Section */}
                             <div style={styles.profileInfo}>
-                                <div style={styles.nameRow}>
-                                    <strong style={styles.profileName}>{ngoInfo.name}</strong>
-                                    <button style={styles.editBtn}><Edit size={14} /></button>
-                                </div>
-                                <p style={styles.profileEmail}>{ngoInfo.email}</p>
+                                {isEditing ? (
+                                    // Edit Mode Inputs
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                                        <input
+                                            type="text"
+                                            value={editName}
+                                            onChange={(e) => setEditName(e.target.value)}
+                                            style={styles.editInput}
+                                            placeholder="NGO Name"
+                                        />
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                            <button onClick={handleSaveClick} style={styles.saveBtn}>
+                                                <Check size={14} />
+                                            </button>
+                                            <button onClick={handleCancelClick} style={styles.cancelBtn}>
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // View Mode
+                                    <div style={styles.nameRow}>
+                                        <strong style={styles.profileName}>{user?.name}</strong>
+                                        <button onClick={handleEditClick} style={styles.editBtn}>
+                                            <Edit size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                                <p style={styles.profileEmail}>{user?.email}</p>
                             </div>
                         </div>
 
@@ -109,81 +236,77 @@ const NgoDashboard = () => {
 
 // --- Sub-Views ---
 
-const OverviewView = ({ name }) => (
-    <div style={styles.tabView}>
-        <div style={styles.header}>
-            <h2 style={styles.title}>Welcome back, {name}!</h2>
-            <p style={styles.subTitle}>Track your fundraising progress and manage your campaigns.</p>
+const OverviewView = ({ name, campaigns }) => {
+    const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
+    const totalContributors = campaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
+    const activeCount = campaigns.filter(c => c.isActive).length;
+    const avgDonation = totalContributors > 0 ? Math.round(totalRaised / totalContributors) : 0;
+
+    return (
+        <div style={styles.tabView}>
+            <div style={styles.header}>
+                <h2 style={styles.title}>Welcome back, {name}!</h2>
+                <p style={styles.subTitle}>Track your fundraising progress and manage your campaigns.</p>
+            </div>
+
+            <div style={styles.statsGrid}>
+                <div style={styles.statsCard}>
+                    <div style={styles.statsHeader}>
+                        <div style={styles.statsLabelGroup}>
+                            <p style={styles.statsLabel}>Total Raised</p>
+                            <h3 style={styles.statsValue}>Rs. {totalRaised.toLocaleString()}</h3>
+                            <p style={styles.statsTrendGreen}>Platform verified total</p>
+                        </div>
+                        <div style={{ ...styles.statsIconCircle, backgroundColor: '#D6E6FF' }}>
+                            <DollarSign size={24} color="#2563EB" />
+                        </div>
+                    </div>
+                </div>
+
+                <div style={styles.statsCard}>
+                    <div style={styles.statsHeader}>
+                        <div style={styles.statsLabelGroup}>
+                            <p style={styles.statsLabel}>Total Supporters</p>
+                            <h3 style={styles.statsValue}>{totalContributors}</h3>
+                            <p style={styles.statsTrendGreen}>Unique contributors</p>
+                        </div>
+                        <div style={{ ...styles.statsIconCircle, backgroundColor: '#f1f5f9' }}>
+                            <Users size={24} color="#64748b" />
+                        </div>
+                    </div>
+                </div>
+
+                <div style={styles.statsCard}>
+                    <div style={styles.statsHeader}>
+                        <div style={styles.statsLabelGroup}>
+                            <p style={styles.statsLabel}>Active Campaigns</p>
+                            <h3 style={styles.statsValue}>{activeCount}</h3>
+                            <p style={styles.statsTrendGray}>{activeCount} campaign{activeCount !== 1 ? 's' : ''} running</p>
+                        </div>
+                        <div style={{ ...styles.statsIconCircle, backgroundColor: '#D1FAE5' }}>
+                            <TrendingUp size={24} color="#10B981" />
+                        </div>
+                    </div>
+                </div>
+
+                <div style={styles.statsCard}>
+                    <div style={styles.statsHeader}>
+                        <div style={styles.statsLabelGroup}>
+                            <p style={styles.statsLabel}>Avg. Donation</p>
+                            <h3 style={styles.statsValue}>Rs. {avgDonation.toLocaleString()}</h3>
+                            <p style={styles.statsTrendGreen}>Across all campaigns</p>
+                        </div>
+                        <div style={{ ...styles.statsIconCircle, backgroundColor: '#DBEAFE' }}>
+                            <Heart size={24} color="#2563EB" />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    );
+};
 
-        <div style={styles.statsGrid}>
-            <div style={styles.statsCard}>
-                <div style={styles.statsHeader}>
-                    <div style={styles.statsLabelGroup}>
-                        <p style={styles.statsLabel}>Total Raised</p>
-                        <h3 style={styles.statsValue}>Rs. 450,000</h3>
-                        <p style={styles.statsTrendGreen}>+25% from last month</p>
-                    </div>
-                    <div style={{ ...styles.statsIconCircle, backgroundColor: '#D6E6FF' }}>
-                        <DollarSign size={24} color="#2563EB" />
-                    </div>
-                </div>
-            </div>
-
-            <div style={styles.statsCard}>
-                <div style={styles.statsHeader}>
-                    <div style={styles.statsLabelGroup}>
-                        <p style={styles.statsLabel}>Total Supporters</p>
-                        <h3 style={styles.statsValue}>34</h3>
-                        <p style={styles.statsTrendGreen}>+7 new this week</p>
-                    </div>
-                    <div style={{ ...styles.statsIconCircle, backgroundColor: '#f1f5f9' }}>
-                        <Users size={24} color="#64748b" />
-                    </div>
-                </div>
-            </div>
-
-            <div style={styles.statsCard}>
-                <div style={styles.statsHeader}>
-                    <div style={styles.statsLabelGroup}>
-                        <p style={styles.statsLabel}>Active Campaigns</p>
-                        <h3 style={styles.statsValue}>1</h3>
-                        <p style={styles.statsTrendGray}>1 active campaign running</p>
-                    </div>
-                    <div style={{ ...styles.statsIconCircle, backgroundColor: '#D1FAE5' }}>
-                        <TrendingUp size={24} color="#10B981" />
-                    </div>
-                </div>
-            </div>
-
-            <div style={styles.statsCard}>
-                <div style={styles.statsHeader}>
-                    <div style={styles.statsLabelGroup}>
-                        <p style={styles.statsLabel}>Avg. Donation</p>
-                        <h3 style={styles.statsValue}>Rs. 13,235</h3>
-                        <p style={styles.statsTrendGreen}>+Rs. 90,000 from last month</p>
-                    </div>
-                    <div style={{ ...styles.statsIconCircle, backgroundColor: '#DBEAFE' }}>
-                        <Heart size={24} color="#2563EB" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-);
-
-const MyCampaignsView = () => {
-    const campaign = {
-        title: "Community developement",
-        subtitle: "Education, Healthcare, Child and Women Development",
-        raised: 2150000,
-        goal: 5000000,
-        donors: 34,
-        daysLeft: 9,
-        image: projectImage,
-        status: "Live"
-    };
-
+const MyCampaignsView = ({ campaigns }) => {
     return (
         <div style={styles.tabView}>
             <div style={styles.header}>
@@ -192,41 +315,63 @@ const MyCampaignsView = () => {
             </div>
 
             <div style={styles.campaignList}>
-                <div style={styles.campaignCard}>
-                    <div style={styles.campaignImageWrapper}>
-                        <img src={campaign.image} alt={campaign.title} style={styles.campaignImage} />
-                        <span style={styles.statusBadge}>
-                            <div style={styles.statusDot}></div>
-                            {campaign.status}
-                        </span>
+                {campaigns.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                        <FileCheck size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+                        <p>No active campaigns found.</p>
                     </div>
-                    <div style={styles.campaignContent}>
-                        <h4 style={styles.campaignTitle}>{campaign.title}</h4>
-                        <p style={styles.campaignSubtitle}>{campaign.subtitle}</p>
-
-                        <div style={styles.progressSection}>
-                            <div style={styles.progressLabelRow}>
-                                <span style={styles.raisedValue}>Rs. {campaign.raised.toLocaleString()}</span>
-                                <span style={styles.goalValue}>/ Rs. {campaign.goal.toLocaleString()}</span>
-                                <span style={styles.percentageText}><TrendingUp size={12} /> {(campaign.raised / campaign.goal * 100).toFixed(0)}%</span>
+                ) : (
+                    campaigns.map(campaign => (
+                        <div key={campaign.id} style={styles.campaignCard}>
+                            <div style={styles.campaignImageWrapper}>
+                                <img
+                                    src={campaign.image === 'orgSmile' ? logo : // Fallback for seeded images
+                                        campaign.image === 'orgKeithston' ? logo :
+                                            campaign.image === 'orgAkshay' ? logo :
+                                                campaign.image === 'orgLotus' ? logo : projectImage}
+                                    alt={campaign.title}
+                                    style={styles.campaignImage}
+                                />
+                                <span style={styles.statusBadge}>
+                                    <div style={{ ...styles.statusDot, backgroundColor: campaign.isActive ? '#10B981' : '#f59e0b' }}></div>
+                                    {campaign.isActive ? 'Live' : 'Pending'}
+                                </span>
                             </div>
-                            <div style={styles.progressBarContainer}>
-                                <div style={{ ...styles.progressBar, width: `${(campaign.raised / campaign.goal) * 100}%` }} />
+                            <div style={styles.campaignContent}>
+                                <h4 style={styles.campaignTitle}>{campaign.title}</h4>
+                                <p style={styles.campaignSubtitle}>{campaign.category}</p>
+
+                                <div style={styles.progressSection}>
+                                    <div style={styles.progressLabelRow}>
+                                        <span style={styles.raisedValue}>Rs. {(campaign.raised || 0).toLocaleString()}</span>
+                                        <span style={styles.goalValue}>/ Rs. {(campaign.goal || 0).toLocaleString()}</span>
+                                        <span style={styles.percentageText}>
+                                            <TrendingUp size={12} />
+                                            {campaign.goal > 0 ? ((campaign.raised || 0) / campaign.goal * 100).toFixed(0) : 0}%
+                                        </span>
+                                    </div>
+                                    <div style={styles.progressBarContainer}>
+                                        <div style={{
+                                            ...styles.progressBar,
+                                            width: `${campaign.goal > 0 ? Math.min((campaign.raised || 0) / campaign.goal * 100, 100) : 0}%`
+                                        }} />
+                                    </div>
+                                </div>
+
+                                <div style={styles.campaignFooter}>
+                                    <div style={styles.footerStat}>
+                                        <Users size={14} color="#64748b" />
+                                        <span>{campaign.contributors || 0} donors</span>
+                                    </div>
+                                    <div style={styles.footerStat}>
+                                        <Clock size={14} color="#64748b" />
+                                        <span>{campaign.daysLeft || 0} days left</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div style={styles.campaignFooter}>
-                            <div style={styles.footerStat}>
-                                <Users size={14} color="#64748b" />
-                                <span>{campaign.donors} donors</span>
-                            </div>
-                            <div style={styles.footerStat}>
-                                <Clock size={14} color="#64748b" />
-                                <span>{campaign.daysLeft} days left</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    ))
+                )}
             </div>
         </div>
     );
@@ -298,19 +443,55 @@ const styles = {
         color: '#1e293b',
         fontWeight: '700',
     },
-    editBtn: {
-        background: 'none',
-        border: 'none',
-        color: '#64748b',
-        cursor: 'pointer',
-        padding: 0,
-        display: 'flex',
-        alignItems: 'center',
-    },
     profileEmail: {
         fontSize: '0.8rem',
         color: '#64748b',
         marginTop: '0.1rem',
+    },
+    editBtn: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '4px',
+        color: '#94a3b8',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        transition: 'background-color 0.2s',
+        ':hover': { backgroundColor: '#f1f5f9' }
+    },
+    editInput: {
+        width: '100%',
+        padding: '4px 8px',
+        fontSize: '1rem',
+        fontWeight: '700',
+        color: '#1e293b',
+        border: '1px solid #cbd5e1',
+        borderRadius: '4px',
+        outline: 'none'
+    },
+    saveBtn: {
+        backgroundColor: '#10b981',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        padding: '4px 8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    cancelBtn: {
+        backgroundColor: '#ef4444',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        padding: '4px 8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     sidebarNav: {
         display: 'flex',

@@ -9,11 +9,13 @@ import AuthModal from './AuthModal';
 import LocationWarningModal from './LocationWarningModal';
 
 const Navbar = ({ minimal = false }) => {
-  const { user, logout } = useAuth();
+  const {
+    user, logout,
+    isAuthModalOpen, setIsAuthModalOpen,
+    isLocationModalOpen, setIsLocationModalOpen,
+    authMode, setAuthMode, openAuthModal
+  } = useAuth();
   const navigate = useNavigate();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('signup');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const scrollToSection = (sectionId) => {
@@ -34,14 +36,7 @@ const Navbar = ({ minimal = false }) => {
     }
   };
 
-  const openAuthModal = (mode) => {
-    if (mode === 'signup') {
-      setIsLocationModalOpen(true);
-    } else {
-      setAuthMode(mode);
-      setIsAuthModalOpen(true);
-    }
-  };
+  // openAuthModal moved to AuthContext
 
   const handleLocationConfirm = () => {
     setIsLocationModalOpen(false);
@@ -57,8 +52,12 @@ const Navbar = ({ minimal = false }) => {
 
   const getUserDashboardPath = () => {
     if (!user) return '/';
-    if (user.role === 'admin') return '/dashboard/admin';
-    return `/dashboard/${user.role || 'donor'}`;
+    const role = (user.role || 'donor').toLowerCase();
+
+    if (role === 'admin') return '/dashboard/admin';
+    if (role === 'ngo' || role === 'nonprofit') return '/dashboard/ngo';
+    if (role === 'individual') return '/dashboard/individual';
+    return '/dashboard/donor';
   };
 
   return (
@@ -73,7 +72,7 @@ const Navbar = ({ minimal = false }) => {
             {!minimal && (
               <>
                 <NavLink to="/" style={styles.link}>Home</NavLink>
-                {user?.role === 'donor' && <NavLink to="/campaigns" style={styles.link}>Campaigns</NavLink>}
+                {user && (user.role || 'donor').toLowerCase() === 'donor' && <NavLink to="/campaigns" style={styles.link}>Campaigns</NavLink>}
                 <button onClick={() => scrollToSection('about')} style={styles.linkBtn}>About Us</button>
                 <button onClick={() => scrollToSection('contact')} style={styles.linkBtn}>Contact</button>
               </>
@@ -134,9 +133,14 @@ const Navbar = ({ minimal = false }) => {
 
 const styles = {
   nav: {
-    padding: '0.5rem 0', // Reduced padding as requested
-    backgroundColor: 'white', // User requested white navbar
-    // Removed absolute positioning so it sits above the hero naturally
+    padding: '0.5rem 0',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
+    borderBottom: '1px solid rgba(241, 245, 249, 0.5)',
   },
   container: {
     display: 'flex',

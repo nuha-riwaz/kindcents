@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Building2, User, Heart, ChevronRight, ChevronLeft, CloudUpload, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import logo from '../assets/logo.png';
 
@@ -16,7 +16,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         lastName: '',
         password: ''
     });
-    const { login, signup, loginEmail } = useAuth();
+    const [uploadedFiles, setUploadedFiles] = useState({});
+    const { login, signup, loginEmail, saveUserRole, updateUserDocuments } = useAuth();
     const navigate = useNavigate();
 
     const fileInputRefs = {
@@ -28,7 +29,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         medicalRecords: React.useRef(null),
         doctorLetter: React.useRef(null),
         attestation: React.useRef(null),
-        financialStatement: React.useRef(null)
+        finance: React.useRef(null)
     };
 
     const isCardStyle = {
@@ -67,9 +68,15 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
                     if (userData.role) {
-                        // User already has a role, log them in fully
+                        const role = userData.role.toLowerCase();
                         onClose();
-                        navigate(`/dashboard/${userData.role}`);
+                        if (role === 'ngo' || role === 'nonprofit') {
+                            navigate('/dashboard/ngo');
+                        } else if (role === 'individual') {
+                            navigate('/dashboard/individual');
+                        } else {
+                            navigate('/dashboard/donor');
+                        }
                         return;
                     }
                 }
@@ -77,19 +84,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 console.error("Error checking user role:", error);
             }
 
-            // New user or no role set - proceed to onboarding
-            const displayName = googleUser.displayName || '';
-            const nameParts = displayName.split(' ');
-            const firstName = nameParts[0] || '';
-            const lastName = nameParts.slice(1).join(' ') || '';
-
-            setFormData({
-                email: googleUser.email || '',
-                firstName,
-                lastName,
-                password: '' // Not needed for Google auth
-            });
-            setMode('email-signup');
+            // If not already returned (meaning no specialized role found), 
+            // allow the new google user to choose their role (Step 2)
+            setMode('email-signup'); // Use signup mode UI
             setStep(2);
         }
     };
@@ -102,23 +99,26 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         e.preventDefault(); // Prevent form submission refresh
         try {
             // For demo, keep admin check if you want, or remove it.
-            // Let's try real login first.
-            await loginEmail(formData.email, formData.password);
+            const loggedInUser = await loginEmail(formData.email, formData.password);
 
-            // If successful, close and navigate (AuthContext updates user state automatically)
-            onClose();
-            // Note: Navigation might depend on role, which useEffect in Main App handles, 
-            // but here we can just default to dashboard or let the state update redirect.
-            // For now, let's just close. The main layout likely redirects based on user.
-            // Or we can fetch the user role and redirect. 
-            // But since loginEmail returns the user object (firebase user), it doesn't have the firestore role yet synchronously attached 
-            // unless we wait for AuthContext to sync. 
-            // AuthContext syncs and updates `user` state. 
-            // Let's just navigate to /dashboard/donor as default or check email.
-            if (formData.email === 'admin@kindcents.org') {
-                navigate('/dashboard/admin');
-            } else {
-                navigate('/dashboard/donor');
+            if (loggedInUser) {
+                // Fetch the user role to decide where to go
+                const userRef = doc(db, 'users', loggedInUser.uid);
+                const userSnap = await getDoc(userRef);
+
+                onClose();
+
+                if (userSnap.exists()) {
+                    const role = (userSnap.data().role || 'donor').toLowerCase();
+                    if (role === 'admin' || formData.email === 'admin@kindcents.org') navigate('/dashboard/admin');
+                    else if (role === 'ngo' || role === 'nonprofit') navigate('/dashboard/ngo');
+                    else if (role === 'individual') navigate('/dashboard/individual');
+                    else navigate('/dashboard/donor');
+                } else {
+                    // Fallback for admin email even if doc missing
+                    if (formData.email === 'admin@kindcents.org') navigate('/dashboard/admin');
+                    else navigate('/dashboard/donor');
+                }
             }
         } catch (error) {
             console.error("Login failed", error);
@@ -131,6 +131,27 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             setMode('login');
         } else {
             setMode('signup');
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileChange = (e, key) => {
+        const file = e.target.files[0];
+        if (file) {
+            setUploadedFiles(prev => ({
+                ...prev,
+                [key]: file.name
+            }));
+        }
+    };
+
+    const handleBrowseClick = (key) => {
+        if (fileInputRefs[key].current) {
+            fileInputRefs[key].current.click();
         }
     };
 
@@ -159,32 +180,16 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
         // ... (rest of step 1 render)
 
-        const handleBrowseClick = (key) => {
-            if (fileInputRefs[key].current) {
-                fileInputRefs[key].current.click();
-            }
-        };
-
-        const handleFileChange = (e, key) => {
-            const file = e.target.files[0];
-            if (file) {
-                console.log(`File selected for ${key}:`, file.name);
-                // In a real app, we'd store this in state
-            }
-        };
-
-        const handleInputChange = (e) => {
-            const { name, value } = e.target;
-            setFormData(prev => ({ ...prev, [name]: value }));
-        };
 
         if (step === 1) {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        <button onClick={onClose} style={styles.closeBtn}>
-                            <X size={24} />
-                        </button>
+                        {mode === 'login' && (
+                            <button onClick={onClose} style={styles.closeBtn}>
+                                <X size={24} />
+                            </button>
+                        )}
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
@@ -282,71 +287,74 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        <button onClick={onClose} style={styles.closeBtn}>
-                            <X size={24} />
-                        </button>
+                        {mode === 'login' && (
+                            <button onClick={onClose} style={styles.closeBtn}>
+                                <X size={24} />
+                            </button>
+                        )}
 
                         <div style={styles.content}>
-                            <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
-                            </div>
-
-                            <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
-                                <p style={{ fontSize: '0.9rem', fontWeight: '600', color: '#1e293b', marginBottom: '0.5rem' }}>Step 2 of 4</p>
-                                <div style={{ width: '100%', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px' }}>
-                                    <div style={{ width: '50%', height: '100%', backgroundColor: '#2596be', borderRadius: '3px' }}></div>
+                            <div style={{ width: '100%', textAlign: 'center', marginBottom: '2rem' }}>
+                                <img src={logo} alt="KindCents" style={{ height: '70px' }} />
+                                <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+                                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1e293b', marginBottom: '0.5rem' }}>Step 2 of 4</p>
+                                    <div style={{ width: '100%', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px' }}>
+                                        <div style={{ width: '50%', height: '100%', backgroundColor: '#2596be', borderRadius: '3px' }}></div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
-                                <button onClick={() => setStep(1)} style={styles.backLinkBtn}>
-                                    <ChevronLeft size={16} /> Back
-                                </button>
-                            </div>
-
-                            <h2 style={{ ...styles.title, fontSize: '1.5rem', marginBottom: '2rem' }}>
+                            <h2 style={{ ...styles.title, fontSize: '1.75rem', fontWeight: '800', marginBottom: '2.5rem', textAlign: 'center' }}>
                                 Which best describes you?
                             </h2>
 
                             <div style={styles.optionsList}>
-                                <div style={styles.optionCard} onClick={() => { setUserType('nonprofit'); setStep(3); }}>
-                                    <div style={{ ...styles.iconCircle, color: '#3b82f6' }}>
+                                <div style={styles.roleCard} onClick={async () => {
+                                    setUserType('nonprofit');
+                                    await saveUserRole('nonprofit');
+                                    setStep(3);
+                                }}>
+                                    <div style={{ ...styles.roleIconCircle, color: '#3b82f6' }}>
                                         <Building2 size={24} />
                                     </div>
                                     <div style={styles.optionContent}>
                                         <h3 style={styles.optionTitle}>Nonprofit Organization</h3>
                                         <p style={styles.optionDesc}>A nonprofit with registered charity status from the government</p>
                                     </div>
-                                    <ChevronRight size={20} color="#94a3b8" />
+                                    <ChevronRight size={20} color="#cbd5e1" />
                                 </div>
 
-                                <div style={styles.optionCard} onClick={() => { setUserType('individual'); setStep(3); }}>
-                                    <div style={{ ...styles.iconCircle, color: '#3b82f6' }}>
+                                <div style={styles.roleCard} onClick={async () => {
+                                    setUserType('individual');
+                                    await saveUserRole('individual');
+                                    setStep(3);
+                                }}>
+                                    <div style={{ ...styles.roleIconCircle, color: '#3b82f6' }}>
                                         <User size={24} />
                                     </div>
                                     <div style={styles.optionContent}>
                                         <h3 style={styles.optionTitle}>Individual</h3>
                                         <p style={styles.optionDesc}>An individual looking to fundraise for medical purposes</p>
                                     </div>
-                                    <ChevronRight size={20} color="#94a3b8" />
+                                    <ChevronRight size={20} color="#cbd5e1" />
                                 </div>
 
-                                <div style={styles.optionCard} onClick={() => { setUserType('donor'); setStep(3); }}>
-                                    <div style={{ ...styles.iconCircle, color: '#3b82f6' }}>
+                                <div style={styles.roleCard} onClick={async () => {
+                                    setUserType('donor');
+                                    await saveUserRole('donor');
+                                    setStep(3);
+                                }}>
+                                    <div style={{ ...styles.roleIconCircle, color: '#3b82f6' }}>
                                         <Heart size={24} />
                                     </div>
                                     <div style={styles.optionContent}>
                                         <h3 style={styles.optionTitle}>Donor</h3>
                                         <p style={styles.optionDesc}>An individual looking to donate online</p>
                                     </div>
-                                    <ChevronRight size={20} color="#94a3b8" />
+                                    <ChevronRight size={20} color="#cbd5e1" />
                                 </div>
                             </div>
 
-                            <div style={{ ...styles.trustBadge, marginTop: '2rem' }}>
-                                <span style={styles.heartIcon}>♥</span> 80k+
-                            </div>
-                            <p style={styles.trustText}>nonprofits use KindCents to fundraise</p>
                         </div>
                     </div>
                 </div>
@@ -361,9 +369,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        <button onClick={onClose} style={styles.closeBtn}>
-                            <X size={24} />
-                        </button>
+                        {mode === 'login' && (
+                            <button onClick={onClose} style={styles.closeBtn}>
+                                <X size={24} />
+                            </button>
+                        )}
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
@@ -477,9 +487,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        <button onClick={onClose} style={styles.closeBtn}>
-                            <X size={24} />
-                        </button>
+                        {mode === 'login' && (
+                            <button onClick={onClose} style={styles.closeBtn}>
+                                <X size={24} />
+                            </button>
+                        )}
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
@@ -512,6 +524,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'cert')}
                                                 />
+                                                {uploadedFiles.cert && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.cert}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -527,6 +544,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'projects')}
                                                 />
+                                                {uploadedFiles.projects && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.projects}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -542,6 +564,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'proposal')}
                                                 />
+                                                {uploadedFiles.proposal && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.proposal}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     </>
@@ -559,6 +586,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'govId')}
                                                 />
+                                                {uploadedFiles.govId && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.govId}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -574,6 +606,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'birthCert')}
                                                 />
+                                                {uploadedFiles.birthCert && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.birthCert}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -589,6 +626,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'medicalRecords')}
                                                 />
+                                                {uploadedFiles.medicalRecords && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.medicalRecords}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -604,6 +646,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'doctorLetter')}
                                                 />
+                                                {uploadedFiles.doctorLetter && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.doctorLetter}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
@@ -619,21 +666,31 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                     style={{ display: 'none' }}
                                                     onChange={(e) => handleFileChange(e, 'attestation')}
                                                 />
+                                                {uploadedFiles.attestation && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.attestation}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Financial Statement</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('financialStatement')}>
+                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('finance')}>
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
                                                 <input
                                                     type="file"
-                                                    ref={fileInputRefs.financialStatement}
+                                                    ref={fileInputRefs.finance}
                                                     style={{ display: 'none' }}
-                                                    onChange={(e) => handleFileChange(e, 'financialStatement')}
+                                                    onChange={(e) => handleFileChange(e, 'finance')}
                                                 />
+                                                {uploadedFiles.finance && (
+                                                    <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
+                                                        ✓ {uploadedFiles.finance}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     </>
@@ -645,16 +702,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => {
+                                        onClick={async () => {
                                             if (userType === 'nonprofit' || userType === 'individual') {
                                                 setStep(5);
                                             } else {
-                                                login("Simulated", formData.firstName || (userType === 'nonprofit' ? 'Nonprofit Admin' : 'Individual'), userType);
+                                                await saveUserRole('donor');
                                                 onClose();
-                                                navigate(`/dashboard/${userType}`);
+                                                navigate('/dashboard/donor');
                                             }
                                         }}
-                                        style={styles.nextBtn}
+                                        style={{
+                                            ...styles.nextBtn,
+                                            opacity: (userType === 'donor' || (userType === 'individual' && uploadedFiles.govId && uploadedFiles.birthCert && uploadedFiles.medicalRecords && uploadedFiles.doctorLetter && uploadedFiles.attestation) || (userType === 'nonprofit' && uploadedFiles.cert && uploadedFiles.proposal)) ? 1 : 0.5
+                                        }}
+                                        disabled={(userType === 'individual' && !(uploadedFiles.govId && uploadedFiles.birthCert && uploadedFiles.medicalRecords && uploadedFiles.doctorLetter && uploadedFiles.attestation)) || (userType === 'nonprofit' && !(uploadedFiles.cert && uploadedFiles.proposal))}
                                     >
                                         Next
                                     </button>
@@ -693,10 +754,17 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        login("Simulated", formData.firstName || (userType === 'nonprofit' ? 'Nonprofit Admin' : 'Individual'), userType);
+                                    onClick={async () => {
+                                        if (Object.keys(uploadedFiles).length > 0) {
+                                            await updateUserDocuments(uploadedFiles);
+                                        }
+                                        await saveUserRole(userType);
                                         onClose();
-                                        navigate(`/dashboard/${userType}`);
+                                        const role = (userType || 'donor').toLowerCase();
+                                        if (role === 'admin') navigate('/dashboard/admin');
+                                        else if (role === 'ngo' || role === 'nonprofit') navigate('/dashboard/ngo');
+                                        else if (role === 'individual') navigate('/dashboard/individual');
+                                        else navigate('/dashboard/donor');
                                     }}
                                     style={{ ...styles.nextBtn, minWidth: '100px' }}
                                 >
@@ -716,9 +784,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
-                <button onClick={onClose} style={styles.closeBtn}>
-                    <X size={24} />
-                </button>
+                {mode === 'login' && (
+                    <button onClick={onClose} style={styles.closeBtn}>
+                        <X size={24} />
+                    </button>
+                )}
 
                 <div style={styles.content}>
                     <img src={logo} alt="KindCents" style={{ height: '60px', marginBottom: '1rem' }} />
@@ -830,14 +900,15 @@ const styles = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(5px)',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         display: 'flex',
-        alignItems: 'flex-start', // Changed from center to flex-start to prevent top clipping
+        alignItems: 'flex-start',
         justifyContent: 'center',
         zIndex: 2000,
         overflowY: 'auto',
-        paddingTop: '3rem', // Add space at top
+        paddingTop: '3rem',
         paddingBottom: '3rem'
     },
     modal: {
@@ -994,6 +1065,35 @@ const styles = {
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         textAlign: 'left',
+    },
+    roleCard: {
+        display: 'flex',
+        alignItems: 'center',
+        padding: '1.25rem',
+        border: '1px solid #f8fafc',
+        borderRadius: '16px',
+        backgroundColor: 'white',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        textAlign: 'left',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+        width: '100%',
+        '&:hover': {
+            borderColor: '#e2e8f0',
+            backgroundColor: '#f8fafc',
+        }
+    },
+    roleIconCircle: {
+        width: '48px',
+        height: '48px',
+        borderRadius: '12px',
+        backgroundColor: '#f0f9ff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: '1.25rem',
+        flexShrink: 0,
+        color: '#3b82f6',
     },
     iconCircle: {
         width: '40px',
