@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import statMoney from '../assets/stat-money.png';
 import statDonors from '../assets/stat-donors.png';
 import statHeart from '../assets/stat-heart.png';
@@ -8,6 +8,13 @@ import { useCampaigns } from '../context/CampaignContext';
 
 const StatsSection = () => {
     const { campaigns } = useCampaigns();
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Filter out NGO profile cards, only count real campaigns
     const realCampaigns = campaigns.filter(c => c.type === 'campaign');
@@ -41,14 +48,35 @@ const StatsSection = () => {
 
     return (
         <section style={styles.section}>
-            <div className="container stats-row" style={styles.grid}>
+            <div className="container stats-row" style={{
+                ...styles.grid,
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+                gap: isMobile ? '0.75rem' : '2rem'
+            }}>
                 {stats.map((stat, index) => (
-                    <div key={index} style={styles.card}>
-                        <div style={styles.iconWrapper}>
+                    <div key={index} style={{
+                        ...styles.card,
+                        flexDirection: isMobile ? 'row' : 'column',
+                        alignItems: 'center',
+                        justifyContent: isMobile ? 'flex-start' : 'center', // Align left on mobile
+                        padding: isMobile ? '0.75rem' : '0',
+                        backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+                        borderRadius: isMobile ? '12px' : '0',
+                        border: isMobile ? '1px solid #e2e8f0' : 'none'
+                    }}>
+                        <div style={{
+                            ...styles.iconWrapper,
+                            width: isMobile ? '60px' : '100px', // Smaller icon on mobile
+                            height: isMobile ? '60px' : '100px',
+                            marginBottom: isMobile ? '0' : '1.5rem', // Remove bottom margin on mobile
+                            marginRight: isMobile ? '1.5rem' : '0' // Add right margin on mobile
+                        }}>
                             <img src={stat.image} alt={stat.label} style={styles.icon} />
                         </div>
-                        <h3 style={styles.value}>{stat.value}</h3>
-                        <p style={styles.label}>{stat.label}</p>
+                        <div style={{ textAlign: isMobile ? 'left' : 'center' }}>
+                            <h3 style={{ ...styles.value, fontSize: isMobile ? '1.5rem' : '1.8rem', marginBottom: '0' }}>{stat.value}</h3>
+                            <p style={{ ...styles.label, fontSize: isMobile ? '0.9rem' : '1rem', margin: 0 }}>{stat.label}</p>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -63,8 +91,6 @@ const styles = {
     },
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '2rem',
         textAlign: 'center',
         maxWidth: '1200px',
         margin: '0 auto',
@@ -76,8 +102,6 @@ const styles = {
         alignItems: 'center',
     },
     iconWrapper: {
-        width: '100px',
-        height: '100px',
         marginBottom: '1.5rem',
         display: 'flex',
         alignItems: 'center',
@@ -90,14 +114,12 @@ const styles = {
         display: 'block',
     },
     value: {
-        fontSize: '1.8rem',
         fontWeight: '800',
         color: '#1e293b',
         marginBottom: '0.25rem',
     },
     label: {
         color: '#64748b',
-        fontSize: '1rem',
         fontWeight: 500,
     }
 };

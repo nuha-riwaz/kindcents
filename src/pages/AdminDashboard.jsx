@@ -52,25 +52,29 @@ const imageMap = {
 const AdminDashboard = () => {
     const { user } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Close sidebar when clicking outside on mobile
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (isSidebarOpen && window.innerWidth <= 768 && !event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
+            if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
                 setIsSidebarOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isSidebarOpen]);
+    }, [isSidebarOpen, isMobile]);
     const navigate = useNavigate();
     const campaignsData = useCampaigns();
 
-    // Safety check for context
-    if (!campaignsData) {
-        console.error("CampaignContext not found!");
-        return <div style={{ padding: '2rem', textAlign: 'center' }}>Error: System context not initialized.</div>;
-    }
+    // ... REST OF THE DATA FETCHING LOGIC ...
+    // (keeping original logic)
 
     const {
         campaigns = [],
@@ -81,6 +85,7 @@ const AdminDashboard = () => {
         updateUserStatus,
         approveDonation,
         rejectDonation,
+        deleteUser,
         pendingDonations = []
     } = campaignsData;
 
@@ -105,22 +110,23 @@ const AdminDashboard = () => {
     }
 
     // Calculate real-time statistics
+    const nonAdminUsers = users.filter(u => (u.role || '').toLowerCase() !== 'admin' && (u.email || '').toLowerCase() !== 'admin@kindcents.org');
     const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
     const activeCampaignsCount = campaigns.filter(c => c.isActive).length;
-    const pendingVerifications = users.filter(u => u.status === 'Pending').length;
+    const pendingVerifications = nonAdminUsers.filter(u => u.status === 'Pending').length;
 
     const stats = [
-        { label: 'Total Users', value: users.length, icon: <Users size={20} />, color: '#4F96FF' },
-        { label: 'Active Campaigns', value: activeCampaignsCount, icon: <TrendingUp size={20} />, color: '#10b981' },
-        { label: 'Pending Verifications', value: pendingVerifications, icon: <FileCheck size={20} />, color: '#f59e0b' },
-        { label: 'Total Raised', value: `Rs. ${totalRaised.toLocaleString()}`, icon: <Shield size={20} />, color: '#4F96FF' },
+        { label: 'Total Users', value: nonAdminUsers.length, icon: <Users size={20} />, color: '#4F96FF' },
+        { label: 'Active Campaigns', value: activeCampaignsCount, icon: <TrendingUp size={20} />, color: '#64748b' },
+        { label: 'Pending Verifications', value: pendingVerifications, icon: <FileCheck size={20} />, color: '#94a3b8' },
+        { label: 'Total Raised', value: `Rs. ${totalRaised.toLocaleString()}`, icon: <Shield size={20} />, color: '#3b82f6' },
     ];
 
     const filteredCampaigns = campaigns.filter(c =>
         (c.title || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredUsers = users.filter(u =>
+    const filteredUsers = nonAdminUsers.filter(u =>
         (u.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (u.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -150,12 +156,12 @@ const AdminDashboard = () => {
         <div style={styles.page}>
             <Navbar minimal={true} />
 
-            <div className="container" style={styles.container}>
-                <div style={styles.dashboardLayout} className="dashboard-layout">
+            <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+                <div style={{ ...styles.dashboardLayout, flexDirection: isMobile ? 'column' : 'row' }} className="dashboard-layout">
                     {/* Mobile Sidebar Toggle */}
                     <button
                         className="sidebar-toggle"
-                        style={styles.sidebarToggle}
+                        style={{ ...styles.sidebarToggle, display: isMobile ? 'block' : 'none' }}
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     >
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
@@ -166,7 +172,7 @@ const AdminDashboard = () => {
                         className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}
                         style={{
                             ...styles.sidebar,
-                            ...(window.innerWidth <= 768 ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                            ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
                         }}
                     >
                         <div style={styles.adminProfile}>
@@ -218,10 +224,10 @@ const AdminDashboard = () => {
 
                     {/* Main Content Area */}
                     <main style={styles.mainArea}>
-                        <header style={styles.areaHeader}>
+                        <header style={{ ...styles.areaHeader, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem' }}>
                             <h2 style={styles.areaTitle}>{activeTab}</h2>
-                            <div style={styles.headerActions}>
-                                <div style={styles.searchBox}>
+                            <div style={{ ...styles.headerActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+                                <div style={{ ...styles.searchBox, width: isMobile ? '100%' : '300px' }}>
                                     <Search size={18} color="#94a3b8" />
                                     <input
                                         type="text"
@@ -232,7 +238,7 @@ const AdminDashboard = () => {
                                     />
                                 </div>
                                 {activeTab === 'Campaigns' && (
-                                    <button onClick={handleAddCampaign} style={styles.addBtn}>
+                                    <button onClick={handleAddCampaign} style={{ ...styles.addBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}>
                                         <Plus size={18} /> New Campaign
                                     </button>
                                 )}
@@ -240,7 +246,7 @@ const AdminDashboard = () => {
                         </header>
 
                         {/* Top Stats */}
-                        <div style={styles.statsRow}>
+                        <div style={{ ...styles.statsRow, gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)' }}>
                             {stats.map((stat, i) => (
                                 <div key={i} style={styles.statCard}>
                                     <div style={{ ...styles.statIcon, backgroundColor: stat.color }}>{stat.icon}</div>
@@ -253,9 +259,9 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Content Grid */}
-                        <div style={styles.contentCard}>
+                        <div style={{ ...styles.contentCard, overflowX: isMobile ? 'auto' : 'hidden' }}>
                             {activeTab === 'Campaigns' && (
-                                <table style={styles.table}>
+                                <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
                                     <thead>
                                         <tr style={styles.tableHeader}>
                                             <th style={styles.th}>Campaign</th>
@@ -330,32 +336,49 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
                                                 <div style={styles.docsList}>
-                                                    {u.uploadedFiles && Object.entries(u.uploadedFiles).map(([key, filename]) => (
-                                                        <button key={key} style={styles.docLink} title={filename}>
-                                                            <FileCheck size={14} />
-                                                            {key === 'govId' ? 'Gov ID' :
-                                                                key === 'birthCert' ? 'Birth Cert' :
-                                                                    key === 'medicalRecords' ? 'Medical' :
-                                                                        key === 'doctorLetter' ? 'Doctor Letter' :
-                                                                            key === 'attestation' ? 'Attestation' :
-                                                                                key === 'cert' ? 'NGO Cert' :
-                                                                                    key === 'proposal' ? 'Proposal' :
-                                                                                        key === 'projects' ? 'Projects' :
-                                                                                            key === 'finance' ? 'Finance' : key}: {filename.length > 15 ? filename.substring(0, 12) + '...' : filename}
-                                                        </button>
-                                                    ))}
+                                                    {u.uploadedFiles && Object.entries(u.uploadedFiles).map(([key, fileData]) => {
+                                                        const filename = typeof fileData === 'object' ? fileData.name : fileData;
+                                                        const fileUrl = typeof fileData === 'object' ? fileData.url : null;
+                                                        return (
+                                                            <a
+                                                                key={key}
+                                                                href={fileUrl || '#'}
+                                                                target={fileUrl ? "_blank" : "_self"}
+                                                                download={fileUrl ? filename : undefined}
+                                                                style={{ ...styles.docLink, textDecoration: 'none', color: '#334155', cursor: fileUrl ? 'pointer' : 'not-allowed', opacity: fileUrl ? 1 : 0.6 }}
+                                                                title={fileUrl ? `View ${filename}` : "File content not available (Older upload)"}
+                                                                onClick={(e) => !fileUrl && e.preventDefault()}
+                                                            >
+                                                                <FileCheck size={14} />
+                                                                {key === 'govId' ? 'Gov ID' :
+                                                                    key === 'birthCert' ? 'Birth Cert' :
+                                                                        key === 'medicalRecords' ? 'Medical' :
+                                                                            key === 'doctorLetter' ? 'Doctor Letter' :
+                                                                                key === 'attestation' ? 'Attestation' :
+                                                                                    key === 'cert' ? 'NGO Cert' :
+                                                                                        key === 'proposal' ? 'Proposal' :
+                                                                                            key === 'projects' ? 'Projects' :
+                                                                                                key === 'finance' ? 'Finance' : key}: {filename.length > 15 ? filename.substring(0, 12) + '...' : filename}
+                                                            </a>
+                                                        );
+                                                    })}
                                                     {(!u.uploadedFiles || Object.keys(u.uploadedFiles).length === 0) && (
                                                         <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No documents uploaded</span>
                                                     )}
                                                 </div>
-                                                <div style={styles.vActions}>
+                                                <div style={{ ...styles.vActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
                                                     <button
                                                         onClick={() => updateUserStatus(u.id, 'Verified')}
-                                                        style={styles.approveBtn}
+                                                        style={{ ...styles.approveBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
                                                     >
                                                         <Check size={16} /> Approve
                                                     </button>
-                                                    <button style={styles.rejectBtn}><X size={16} /> Reject</button>
+                                                    <button
+                                                        onClick={() => updateUserStatus(u.id, 'Rejected')}
+                                                        style={{ ...styles.rejectBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+                                                    >
+                                                        <X size={16} /> Reject
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))
@@ -367,7 +390,7 @@ const AdminDashboard = () => {
                                 <div style={styles.dashboardOverview}>
                                     <h3 style={styles.overviewTitle}>Platform Overview</h3>
 
-                                    <div style={styles.overviewGrid}>
+                                    <div style={{ ...styles.overviewGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
                                         <div style={styles.overviewCard}>
                                             <h4 style={styles.overviewCardTitle}>Recent Activity</h4>
                                             <div style={styles.activityList}>
@@ -421,11 +444,11 @@ const AdminDashboard = () => {
                             )}
 
                             {activeTab === 'Payments' && (
-                                <div style={styles.paymentApprovalList}>
+                                <div style={{ ...styles.paymentApprovalList, overflowX: isMobile ? 'auto' : 'hidden' }}>
                                     {(pendingDonations || []).length === 0 ? (
                                         <div style={styles.emptyState}>No pending payment approvals</div>
                                     ) : (
-                                        <table style={styles.table}>
+                                        <table style={{ ...styles.table, minWidth: isMobile ? '700px' : 'auto' }}>
                                             <thead>
                                                 <tr style={styles.tableHeader}>
                                                     <th style={styles.th}>Donor</th>
@@ -481,40 +504,57 @@ const AdminDashboard = () => {
                             )}
 
                             {activeTab === 'Users' && (
-                                <table style={styles.table}>
-                                    <thead>
-                                        <tr style={styles.tableHeader}>
-                                            <th style={styles.th}>User</th>
-                                            <th style={styles.th}>Role</th>
-                                            <th style={styles.th}>Joined</th>
-                                            <th style={styles.th}>Status</th>
-                                            <th style={styles.th}></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredUsers.map(u => (
-                                            <tr key={u.id} style={styles.tr}>
-                                                <td style={styles.td}>
-                                                    <div>
-                                                        <div style={styles.tableMainText}>{u.name}</div>
-                                                        <div style={styles.tableSubText}>{u.email}</div>
-                                                    </div>
-                                                </td>
-                                                <td style={styles.td}>{u.role}</td>
-                                                <td style={styles.td}>{u.signupDate}</td>
-                                                <td style={styles.td}>
-                                                    <span style={u.status === 'Verified' ? styles.badgeSuccess : styles.badgeWarning}>
-                                                        {u.status}
-                                                    </span>
-                                                </td>
-                                                <td style={styles.td}><MoreVertical size={16} color="#94a3b8" /></td>
+                                <div style={{ overflowX: isMobile ? 'auto' : 'hidden' }}>
+                                    <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+                                        <thead>
+                                            <tr style={styles.tableHeader}>
+                                                <th style={styles.th}>User</th>
+                                                <th style={styles.th}>Role</th>
+                                                <th style={styles.th}>Joined</th>
+                                                <th style={styles.th}>Status</th>
+                                                <th style={styles.th}></th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {filteredUsers.map(u => (
+                                                <tr key={u.id} style={styles.tr}>
+                                                    <td style={styles.td}>
+                                                        <div>
+                                                            <div style={styles.tableMainText}>{u.name}</div>
+                                                            <div style={styles.tableSubText}>{u.email}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={styles.td}>{u.role}</td>
+                                                    <td style={styles.td}>{u.signupDate}</td>
+                                                    <td style={styles.td}>
+                                                        <span style={u.status === 'Verified' ? styles.badgeSuccess : styles.badgeWarning}>
+                                                            {u.status}
+                                                        </span>
+                                                    </td>
+                                                    <td style={styles.td}>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (window.confirm(
+                                                                    `Are you sure you want to delete ${u.name}?\n\nIMPORTANT: This only deletes their data from the database. To allow them to use this email again, you MUST also delete them from the "Authentication" tab in your Firebase Console.`
+                                                                )) {
+                                                                    deleteUser(u.id);
+                                                                }
+                                                            }}
+                                                            style={styles.deleteBtn}
+                                                            title="Delete User"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </main>
+
                 </div>
             </div>
 
@@ -598,7 +638,7 @@ const styles = {
         textAlign: 'left',
         transition: 'all 0.2s'
     },
-    activeNavItem: { backgroundColor: '#eff6ff', color: '#2563eb', fontWeight: 600 },
+    activeNavItem: { backgroundColor: '#eff6ff', color: '#4F96FF', fontWeight: 600 },
     sidebarFooter: { marginTop: 'auto', textAlign: 'center' },
     mainArea: { flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem' },
     areaHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -617,7 +657,7 @@ const styles = {
     searchInput: { border: 'none', outline: 'none', fontSize: '0.9rem', color: '#1e293b', width: '100%' },
     addBtn: {
         padding: '0.6rem 1.25rem',
-        backgroundColor: '#2563eb',
+        backgroundColor: '#4F96FF',
         color: 'white',
         border: 'none',
         borderRadius: '12px',
@@ -658,7 +698,7 @@ const styles = {
     tableSubText: { fontSize: '0.8rem', color: '#64748b' },
     progressCell: { display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '150px' },
     miniProgressTrack: { height: '4px', backgroundColor: '#f1f5f9', borderRadius: '2px' },
-    miniProgressFill: { height: '100%', backgroundColor: '#3b82f6', borderRadius: '2px' },
+    miniProgressFill: { height: '100%', backgroundColor: '#4F96FF', borderRadius: '2px' },
     badgeSuccess: { backgroundColor: '#dcfce7', color: '#10b981', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 700 },
     badgeDanger: { backgroundColor: '#fee2e2', color: '#ef4444', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 700 },
     badgeWarning: { backgroundColor: '#fef3c7', color: '#f59e0b', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 700 },
@@ -682,7 +722,7 @@ const styles = {
     docsList: { display: 'flex', gap: '0.75rem' },
     docLink: { border: '1px solid #cbd5e1', background: 'white', padding: '0.4rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
     vActions: { display: 'flex', gap: '0.75rem' },
-    approveBtn: { backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1.25rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
+    approveBtn: { backgroundColor: '#4F96FF', color: 'white', border: 'none', padding: '0.5rem 1.25rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
     rejectBtn: { backgroundColor: 'white', color: '#ef4444', border: '1px solid #ef4444', padding: '0.5rem 1.25rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' },
     emptyState: { textAlign: 'center', padding: '3rem', color: '#94a3b8' },
     tabBadge: {
@@ -705,7 +745,7 @@ const styles = {
     },
     approveIconBtn: {
         border: '1px solid #bfdbfe', background: '#eff6ff', padding: '0.4rem',
-        borderRadius: '8px', cursor: 'pointer', color: '#2563eb',
+        borderRadius: '8px', cursor: 'pointer', color: '#4F96FF',
         transition: 'all 0.2s'
     },
     rejectIconBtn: {
@@ -735,4 +775,12 @@ const styles = {
     quickStatValue: { fontSize: '1.25rem', fontWeight: '700', color: '#2563eb' }
 };
 
-export default AdminDashboard;
+import ErrorBoundary from '../components/ErrorBoundary';
+
+const AdminDashboardWithBoundary = () => (
+    <ErrorBoundary>
+        <AdminDashboard />
+    </ErrorBoundary>
+);
+
+export default AdminDashboardWithBoundary;

@@ -9,6 +9,10 @@ import ayaanSurgery from '../assets/ayaan-surgery.png';
 import templeRenovation from '../assets/temple-renovation.png';
 import orphanCare from '../assets/orphan-care.png';
 import ruralMedical from '../assets/rural-medical.jpg';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgSmile from '../assets/org-smile.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
 
 // Image mapping to resolve Firestore strings to local assets
 const imageMap = {
@@ -18,7 +22,11 @@ const imageMap = {
     ayaanSurgery,
     templeRenovation,
     orphanCare,
-    ruralMedical
+    ruralMedical,
+    orgAkshay,
+    orgKeithston,
+    orgSmile,
+    orgLotus
 };
 
 const ProjectsSection = () => {

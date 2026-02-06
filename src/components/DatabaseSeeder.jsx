@@ -4,6 +4,7 @@ import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
 import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
 import orphanCare from '../assets/orphan-care.png';
+import orgAkshay from '../assets/org-akshay.jpg';
 
 const DatabaseSeeder = () => {
     const [status, setStatus] = useState('Idle');
@@ -22,12 +23,14 @@ const DatabaseSeeder = () => {
             // For now, let's store a string that the frontend can map back to an import or a fixed URL.
             // We'll use the variable name as a string for now.
             image: "ayaanSurgery",
-            raised: 960000,
+            raised: 990000,
             goal: 1000000,
             contributors: 34,
             rating: 4,
             date: "Jan 25, 2026",
             daysLeft: 9,
+            userId: "1",
+            creatorId: "1",
             category: "Medical",
             isActive: true,
             isCompleted: false,
@@ -62,7 +65,7 @@ const DatabaseSeeder = () => {
             type: "campaign",
             title: "Orphan Care Essentials",
             image: "orphanCare",
-            raised: 50000,
+            raised: 12000,
             goal: 70000,
             contributors: 21,
             rating: 4,
@@ -101,7 +104,7 @@ const DatabaseSeeder = () => {
             type: "campaign",
             title: "Medical Equipment for Rural Hospital",
             image: "ruralMedical",
-            raised: 190000,
+            raised: 45000,
             goal: 200000,
             contributors: 52,
             rating: 4,
@@ -139,7 +142,7 @@ const DatabaseSeeder = () => {
             type: "campaign",
             title: "Temple renovation in Panagama",
             image: "templeRenovation",
-            raised: 20000,
+            raised: 8000,
             goal: 50000,
             contributors: 18,
             rating: 4,
@@ -176,11 +179,13 @@ const DatabaseSeeder = () => {
             type: "ngo",
             title: "Akshay Society",
             image: "orgAkshay",
-            raised: 1820000,
+            raised: 250000,
             goal: 5000000,
             contributors: 173,
             rating: 4,
             date: "Verified NGO",
+            userId: "3",
+            creatorId: "3",
             isActive: true,
             isCompleted: false,
             about: [
@@ -195,7 +200,7 @@ const DatabaseSeeder = () => {
                 { title: "Community Impact Verified", desc: "Health and education programs benefiting 15,000+ individuals confirmed.", date: "Verified on Jan 12, 2026" },
                 { title: "Environmental Reports", desc: "Medical, education, and rural development reports documented.", date: "Verified on Jan 12, 2026" }
             ],
-            organizer: { initials: "AS", name: "Akshay Society", sub: "Health & Education", tag: "Verified NGO" },
+            organizer: { initials: "AS", name: "Akshay Society", sub: "Health & Education", tag: "Verified NGO", logo: "orgAkshay" },
             fundUtilization: [
                 { title: "Community Health Programs", amount: 750000, desc: "Medical camps, health screenings, and essential medicines", date: "Verified" },
                 { title: "Educational Support", amount: 520000, desc: "School supplies, learning materials, and student support", date: "Verified" },
@@ -215,7 +220,7 @@ const DatabaseSeeder = () => {
             type: "ngo",
             title: "Keithston Foundation",
             image: "orgKeithston",
-            raised: 2450000,
+            raised: 320000,
             goal: 5000000,
             contributors: 245,
             rating: 4,
@@ -254,7 +259,7 @@ const DatabaseSeeder = () => {
             type: "ngo",
             title: "Smile Foundation",
             image: "orgSmile",
-            raised: 2150000,
+            raised: 280000,
             goal: 5000000,
             contributors: 210,
             rating: 5,
@@ -293,7 +298,7 @@ const DatabaseSeeder = () => {
             type: "ngo",
             title: "Lotus Born Foundation",
             image: "orgLotus",
-            raised: 1950000,
+            raised: 210000,
             goal: 5000000,
             contributors: 185,
             rating: 4,
@@ -332,7 +337,7 @@ const DatabaseSeeder = () => {
     const users = [
         { id: "1", name: "Rashid Hassan", email: "rashid.hsn@gmail.com", role: "Individual", status: "Verified", signupDate: "Jan 10, 2026" },
         { id: "2", name: "Nuha", email: "nuha@demo.com", role: "Donor", status: "Verified", signupDate: "Feb 01, 2026" },
-        { id: "3", name: "Akshay Society Admin", email: "admin@akshay.org", role: "NGO", status: "Pending", signupDate: "Feb 03, 2026" },
+        { id: "3", name: "Akshay Society", email: "admin@akshay.org", role: "NGO", status: "Verified", signupDate: "Feb 03, 2026", photoURL: "orgAkshay" },
     ];
 
     const seedData = async () => {

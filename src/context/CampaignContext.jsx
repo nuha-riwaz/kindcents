@@ -157,7 +157,7 @@ export const CampaignProvider = ({ children }) => {
         }
     };
 
-    const donateToCampaign = async (campaignId, amount, userId = 'anonymous') => {
+    const donateToCampaign = async (campaignId, amount, userId = 'anonymous', details = {}) => {
         try {
             const campaignRef = doc(db, 'campaigns', campaignId);
 
@@ -170,6 +170,8 @@ export const CampaignProvider = ({ children }) => {
                 campaignId,
                 userId,
                 amount,
+                cardName: details.cardName || 'Anonymous',
+                email: details.email || 'N/A',
                 campaignTitle: campaignData.title || 'Campaign',
                 status: 'Pending',
                 createdAt: new Date(),
@@ -236,6 +238,17 @@ export const CampaignProvider = ({ children }) => {
         }
     };
 
+    const deleteUser = async (userId) => {
+        try {
+            await deleteDoc(doc(db, 'users', userId));
+            // Update local state
+            setUsers(prev => prev.filter(u => u.id !== userId));
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            throw error;
+        }
+    };
+
     return (
         <CampaignContext.Provider value={{
             campaigns: Object.values(campaigns),
@@ -248,10 +261,8 @@ export const CampaignProvider = ({ children }) => {
             updateUserStatus,
             donateToCampaign,
             approveDonation,
-            updateUserStatus,
-            donateToCampaign,
-            approveDonation,
             rejectDonation,
+            deleteUser, // Export the new function
             donations,
             pendingDonations: donations.filter(d => d.status === 'Pending')
         }}>

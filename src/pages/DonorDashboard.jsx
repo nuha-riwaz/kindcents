@@ -58,18 +58,27 @@ const imageMap = {
     projectArklow,
     mrsPerera,
     ayaanSurgery,
-    orgSmile,
     orgAkshay,
     orgKeithston,
+    orgSmile,
     orgLotus,
     templeRenovation,
     orphanCare,
-    ruralMedical
+    ruralMedical,
+    logo
 };
 
 const DonorDashboard = () => {
     const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const [activeTab, setActiveTab] = useState('Overview');
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState(user?.name || '');
@@ -247,15 +256,15 @@ const DonorDashboard = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Overview':
-                return <OverviewView name={displayName.split(' ')[0]} stats={stats} />;
+                return <OverviewView name={displayName.split(' ')[0]} stats={stats} isMobile={isMobile} />;
             case 'My Campaigns':
-                return <MyCampaignsView />;
+                return <MyCampaignsView isMobile={isMobile} />;
             case 'Achievements':
-                return <AchievementsView />;
+                return <AchievementsView isMobile={isMobile} />;
             case 'Recent Donations':
                 return <RecentDonationsView />;
             default:
-                return <OverviewView name={displayName.split(' ')[0]} />;
+                return <OverviewView name={displayName.split(' ')[0]} isMobile={isMobile} />;
         }
     };
 
@@ -263,11 +272,11 @@ const DonorDashboard = () => {
         <div style={styles.page}>
             <Navbar />
             <div className="container" style={styles.container}>
-                <div style={styles.dashboardCard}>
+                <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
                     {/* Sidebar */}
-                    <div style={styles.sidebar}>
+                    <div style={{ ...styles.sidebar, width: isMobile ? '100%' : '280px', padding: isMobile ? '1.5rem' : '2rem 1.5rem' }}>
                         <div style={styles.profileSection}>
-                            <img src={logo} alt="KindCents" style={styles.logoSmall} />
+                            <img src={logo} alt="KindCents" style={{ ...styles.logoSmall, alignSelf: isMobile ? 'center' : 'flex-start' }} />
                             <div style={styles.avatarContainer}>
                                 <div
                                     style={{
@@ -335,13 +344,14 @@ const DonorDashboard = () => {
                             </div>
                         </div>
 
-                        <nav style={styles.sidebarNav}>
+                        <nav style={{ ...styles.sidebarNav, flexDirection: isMobile ? 'row' : 'column', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: isMobile ? '0.5rem' : '0' }}>
                             {sidebarItems.map(item => (
                                 <button
                                     key={item.id}
                                     style={{
                                         ...styles.navItem,
-                                        ...(activeTab === item.id ? styles.activeNavItem : {})
+                                        ...(activeTab === item.id ? styles.activeNavItem : {}),
+                                        whiteSpace: isMobile ? 'nowrap' : 'normal'
                                     }}
                                     onClick={() => {
                                         if (item.id === 'Browse') {
@@ -359,7 +369,7 @@ const DonorDashboard = () => {
                     </div>
 
                     {/* Main Content Area */}
-                    <div style={styles.mainContent}>
+                    <div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
                         {renderTabContent()}
                     </div>
                 </div>
@@ -371,14 +381,14 @@ const DonorDashboard = () => {
 
 // --- Sub-Views ---
 
-const OverviewView = ({ name, stats }) => (
+const OverviewView = ({ name, stats, isMobile }) => (
     <div style={styles.tabView}>
         <div style={styles.welcomeHeader}>
             <h2 style={styles.welcomeTitle}>Welcome back, {name}!</h2>
             <p style={styles.welcomeSub}>Here's how you're making a difference.</p>
         </div>
 
-        <div style={styles.statsGrid}>
+        <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
             {stats.map((stat, index) => (
                 <div key={index} style={styles.statsCard}>
                     <div style={styles.statsIconRow}>
@@ -399,7 +409,7 @@ const OverviewView = ({ name, stats }) => (
     </div>
 );
 
-const MyCampaignsView = () => {
+const MyCampaignsView = ({ isMobile }) => {
     const { user } = useAuth();
     const [userDonations, setUserDonations] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
@@ -520,7 +530,7 @@ const MyCampaignsView = () => {
                 <p style={styles.welcomeSub}>Your contributions, making a difference one campaign at a time.</p>
             </div>
 
-            <div style={styles.campaignListGrid}>
+            <div style={{ ...styles.campaignListGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
                 {userDonations.map(c => (
                     <div key={c.id} style={styles.compactCampaignCard}>
                         <div style={styles.compactImageWrapper}>
@@ -561,7 +571,7 @@ const MyCampaignsView = () => {
 };
 
 
-const AchievementsView = () => {
+const AchievementsView = ({ isMobile }) => {
     const { user } = useAuth();
     const [badges, setBadges] = React.useState([
         { title: "First Step", desc: "Made your first charitable donation!", icon: badgeFirstStep, unlocked: false, progress: 0, target: 1 },
@@ -667,7 +677,7 @@ const AchievementsView = () => {
                 <p style={styles.welcomeSub}>Unlock badges by reaching donation milestones.</p>
             </div>
 
-            <div style={styles.badgeGrid}>
+            <div style={{ ...styles.badgeGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)' }}>
                 {badges.map((badge, i) => (
                     <div key={i} style={{
                         ...styles.badgeCard,

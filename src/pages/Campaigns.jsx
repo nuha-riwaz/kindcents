@@ -41,6 +41,14 @@ const Campaigns = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const filteredCampaigns = campaigns.filter(campaign => {
         // Exclude foundation/NGO cards as they have their own section
         if (campaign.type === 'ngo') return false;
@@ -65,7 +73,7 @@ const Campaigns = () => {
             <Navbar />
             <div className="container" style={styles.container}>
                 <div style={styles.headerBox}>
-                    <div style={styles.headerContent}>
+                    <div style={{ ...styles.headerContent, flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : 'left' }}>
                         <img src={logo} alt="KindCents" style={styles.headerLogo} />
                         <div>
                             <h1 style={styles.headerTitle}>Donate Now - Track every step of your donation.</h1>
@@ -242,7 +250,7 @@ const Campaigns = () => {
                 {/* Verified Organizations Section */}
                 <div style={styles.verifiedSection}>
                     <h2 style={styles.verifiedTitle}>Be a part of Verified organizations</h2>
-                    <div style={styles.orgLogos}>
+                    <div style={{ ...styles.orgLogos, gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}>
                         <div
                             style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/akshay-society')}
@@ -362,7 +370,7 @@ const styles = {
     activePagBtn: { backgroundColor: '#64748b', color: '#fff', borderRadius: '4px', width: '32px', height: '32px', justifyContent: 'center', padding: 0 },
     verifiedSection: { backgroundColor: '#fff', borderRadius: '20px', padding: '3rem', border: '1px solid #e2e8f0', textAlign: 'center', marginBottom: '3rem' },
     verifiedTitle: { fontSize: '1.25rem', fontWeight: '700', color: '#1e293b', marginBottom: '2.5rem' },
-    orgLogos: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem', alignItems: 'center', justifyContent: 'center' },
+    orgLogos: { display: 'grid', gap: '2rem', alignItems: 'center', justifyContent: 'center' },
     orgLogoWrapper: {
         backgroundColor: '#f8fafc',
         borderRadius: '12px',

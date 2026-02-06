@@ -19,12 +19,13 @@ export const AuthProvider = ({ children }) => {
 
                     if (docSnap.exists()) {
                         const firestoreData = docSnap.data();
+                        const isAdmin = currentUser.email.toLowerCase() === 'admin@kindcents.org';
                         setUser({
                             ...currentUser,
                             ...firestoreData,
                             role: firestoreData.role,
                             status: firestoreData.status,
-                            name: firestoreData.name || currentUser.displayName,
+                            name: isAdmin ? "Admin" : (firestoreData.name || currentUser.displayName),
                             photoURL: firestoreData.photoURL || currentUser.photoURL,
                             stats: firestoreData.stats || {}
                         });
@@ -51,7 +52,18 @@ export const AuthProvider = ({ children }) => {
                 }
                 setLoading(false);
             } else {
-                setUser(null);
+                // Check for simulated user in localStorage
+                const simulatedUser = localStorage.getItem('simulatedUser');
+                if (simulatedUser) {
+                    try {
+                        setUser(JSON.parse(simulatedUser));
+                    } catch (e) {
+                        console.error('Error parsing simulated user:', e);
+                        localStorage.removeItem('simulatedUser');
+                    }
+                } else {
+                    setUser(null);
+                }
                 setLoading(false);
             }
         });
@@ -59,6 +71,21 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const signup = async (email, password, fullName) => {
+        // Validation check
+        const validatePassword = (pass) => {
+            const requirements = [
+                pass.length >= 8,
+                /[A-Z]/.test(pass),
+                /[a-z]/.test(pass),
+                /[0-9]/.test(pass)
+            ];
+            return requirements.every(Boolean);
+        };
+
+        if (!validatePassword(password)) {
+            throw new Error("Password must be at least 8 characters long, and include an uppercase letter, a lowercase letter, and a number.");
+        }
+
         try {
             // 1. Create User in Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -97,6 +124,17 @@ export const AuthProvider = ({ children }) => {
         if (method === "Google User") {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
+
+                // Fetch user profile from Firestore to check for existing role
+                const userDocRef = doc(db, 'users', result.user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    // Return combined object so the caller knows the role immediately
+                    return { ...result.user, ...userData };
+                }
+
                 return result.user;
             } catch (error) {
                 console.error("Error signing in with Google", error);
@@ -111,15 +149,24 @@ export const AuthProvider = ({ children }) => {
             }
         } else if (method === "Simulated") {
             // Keep simulated login for testing/admin backup
-            const isAdmin = email === 'admin@kindcents.org' || customName === 'Admin';
+            const emailLower = email?.toLowerCase() || "";
+            const isAdmin = emailLower === 'admin@kindcents.org' || customName === 'Admin';
+
+            let uid = isAdmin ? "admin-999" : "simulated-123";
+            if (emailLower === 'rashid.hsn@gmail.com') uid = "1";
+            if (emailLower === 'admin@akshay.org') uid = "3";
+
             const mockUser = {
-                uid: isAdmin ? "admin-999" : "simulated-123",
-                name: customName || (isAdmin ? "Admin Control" : "User"),
-                email: email || (isAdmin ? "admin@kindcents.org" : "demo@kindcents.org"),
+                uid: uid,
+                name: isAdmin ? "Admin" : (customName || "User"),
+                email: emailLower || (isAdmin ? "admin@kindcents.org" : "demo@kindcents.org"),
                 photoURL: null,
                 role: isAdmin ? 'admin' : userType,
                 status: 'Verified'
             };
+
+            // Store in localStorage for persistence across page reloads
+            localStorage.setItem('simulatedUser', JSON.stringify(mockUser));
             setUser(mockUser);
         }
     };
@@ -127,6 +174,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             await signOut(auth);
+            localStorage.removeItem('simulatedUser'); // Clear simulated user from localStorage
             setUser(null); // Explicitly clear for simulated cases
         } catch (error) {
             console.error("Error signing out", error);

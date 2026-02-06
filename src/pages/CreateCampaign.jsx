@@ -36,10 +36,20 @@ const CreateCampaign = () => {
     const handleFileChange = (e, id) => {
         const file = e.target.files[0];
         if (file) {
-            setUploadedFiles(prev => ({
-                ...prev,
-                [id]: file.name
-            }));
+            // Check size (limit to 300KB to prevent Firestore bloat)
+            if (file.size > 300 * 1024) {
+                alert("File too large. Please upload documents smaller than 300KB.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUploadedFiles(prev => ({
+                    ...prev,
+                    [id]: { name: file.name, url: reader.result }
+                }));
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -143,7 +153,7 @@ const CreateCampaign = () => {
                                         ...styles.uploadText,
                                         color: uploadedFiles[section.id] ? '#059669' : '#94a3b8'
                                     }}>
-                                        {uploadedFiles[section.id] ? `✓ ${uploadedFiles[section.id]}` : 'Drag and drop a file to upload'}
+                                        {uploadedFiles[section.id] ? `✓ ${uploadedFiles[section.id].name || uploadedFiles[section.id]}` : 'Drag and drop a file to upload'}
                                     </p>
                                     <button style={styles.browseBtn}>
                                         {uploadedFiles[section.id] ? 'Change file' : 'Browse file'}

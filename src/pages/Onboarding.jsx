@@ -95,7 +95,7 @@ const Onboarding = () => {
         if (role === 'admin') navigate('/dashboard/admin');
         else if (role === 'ngo' || role === 'nonprofit') navigate('/dashboard/ngo');
         else if (role === 'individual') navigate('/dashboard/individual');
-        else navigate('/dashboard/donor');
+        else navigate('/'); // Redirect donors to Home Page
     };
 
     const renderStep2 = () => (

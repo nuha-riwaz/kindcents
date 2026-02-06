@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Instagram, Youtube, Linkedin, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
@@ -6,6 +6,13 @@ import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
     const { user } = useAuth();
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const getUserDashboardPath = () => {
         if (!user) return '/';
@@ -20,15 +27,31 @@ const Footer = () => {
     return (
         <footer id="contact" style={styles.footer}>
             <div className="container" style={styles.container}>
-                <div style={styles.topSection}>
+                <div style={{
+                    ...styles.topSection,
+                    gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1.2fr',
+                    display: isMobile ? 'flex' : 'grid',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    textAlign: isMobile ? 'center' : 'left',
+                    alignItems: isMobile ? 'center' : 'start',
+                    width: '100%',
+                    gap: isMobile ? '2rem' : '3rem'
+                }}>
                     {/* Logo and Description Column */}
-                    <div style={styles.logoColumn}>
-                        <img src={logo} alt="KindCents" style={styles.logo} />
+                    <div style={{ ...styles.logoColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                        <img src={logo} alt="KindCents" style={{
+                            ...styles.logo,
+                            marginLeft: isMobile ? '0' : '50px',
+                            height: isMobile ? '80px' : '100px'
+                        }} />
                         <p style={styles.tagline}>Verified donations. Real Impact.</p>
-                        <p style={styles.description}>
-                            A transparent crowdfunding platform<br />connecting verified recipients with<br />trusted donors.
+                        <p style={{ ...styles.description, textAlign: isMobile ? 'center' : 'left' }}>
+                            {isMobile ?
+                                "A transparent crowdfunding platform connecting verified recipients with trusted donors." :
+                                <>A transparent crowdfunding platform<br />connecting verified recipients with<br />trusted donors.</>
+                            }
                         </p>
-                        <div style={styles.socials}>
+                        <div style={{ ...styles.socials, justifyContent: isMobile ? 'center' : 'flex-start' }}>
                             <X size={20} style={styles.socialIcon} />
                             <Instagram size={20} style={styles.socialIcon} />
                             <Youtube size={20} style={styles.socialIcon} />
@@ -37,35 +60,35 @@ const Footer = () => {
                     </div>
 
                     {/* Quick Links Column */}
-                    <div style={styles.linkColumn}>
+                    <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
                         <h4 style={styles.heading}>Quick Links</h4>
-                        <ul style={styles.list}>
-                            <li><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
-                            {user && <li><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
+                        <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
+                            {user && <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
                         </ul>
                     </div>
 
                     {/* Policy Column */}
-                    <div style={styles.linkColumn}>
+                    <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
                         <h4 style={styles.heading}>Policy</h4>
-                        <ul style={styles.list}>
-                            <li><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
-                            <li><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
-                            <li><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
-                            <li><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
+                        <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
                         </ul>
                     </div>
 
                     {/* Contact Column */}
-                    <div style={styles.linkColumn}>
+                    <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
                         <h4 style={styles.heading}>Contact</h4>
-                        <ul style={styles.list}>
-                            <li>support@kindcents.org</li>
-                            <li>3rd Floor, Orion</li>
-                            <li>Business Centre,</li>
-                            <li>Alexandra Place,</li>
-                            <li>Colombo 04,</li>
-                            <li>Sri Lanka.</li>
+                        <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Colombo 04,</li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Sri Lanka.</li>
                         </ul>
                     </div>
                 </div>
@@ -89,12 +112,10 @@ const styles = {
     container: {
         display: 'flex',
         flexDirection: 'column',
+        padding: '0 1.5rem', // Add horizontal padding to prevent edge collision
     },
     topSection: {
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr 1.2fr',
-        gap: '3rem',
-        marginBottom: '2rem',
         alignItems: 'start',
     },
     logoColumn: {
@@ -103,11 +124,10 @@ const styles = {
         gap: '0.75rem',
     },
     logo: {
-        height: '100px', // Adjusted to 100px
         width: 'auto',
+        maxWidth: '100%', // Prevent overflow on small screens
         objectFit: 'contain',
         marginBottom: '0.5rem',
-        marginLeft: '-150px', // Shifted left significantly
     },
     tagline: {
         fontWeight: 600,

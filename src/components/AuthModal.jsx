@@ -17,6 +17,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         password: ''
     });
     const [uploadedFiles, setUploadedFiles] = useState({});
+    const [passwordError, setPasswordError] = useState('');
     const { login, signup, loginEmail, saveUserRole, updateUserDocuments } = useAuth();
     const navigate = useNavigate();
 
@@ -52,6 +53,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 lastName: '',
                 password: ''
             });
+            setUploadedFiles({});
         }
     }, [isOpen, initialMode]);
 
@@ -71,11 +73,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                         const role = userData.role.toLowerCase();
                         onClose();
                         if (role === 'ngo' || role === 'nonprofit') {
-                            navigate('/dashboard/ngo');
+                            navigate('/');
                         } else if (role === 'individual') {
-                            navigate('/dashboard/individual');
+                            navigate('/');
                         } else {
-                            navigate('/dashboard/donor');
+                            navigate('/');
                         }
                         return;
                     }
@@ -97,6 +99,26 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
     const handleEmailLoginAction = async (e) => {
         e.preventDefault(); // Prevent form submission refresh
+
+        const email = formData.email.trim().toLowerCase();
+        const password = formData.password.trim();
+
+        // Bypass for test accounts
+        if (password === 'Test@123') {
+            if (email === 'rashid.hsn@gmail.com') {
+                login("Simulated", "Rashid Hassan", "individual", email);
+                onClose();
+                navigate('/');
+                return;
+            }
+            if (email === 'admin@akshay.org') {
+                login("Simulated", "Akshay Society", "ngo", email);
+                onClose();
+                navigate('/');
+                return;
+            }
+        }
+
         try {
             // For demo, keep admin check if you want, or remove it.
             const loggedInUser = await loginEmail(formData.email, formData.password);
@@ -110,14 +132,12 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                 if (userSnap.exists()) {
                     const role = (userSnap.data().role || 'donor').toLowerCase();
-                    if (role === 'admin' || formData.email === 'admin@kindcents.org') navigate('/dashboard/admin');
-                    else if (role === 'ngo' || role === 'nonprofit') navigate('/dashboard/ngo');
-                    else if (role === 'individual') navigate('/dashboard/individual');
-                    else navigate('/dashboard/donor');
+                    if (role === 'admin' || email === 'admin@kindcents.org') navigate('/dashboard/admin');
+                    else navigate('/');
                 } else {
                     // Fallback for admin email even if doc missing
-                    if (formData.email === 'admin@kindcents.org') navigate('/dashboard/admin');
-                    else navigate('/dashboard/donor');
+                    if (email === 'admin@kindcents.org') navigate('/dashboard/admin');
+                    else navigate('/');
                 }
             }
         } catch (error) {
@@ -125,6 +145,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             alert("Login Failed: " + error.message);
         }
     };
+
 
     const toggleMode = () => {
         if (mode === 'signup') {
@@ -142,10 +163,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     const handleFileChange = (e, key) => {
         const file = e.target.files[0];
         if (file) {
-            setUploadedFiles(prev => ({
-                ...prev,
-                [key]: file.name
-            }));
+            // Check size (limit to 300KB to prevent Firestore bloat)
+            if (file.size > 300 * 1024) {
+                alert("File too large. Please upload documents smaller than 300KB.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUploadedFiles(prev => ({
+                    ...prev,
+                    [key]: { name: file.name, url: reader.result }
+                }));
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -167,7 +198,23 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             // Actually, handleGoogleLogin sets step to 2 directly.
             // So if we are at step 1, it MUST be email signup.
 
+            const validatePassword = (pass) => {
+                const requirements = [
+                    pass.length >= 8,
+                    /[A-Z]/.test(pass),
+                    /[a-z]/.test(pass),
+                    /[0-9]/.test(pass)
+                ];
+                return requirements.every(Boolean);
+            };
+
             try {
+                if (!validatePassword(formData.password)) {
+                    setPasswordError('Password does not meet the requirements.');
+                    return;
+                }
+                setPasswordError('');
+
                 const fullName = `${formData.firstName} ${formData.lastName}`;
                 await signup(formData.email, formData.password, fullName);
                 // Signup successful - User is now logged in.
@@ -259,8 +306,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                         value={formData.password}
                                         onChange={handleInputChange}
                                     />
-                                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
-                                        Your password must include at least 8 characters, an uppercase letter, a lowercase letter, and a number.
+                                    <p style={{ fontSize: '0.75rem', color: passwordError ? '#ef4444' : '#64748b', marginTop: '0.5rem' }}>
+                                        {passwordError || "Your password must include at least 8 characters, an uppercase letter, a lowercase letter, and a number."}
                                     </p>
                                 </div>
 
@@ -309,9 +356,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                             </h2>
 
                             <div style={styles.optionsList}>
-                                <div style={styles.roleCard} onClick={async () => {
+                                <div style={styles.roleCard} onClick={() => {
                                     setUserType('nonprofit');
-                                    await saveUserRole('nonprofit');
                                     setStep(3);
                                 }}>
                                     <div style={{ ...styles.roleIconCircle, color: '#3b82f6' }}>
@@ -324,9 +370,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     <ChevronRight size={20} color="#cbd5e1" />
                                 </div>
 
-                                <div style={styles.roleCard} onClick={async () => {
+                                <div style={styles.roleCard} onClick={() => {
                                     setUserType('individual');
-                                    await saveUserRole('individual');
                                     setStep(3);
                                 }}>
                                     <div style={{ ...styles.roleIconCircle, color: '#3b82f6' }}>
@@ -339,9 +384,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     <ChevronRight size={20} color="#cbd5e1" />
                                 </div>
 
-                                <div style={styles.roleCard} onClick={async () => {
+                                <div style={styles.roleCard} onClick={() => {
                                     setUserType('donor');
-                                    await saveUserRole('donor');
                                     setStep(3);
                                 }}>
                                     <div style={{ ...styles.roleIconCircle, color: '#3b82f6' }}>
@@ -526,7 +570,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.cert && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.cert}
+                                                        ✓ {uploadedFiles.cert?.name || uploadedFiles.cert}
                                                     </p>
                                                 )}
                                             </div>
@@ -546,7 +590,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.projects && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.projects}
+                                                        ✓ {uploadedFiles.projects?.name || uploadedFiles.projects}
                                                     </p>
                                                 )}
                                             </div>
@@ -566,7 +610,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.proposal && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.proposal}
+                                                        ✓ {uploadedFiles.proposal?.name || uploadedFiles.proposal}
                                                     </p>
                                                 )}
                                             </div>
@@ -588,7 +632,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.govId && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.govId}
+                                                        ✓ {uploadedFiles.govId?.name || uploadedFiles.govId}
                                                     </p>
                                                 )}
                                             </div>
@@ -608,7 +652,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.birthCert && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.birthCert}
+                                                        ✓ {uploadedFiles.birthCert?.name || uploadedFiles.birthCert}
                                                     </p>
                                                 )}
                                             </div>
@@ -628,7 +672,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.medicalRecords && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.medicalRecords}
+                                                        ✓ {uploadedFiles.medicalRecords?.name || uploadedFiles.medicalRecords}
                                                     </p>
                                                 )}
                                             </div>
@@ -648,7 +692,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.doctorLetter && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.doctorLetter}
+                                                        ✓ {uploadedFiles.doctorLetter?.name || uploadedFiles.doctorLetter}
                                                     </p>
                                                 )}
                                             </div>
@@ -668,7 +712,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.attestation && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.attestation}
+                                                        ✓ {uploadedFiles.attestation?.name || uploadedFiles.attestation}
                                                     </p>
                                                 )}
                                             </div>
@@ -688,7 +732,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                                 />
                                                 {uploadedFiles.finance && (
                                                     <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.4rem', fontWeight: '600' }}>
-                                                        ✓ {uploadedFiles.finance}
+                                                        ✓ {uploadedFiles.finance?.name || uploadedFiles.finance}
                                                     </p>
                                                 )}
                                             </div>
@@ -762,9 +806,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                         onClose();
                                         const role = (userType || 'donor').toLowerCase();
                                         if (role === 'admin') navigate('/dashboard/admin');
-                                        else if (role === 'ngo' || role === 'nonprofit') navigate('/dashboard/ngo');
-                                        else if (role === 'individual') navigate('/dashboard/individual');
-                                        else navigate('/dashboard/donor');
+                                        else navigate('/');
                                     }}
                                     style={{ ...styles.nextBtn, minWidth: '100px' }}
                                 >
@@ -824,12 +866,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style={{ width: '18px', marginRight: '10px' }} />
                                     Log in with Google
                                 </button>
-                                <div style={{ ...styles.divider, marginTop: '1.5rem' }}>
-                                    <span style={styles.dividerLine}></span>
-                                    <span style={styles.dividerText}>or</span>
-                                    <span style={styles.dividerLine}></span>
-                                </div>
                             </div>
+
 
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Email*</label>
@@ -889,7 +927,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

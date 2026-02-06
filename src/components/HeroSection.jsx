@@ -9,7 +9,8 @@ const HeroSection = () => {
     const { user, openAuthModal } = useAuth();
     const navigate = useNavigate();
 
-    const ctaText = (user?.userType === 'nonprofit' || user?.userType === 'individual')
+    const userRole = user?.role?.toLowerCase();
+    const ctaText = (userRole === 'ngo' || userRole === 'individual')
         ? "Fundraise Now"
         : "Donate Now";
 
@@ -19,7 +20,7 @@ const HeroSection = () => {
             return;
         }
 
-        if (user.userType === 'nonprofit' || user.userType === 'individual') {
+        if (userRole === 'ngo' || userRole === 'individual') {
             navigate('/create-campaign');
         } else {
             navigate('/campaigns');

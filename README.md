@@ -9,6 +9,18 @@ KindCents is a transparent, crowdfunding platform designed to eliminate fraud an
 - **Role-Based Dashboards**: Custom-tailored dashboard experiences for Donors, NGOs, Individuals, and Administrators.
 - **Real-Time Transparency**: Automated fund utilization tracking and verified campaign updates.
 - **Donation Management**: Secure payment flow with admin-controlled fund releases.
+- **Visual Excellence**: Modern, premium UI utilizing a professional Blue and Grey color palette with glassmorphism effects.
+
+## Admin Credentials (For Testing)
+- **Email**: `admin@kindcents.org`
+- **Password**: `Admin@123`
+
+### User Credentials (Test/Demo)
+All test accounts use the password: `Test@123`
+
+- **Individual:** `rashid.hsn@gmail.com` (Owner of "Help Ayaan's Surgery")
+- **NGO Admin:** `admin@akshay.org` (Owner of "Akshay Society")
+- **Donor:** `nuha@demo.com`
 
 ## Tech Stack
 - **Frontend**: React.js (v19)
@@ -39,19 +51,14 @@ KindCents is a transparent, crowdfunding platform designed to eliminate fraud an
 3. **Configure Firebase**:
    - Create a new project on the [Firebase Console](https://console.firebase.google.com/).
    - Enable **Authentication** (Email/Password and Google Sign-In).
-   - Initialize **Cloud Firestore** in test mode or with appropriate security rules.
-   - Add your Firebase configuration keys to the project (ensure `src/firebase.js` is updated).
+   - Initialize **Cloud Firestore**.
+   - Add your Firebase configuration keys to `src/firebase.js`.
 
 4. **Run development server**:
    ```bash
    npm run dev
    ```
-   The application will be accessible at `http://localhost:5173`.
-
-5. **Build for production**:
-   ```bash
-   npm run build
-   ```
+   Access at `http://localhost:5173`.
 
 ## Development Team
 This project was proudly developed by:

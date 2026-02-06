@@ -15,7 +15,8 @@ import {
     X,
     Camera,
     User as UserIcon,
-    Loader2
+    Loader2,
+    Menu
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
@@ -27,20 +28,51 @@ import projectArklow from '../assets/project-arklow.png';
 import ruralMedical from '../assets/rural-medical.jpg';
 import templeRenovation from '../assets/temple-renovation.png';
 import orphanCare from '../assets/orphan-care.png';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgSmile from '../assets/org-smile.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
 
+// Image mapping to resolve Firestore strings to local assets
 const imageMap = {
-    projectEmma,
     ayaanSurgery,
+    projectEmma,
     projectArklow,
     ruralMedical,
     templeRenovation,
-    orphanCare
+    orphanCare,
+    orgAkshay,
+    orgKeithston,
+    orgSmile,
+    orgLotus,
+    logo
 };
+
 
 const IndividualDashboard = () => {
     const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Close sidebar when clicking outside on mobile
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar-ind') && !event.target.closest('.sidebar-toggle')) {
+                setIsSidebarOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isSidebarOpen, isMobile]);
+
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState(user?.name || '');
     const [uploading, setUploading] = useState(false);
@@ -193,10 +225,27 @@ const IndividualDashboard = () => {
         <div style={styles.page}>
             <Navbar />
 
-            <div className="container" style={styles.container}>
-                <div style={styles.dashboardWrapper}>
+            <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+                <div style={styles.dashboardCard}>
+                    {/* Mobile Sidebar Toggle */}
+                    {isMobile && (
+                        <button
+                            className="sidebar-toggle"
+                            style={styles.sidebarToggle}
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        >
+                            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    )}
+
                     {/* Sidebar */}
-                    <aside style={styles.sidebar}>
+                    <aside
+                        className={`admin-sidebar-ind ${isSidebarOpen ? 'open' : ''}`}
+                        style={{
+                            ...styles.sidebar,
+                            ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                        }}
+                    >
                         <div style={styles.profileSection}>
                             <img src={logo} alt="KindCents" style={styles.sideLogo} />
                             <div style={styles.avatarWrapper} onClick={handleImageClick}>
@@ -265,7 +314,7 @@ const IndividualDashboard = () => {
 
                         <nav style={styles.sideNav}>
                             <button
-                                onClick={() => setActiveTab('Overview')}
+                                onClick={() => { setActiveTab('Overview'); setIsSidebarOpen(false); }}
                                 style={{
                                     ...styles.navBtn,
                                     ...(activeTab === 'Overview' ? styles.activeNavBtn : {})
@@ -274,7 +323,7 @@ const IndividualDashboard = () => {
                                 <LayoutDashboard size={20} /> Overview
                             </button>
                             <button
-                                onClick={() => setActiveTab('My Active Campaigns')}
+                                onClick={() => { setActiveTab('My Active Campaigns'); setIsSidebarOpen(false); }}
                                 style={{
                                     ...styles.navBtn,
                                     ...(activeTab === 'My Active Campaigns' ? styles.activeNavBtn : {})
@@ -293,15 +342,15 @@ const IndividualDashboard = () => {
                     </aside>
 
                     {/* Main Content */}
-                    <main style={styles.mainContent}>
+                    <main style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
                         {activeTab === 'Overview' ? (
                             <div style={styles.tabContent}>
                                 <div style={styles.welcomeSection}>
-                                    <h1 style={styles.welcomeTitle}>Welcome back, {(user?.name || "Rashid").split(' ')[0]}!</h1>
+                                    <h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>Welcome back, {(user?.name || "Rashid").split(' ')[0]}!</h1>
                                     <p style={styles.welcomeSub}>Track your fundraising progress and manage your campaigns.</p>
                                 </div>
 
-                                <div style={styles.statsGrid}>
+                                <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
                                     {stats.map((stat, i) => (
                                         <div key={i} style={{
                                             ...styles.statCard,
@@ -322,15 +371,15 @@ const IndividualDashboard = () => {
                         ) : (
                             <div style={styles.tabContent}>
                                 <div style={styles.welcomeSection}>
-                                    <h1 style={styles.welcomeTitle}>My Active Campaigns</h1>
+                                    <h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>My Active Campaigns</h1>
                                     <p style={styles.welcomeSub}>Real-time tracking of donations coming in</p>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
                                     {userCampaigns.length > 0 ? userCampaigns.map((campaign) => {
                                         const progress = Math.min(100, Math.floor(((campaign.raised || 0) / (campaign.goal || 1)) * 100));
                                         return (
-                                            <div key={campaign.id} style={styles.activeCampaignCard}>
+                                            <div key={campaign.id} style={{ ...styles.activeCampaignCard, maxWidth: isMobile ? '100%' : '350px' }}>
                                                 <div style={styles.campaignImageWrapper}>
                                                     <img src={imageMap[campaign.image] || projectEmma} alt={campaign.title} style={styles.campaignImage} />
                                                     <div style={styles.liveBadge}>
@@ -383,33 +432,70 @@ const IndividualDashboard = () => {
 
 const styles = {
     page: {
-        backgroundColor: '#e0f2fe', // Matching the pale blue bg in mockups
+        backgroundColor: '#f8fafc',
         minHeight: '100vh',
     },
     container: {
         paddingTop: '100px',
         paddingBottom: '4rem',
     },
-    dashboardWrapper: {
+    dashboardCard: {
+        backgroundColor: '#fff',
+        borderRadius: '24px',
+        overflow: 'hidden',
         display: 'flex',
-        gap: '2rem',
-        minHeight: '600px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        minHeight: '650px',
+        border: '1px solid #e2e8f0',
     },
     sidebar: {
         width: '280px',
-        backgroundColor: '#D6E6FF', // Light blue sidebar
-        borderRadius: '24px',
-        padding: '2rem 1.5rem',
+        backgroundColor: '#E0EEFF',
+        padding: '2rem 1.25rem',
         display: 'flex',
         flexDirection: 'column',
+        gap: '2rem',
+        transition: 'transform 0.3s ease-in-out',
+        zIndex: 50
+    },
+    sidebarToggle: {
+        position: 'fixed',
+        top: '85px',
+        left: '1rem',
+        background: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        padding: '0.5rem',
+        zIndex: 60,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+        cursor: 'pointer'
+    },
+    mobileSidebarOpen: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        transform: 'translateX(0)',
+        borderRadius: 0,
+        width: '80%',
+    },
+    mobileSidebarClosed: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        transform: 'translateX(-100%)',
     },
     profileSection: {
-        textAlign: 'center',
-        marginBottom: '2rem',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    logoContainer: {
+        marginBottom: '1.5rem',
     },
     sideLogo: {
         height: '60px',
-        marginBottom: '1.5rem',
     },
     avatarWrapper: {
         display: 'flex',

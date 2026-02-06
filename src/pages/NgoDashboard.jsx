@@ -17,17 +17,50 @@ import {
     FileCheck,
     Check,
     X,
-    Camera
+    Camera,
+    Menu
 } from 'lucide-react';
 import { useCampaigns } from '../context/CampaignContext';
 import logo from '../assets/logo.png';
 import projectImage from '../assets/project-emma.jpg';
+import orgAkshay from '../assets/org-akshay.jpg';
+import orgKeithston from '../assets/org-keithston.jpg';
+import orgSmile from '../assets/org-smile.jpg';
+import orgLotus from '../assets/org-lotus.jpg';
+
+// Image mapping to resolve Firestore strings to local assets
+const imageMap = {
+    orgAkshay,
+    orgKeithston,
+    orgSmile,
+    orgLotus,
+    logo
+};
 
 const NgoDashboard = () => {
     const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
     const { campaigns } = useCampaigns();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Close sidebar when clicking outside on mobile
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar-ngo') && !event.target.closest('.sidebar-toggle')) {
+                setIsSidebarOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isSidebarOpen, isMobile]);
 
     // Profile Editing State
     const [isEditing, setIsEditing] = useState(false);
@@ -101,21 +134,37 @@ const NgoDashboard = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Overview':
-                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} />;
+                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
             case 'My Active Campaigns':
-                return <MyCampaignsView campaigns={myCampaigns} />;
+                return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} />;
             default:
-                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} />;
+                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
         }
     };
 
     return (
         <div style={styles.page}>
             <Navbar />
-            <div className="container" style={styles.container}>
-                <div style={styles.dashboardCard}>
+            <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+                <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                    {/* Mobile Sidebar Toggle */}
+                    {isMobile && (
+                        <button
+                            className="sidebar-toggle"
+                            style={styles.sidebarToggle}
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        >
+                            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    )}
+
                     {/* Sidebar */}
-                    <div style={styles.sidebar}>
+                    <div
+                        className={`admin-sidebar-ngo ${isSidebarOpen ? 'open' : ''}`}
+                        style={{
+                            ...styles.sidebar,
+                            ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                        }}>
                         <div style={styles.profileSection}>
                             <div style={styles.logoContainer}>
                                 <img src={logo} alt="KindCents" style={styles.sidebarLogo} />
@@ -224,7 +273,7 @@ const NgoDashboard = () => {
                     </div>
 
                     {/* Main Content Area */}
-                    <div style={styles.mainContent}>
+                    <div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
                         {renderTabContent()}
                     </div>
                 </div>
@@ -236,7 +285,7 @@ const NgoDashboard = () => {
 
 // --- Sub-Views ---
 
-const OverviewView = ({ name, campaigns }) => {
+const OverviewView = ({ name, campaigns, isMobile }) => {
     const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
     const totalContributors = campaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
     const activeCount = campaigns.filter(c => c.isActive).length;
@@ -245,11 +294,11 @@ const OverviewView = ({ name, campaigns }) => {
     return (
         <div style={styles.tabView}>
             <div style={styles.header}>
-                <h2 style={styles.title}>Welcome back, {name}!</h2>
+                <h2 style={{ ...styles.title, fontSize: isMobile ? '1.4rem' : '1.75rem' }}>Welcome back, {name}!</h2>
                 <p style={styles.subTitle}>Track your fundraising progress and manage your campaigns.</p>
             </div>
 
-            <div style={styles.statsGrid}>
+            <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
                 <div style={styles.statsCard}>
                     <div style={styles.statsHeader}>
                         <div style={styles.statsLabelGroup}>
@@ -306,11 +355,11 @@ const OverviewView = ({ name, campaigns }) => {
     );
 };
 
-const MyCampaignsView = ({ campaigns }) => {
+const MyCampaignsView = ({ campaigns, isMobile }) => {
     return (
         <div style={styles.tabView}>
             <div style={styles.header}>
-                <h2 style={styles.title}>My Active Campaigns</h2>
+                <h2 style={{ ...styles.title, fontSize: isMobile ? '1.4rem' : '1.75rem' }}>My Active Campaigns</h2>
                 <p style={styles.subTitle}>Real-time tracking of donations coming in</p>
             </div>
 
@@ -322,13 +371,10 @@ const MyCampaignsView = ({ campaigns }) => {
                     </div>
                 ) : (
                     campaigns.map(campaign => (
-                        <div key={campaign.id} style={styles.campaignCard}>
+                        <div key={campaign.id} style={{ ...styles.campaignCard, width: isMobile ? '100%' : '320px' }}>
                             <div style={styles.campaignImageWrapper}>
                                 <img
-                                    src={campaign.image === 'orgSmile' ? logo : // Fallback for seeded images
-                                        campaign.image === 'orgKeithston' ? logo :
-                                            campaign.image === 'orgAkshay' ? logo :
-                                                campaign.image === 'orgLotus' ? logo : projectImage}
+                                    src={imageMap[campaign.image] || campaign.image || projectImage}
                                     alt={campaign.title}
                                     style={styles.campaignImage}
                                 />
@@ -404,6 +450,36 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '2rem',
+        transition: 'transform 0.3s ease-in-out',
+        zIndex: 50
+    },
+    sidebarToggle: {
+        position: 'fixed',
+        top: '85px',
+        left: '1rem',
+        background: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        padding: '0.5rem',
+        zIndex: 60,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+        cursor: 'pointer'
+    },
+    mobileSidebarOpen: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        transform: 'translateX(0)',
+        borderRadius: 0,
+        width: '80%',
+    },
+    mobileSidebarClosed: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        transform: 'translateX(-100%)',
     },
     profileSection: {
         display: 'flex',

@@ -60,6 +60,14 @@ const CampaignDetails = () => {
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const campaign = campaignStore[id] || (Object.values(campaignStore).find(c => c.id === id));
     const isNGO = campaign.type === 'ngo';
 
@@ -79,10 +87,14 @@ const CampaignDetails = () => {
         }
     };
 
-    const handleDonation = async (amount) => {
+    const handleDonation = async (donationData) => {
         if (!campaign) return;
+        // Check if donationData is an object (new way) or just amount (old way fallback)
+        const amount = typeof donationData === 'object' ? donationData.amount : donationData;
+        const details = typeof donationData === 'object' ? donationData : {};
+
         try {
-            await donateToCampaign(campaign.id, amount, user ? user.uid : 'anonymous');
+            await donateToCampaign(campaign.id, amount, user ? user.uid : 'anonymous', details);
         } catch (error) {
             alert("Donation failed. Please try again.");
         }
@@ -102,16 +114,17 @@ const CampaignDetails = () => {
                         ...styles.heroCard,
                         backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(${imageMap[campaign.image] || campaign.image})`,
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        padding: isMobile ? '2rem' : '3rem',
                     }}>
-                    <div style={styles.heroLayout}>
+                    <div style={{ ...styles.heroLayout, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'flex-end' }}>
                         {/* Hero Left Content */}
                         <div style={styles.heroMain}>
                             <div style={isNGO ? styles.heroBadgeNGO : styles.heroBadge}>
                                 <CheckCircle2 size={16} /> {isNGO ? 'Verified NGO' : 'Verified Cause'}
                             </div>
 
-                            <h1 style={styles.titleCompact}>{campaign.title}</h1>
+                            <h1 style={{ ...styles.titleCompact, fontSize: isMobile ? '2rem' : '2.5rem' }}>{campaign.title}</h1>
 
                             <div style={styles.progressSectionCompact}>
                                 <div style={styles.progressContainerCompact}>
@@ -150,7 +163,7 @@ const CampaignDetails = () => {
                         </div>
 
                         {/* Hero Right Content */}
-                        <div style={styles.heroActions}>
+                        <div style={{ ...styles.heroActions, width: isMobile ? '100%' : 'auto', alignItems: isMobile ? 'flex-start' : 'center' }}>
                             <div style={styles.ratingStarsBox}>
                                 {[...Array(5)].map((_, i) => (
                                     <Star
@@ -162,14 +175,14 @@ const CampaignDetails = () => {
                                     />
                                 ))}
                             </div>
-                            <button style={styles.donateBtnHero} onClick={() => setIsDonationModalOpen(true)}>
+                            <button style={{ ...styles.donateBtnHero, width: isMobile ? '100%' : 'fit-content', justifyContent: 'center' }} onClick={() => setIsDonationModalOpen(true)}>
                                 Donate Now <ArrowRight size={24} />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div style={styles.mainGrid}>
+                <div style={{ ...styles.mainGrid, gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr' }}>
                     <div style={styles.leftCol}>
                         {/* About Section */}
                         <div style={styles.sectionCard}>
@@ -263,7 +276,17 @@ const CampaignDetails = () => {
                         <div style={styles.sideCardCompact}>
                             <p style={styles.sideLabelCompact}>Campaign organizer</p>
                             <div style={styles.organizerInfoBox}>
-                                <div style={styles.avatarCompact}>{campaign.organizer.initials}</div>
+                                {campaign.organizer.logo ? (
+                                    <div style={{ ...styles.avatarCompact, overflow: 'hidden', padding: 0 }}>
+                                        <img
+                                            src={imageMap[campaign.organizer.logo] || campaign.organizer.logo}
+                                            alt={campaign.organizer.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div style={styles.avatarCompact}>{campaign.organizer.initials}</div>
+                                )}
                                 <div style={styles.organizerMetaBox}>
                                     <strong style={styles.sideNameCompact}>{campaign.organizer.name}</strong>
                                     <p style={styles.sideSubCompact}>{campaign.organizer.sub}</p>

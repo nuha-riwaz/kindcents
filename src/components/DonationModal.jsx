@@ -70,7 +70,7 @@ const DonationModal = ({ isOpen, onClose, campaignTitle, onDonate }) => {
 
         // Simulate Stripe-style processing
         setTimeout(async () => {
-            await onDonate(amount);
+            await onDonate({ amount, cardName, email });
             setLoading(false);
             setStep(3);
         }, 2200);

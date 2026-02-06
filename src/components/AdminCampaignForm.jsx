@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Upload } from 'lucide-react';
+import { X, Upload, Save } from 'lucide-react';
+import { useCampaigns } from '../context/CampaignContext';
 
 const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
+    const { users } = useCampaigns();
+    // Filter users to only show potential campaign organizers
+    const potentialOwners = users.filter(u =>
+        u.role === 'ngo' || u.role === 'nonprofit' || u.role === 'individual' || u.userType === 'nonprofit' || u.userType === 'individual'
+    );
+
     const [formData, setFormData] = useState({
         title: '',
+        userId: '', // New field for robust linking
         category: 'Medical',
         goal: '',
         raised: '0',
@@ -18,6 +26,7 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
         if (campaign) {
             setFormData({
                 title: campaign.title || '',
+                userId: campaign.userId || '',
                 category: campaign.category || 'Medical',
                 goal: campaign.goal || '',
                 raised: campaign.raised || '0',
@@ -33,6 +42,7 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
         } else {
             setFormData({
                 title: '',
+                userId: '',
                 category: 'Medical',
                 goal: '',
                 raised: '0',
@@ -153,6 +163,32 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                                     style={{ display: 'none' }}
                                 />
                             </label>
+                        </div>
+                    </div>
+
+                    <div style={styles.section}>
+                        <div style={styles.field}>
+                            <label style={styles.label}>Assign to Registered User (Optional)</label>
+                            <select
+                                value={formData.userId}
+                                onChange={(e) => {
+                                    const selectedId = e.target.value;
+                                    const selectedUser = potentialOwners.find(u => u.id === selectedId);
+                                    setFormData({
+                                        ...formData,
+                                        userId: selectedId,
+                                        organizerName: selectedUser ? selectedUser.name : formData.organizerName
+                                    });
+                                }}
+                                style={styles.input}
+                            >
+                                <option value="">-- No User Assigned (Manual) --</option>
+                                {potentialOwners.map(user => (
+                                    <option key={user.id} value={user.id}>
+                                        {user.name} ({user.email})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -346,7 +382,7 @@ const styles = {
     input: { padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem', outline: 'none' },
     footer: { marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' },
     cancelBtn: { padding: '0.75rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: 'white', fontWeight: '600', cursor: 'pointer' },
-    saveBtn: { padding: '0.75rem 2rem', borderRadius: '12px', border: 'none', backgroundColor: '#2563eb', color: 'white', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' },
+    saveBtn: { padding: '0.75rem 2rem', borderRadius: '12px', border: 'none', backgroundColor: '#4F96FF', color: 'white', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' },
     uploadBtn: {
         display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem',
         backgroundColor: '#f1f5f9', borderRadius: '8px', cursor: 'pointer',
@@ -356,7 +392,7 @@ const styles = {
     sectionHeader: { margin: '0 0 1rem 0', color: '#334155', fontSize: '1rem' },
     listItemBox: { backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' },
     addItemBtn: {
-        backgroundColor: '#eff6ff', color: '#2563eb', border: '1px dashed #bfdbfe',
+        backgroundColor: '#eff6ff', color: '#4F96FF', border: '1px dashed #bfdbfe',
         padding: '0.75rem', borderRadius: '8px', width: '100%', cursor: 'pointer', fontWeight: 600
     },
     removeBtn: {

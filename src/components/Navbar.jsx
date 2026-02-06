@@ -16,7 +16,6 @@ const Navbar = ({ minimal = false }) => {
     authMode, setAuthMode, openAuthModal
   } = useAuth();
   const navigate = useNavigate();
-  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
