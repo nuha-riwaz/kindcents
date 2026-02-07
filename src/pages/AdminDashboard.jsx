@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AdminCampaignForm from '../components/AdminCampaignForm';
+import ExpensesViewModal from '../components/ExpensesViewModal';
 import { useAuth } from '../context/AuthContext';
 import { useCampaigns } from '../context/CampaignContext';
 import {
@@ -86,11 +87,15 @@ const AdminDashboard = () => {
         approveDonation,
         rejectDonation,
         deleteUser,
-        pendingDonations = []
+        pendingDonations = [],
+        expenses // Get expenses from context
     } = campaignsData;
 
     const [activeTab, setActiveTab] = useState('Campaigns');
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Expenses Modal State
+    const [viewExpensesCampaign, setViewExpensesCampaign] = useState(null);
 
     // Redirect to home if user logs out
     useEffect(() => {
@@ -298,20 +303,27 @@ const AdminDashboard = () => {
                                                     </span>
                                                 </td>
                                                 <td style={styles.td}>
-                                                    <div style={styles.actionRow}>
+                                                    <div style={styles.actionButtons}>
                                                         <button
-                                                            onClick={() => handleEditCampaign(c)}
-                                                            style={styles.iconBtn}
-                                                            title="Edit"
+                                                            style={{ ...styles.actionBtn, color: '#3b82f6', borderColor: '#3b82f6' }}
+                                                            onClick={() => setViewExpensesCampaign(c)}
+                                                            title="View Expenses"
                                                         >
-                                                            <Edit size={16} />
+                                                            <Eye size={14} /> View Expenses
                                                         </button>
+                                                        {c.status === 'pending' && (
+                                                            <button
+                                                                style={styles.actionBtn}
+                                                                onClick={() => handleStatusUpdate(c.id, 'active')}
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => { if (window.confirm('Delete this campaign?')) deleteCampaign(c.id); }}
-                                                            style={styles.deleteBtn}
-                                                            title="Delete"
+                                                            style={{ ...styles.actionBtn, color: '#ef4444', borderColor: '#ef4444' }}
+                                                            onClick={() => handleDeleteCampaign(c.id)}
                                                         >
-                                                            <Trash2 size={16} />
+                                                            Delete
                                                         </button>
                                                     </div>
                                                 </td>
@@ -524,7 +536,12 @@ const AdminDashboard = () => {
                                                             <div style={styles.tableSubText}>{u.email}</div>
                                                         </div>
                                                     </td>
-                                                    <td style={styles.td}>{u.role}</td>
+                                                    <td style={styles.td}>
+                                                        {u.role
+                                                            ? u.role.charAt(0).toUpperCase() + u.role.slice(1)
+                                                            : <span style={{ color: '#cbd5e1', fontStyle: 'italic' }}>N/A</span>
+                                                        }
+                                                    </td>
                                                     <td style={styles.td}>{u.signupDate}</td>
                                                     <td style={styles.td}>
                                                         <span style={u.status === 'Verified' ? styles.badgeSuccess : styles.badgeWarning}>
@@ -563,6 +580,12 @@ const AdminDashboard = () => {
                 onClose={() => setIsFormOpen(false)}
                 onSave={handleSaveCampaign}
                 campaign={editingCampaign}
+            />
+            <ExpensesViewModal
+                isOpen={!!viewExpensesCampaign}
+                onClose={() => setViewExpensesCampaign(null)}
+                campaign={viewExpensesCampaign}
+                expenses={expenses || []}
             />
         </div >
     );
@@ -702,6 +725,7 @@ const styles = {
     badgeSuccess: { backgroundColor: '#dcfce7', color: '#10b981', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 700 },
     badgeDanger: { backgroundColor: '#fee2e2', color: '#ef4444', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 700 },
     badgeWarning: { backgroundColor: '#fef3c7', color: '#f59e0b', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 700 },
+    actionButtons: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
     actionRow: { display: 'flex', gap: '0.5rem' },
     iconBtn: { border: '1px solid #e2e8f0', background: 'none', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', color: '#64748b' },
     deleteBtn: { border: '1px solid #fee2e2', background: 'none', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', color: '#ef4444' },

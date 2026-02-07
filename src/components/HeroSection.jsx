@@ -10,7 +10,7 @@ const HeroSection = () => {
     const navigate = useNavigate();
 
     const userRole = user?.role?.toLowerCase();
-    const ctaText = (userRole === 'ngo' || userRole === 'individual')
+    const ctaText = (userRole === 'ngo' || userRole === 'individual' || userRole === 'nonprofit')
         ? "Fundraise Now"
         : "Donate Now";
 
@@ -20,7 +20,7 @@ const HeroSection = () => {
             return;
         }
 
-        if (userRole === 'ngo' || userRole === 'individual') {
+        if (userRole === 'ngo' || userRole === 'individual' || userRole === 'nonprofit') {
             navigate('/create-campaign');
         } else {
             navigate('/campaigns');

@@ -18,7 +18,23 @@ export const CampaignProvider = ({ children }) => {
     const [campaigns, setCampaigns] = useState({});
     const [users, setUsers] = useState([]);
     const [donations, setDonations] = useState([]);
+    const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Subscribe to Expenses Collection
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, 'expenses'), (snapshot) => {
+            const expenseList = [];
+            snapshot.forEach((doc) => {
+                expenseList.push({ ...doc.data(), id: doc.id });
+            });
+            setExpenses(expenseList);
+        }, (error) => {
+            console.error("Error fetching expenses:", error);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     // Subscribe to Campaigns Collection
     useEffect(() => {
@@ -249,6 +265,28 @@ export const CampaignProvider = ({ children }) => {
         }
     };
 
+    const addExpense = async (expenseData) => {
+        try {
+            await addDoc(collection(db, 'expenses'), {
+                ...expenseData,
+                createdAt: new Date(),
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            });
+        } catch (error) {
+            console.error("Error adding expense:", error);
+            throw error;
+        }
+    };
+
+    const deleteExpense = async (expenseId) => {
+        try {
+            await deleteDoc(doc(db, 'expenses', expenseId));
+        } catch (error) {
+            console.error("Error deleting expense:", error);
+            throw error;
+        }
+    };
+
     return (
         <CampaignContext.Provider value={{
             campaigns: Object.values(campaigns),
@@ -264,7 +302,10 @@ export const CampaignProvider = ({ children }) => {
             rejectDonation,
             deleteUser, // Export the new function
             donations,
-            pendingDonations: donations.filter(d => d.status === 'Pending')
+            pendingDonations: donations.filter(d => d.status === 'Pending'),
+            expenses,
+            addExpense,
+            deleteExpense
         }}>
             {children}
         </CampaignContext.Provider>

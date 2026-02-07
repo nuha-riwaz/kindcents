@@ -1,37 +1,18 @@
 # KindCents - Verified Donations, Real Impact
 
-## Overview
-KindCents is a transparent, crowdfunding platform designed to eliminate fraud and restore trust in digital donations. We ensure every contribution reaches genuine causes with 100% accountability. Our mission is to bridge the trust gap in philanthropy through secure, data-driven transparency.
-
-## Core Features
-- **Mandatory Document Verification**: High-trust onboarding for Individuals and NGOs with mandatory document submissions.
-- **Admin Review Panel**: Advanced interface for manual verification of user identities and payment approvals.
-- **Role-Based Dashboards**: Custom-tailored dashboard experiences for Donors, NGOs, Individuals, and Administrators.
-- **Real-Time Transparency**: Automated fund utilization tracking and verified campaign updates.
-- **Donation Management**: Secure payment flow with admin-controlled fund releases.
-- **Visual Excellence**: Modern, premium UI utilizing a professional Blue and Grey color palette with glassmorphism effects.
-
-## Admin Credentials (For Testing)
-- **Email**: `admin@kindcents.org`
-- **Password**: `Admin@123`
-
-### User Credentials (Test/Demo)
-All test accounts use the password: `Test@123`
-
-- **Individual:** `rashid.hsn@gmail.com` (Owner of "Help Ayaan's Surgery")
-- **NGO Admin:** `admin@akshay.org` (Owner of "Akshay Society")
-- **Donor:** `nuha@demo.com`
+**Repository:** [https://github.com/nuha-riwaz/kindcents](https://github.com/nuha-riwaz/kindcents)  
+**Live Demo:** [https://kindcents.web.app](https://kindcents.web.app)
 
 ## Tech Stack
 - **Frontend**: React.js (v19)
 - **Build Tool**: Vite
 - **Styling**: Vanilla CSS (Custom tokens, Modern & Premium aesthetics)
 - **Icons**: Lucide React
-- **Backend / Database**: Firebase (Authentication, Firestore NoSQL, Hosting)
+- **Backend Architecture**: BaaS (Backend as a Service)
+- **Backend / Database**: Firebase (Authentication, Firestore NoSQL, Storage, Hosting)
 - **Routing**: React Router DOM (v7)
 
 ## Setup & Installation
-
 ### Prerequisites
 - Node.js (v18 or higher)
 - npm or yarn
@@ -39,8 +20,8 @@ All test accounts use the password: `Test@123`
 ### Steps
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd kindcents-1
+   git clone https://github.com/nuha-riwaz/kindcents.git
+   cd kindcents
    ```
 
 2. **Install dependencies**:
@@ -59,6 +40,17 @@ All test accounts use the password: `Test@123`
    npm run dev
    ```
    Access at `http://localhost:5173`.
+
+## Admin Credentials (For Testing)
+- **Email**: `admin@kindcents.org`
+- **Password**: `Admin@123`
+
+### User Credentials (Test/Demo)
+All test accounts use the password: `Test@123`
+
+- **Individual:** `rashid.hsn@gmail.com` (Owner of "Help Ayaan's Surgery")
+- **NGO Admin:** `admin@akshay.org` (Owner of "Akshay Society")
+- **Donor:** `nuha@demo.com`
 
 ## Development Team
 This project was proudly developed by:

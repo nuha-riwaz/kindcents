@@ -37,6 +37,8 @@ const imageMap = {
     logo
 };
 
+import ExpenseUploadModal from '../components/ExpenseUploadModal';
+
 const NgoDashboard = () => {
     const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
@@ -44,6 +46,15 @@ const NgoDashboard = () => {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    // Expense Modal State
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+    const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+
+    const openExpenseModal = (campaignId) => {
+        setSelectedCampaignId(campaignId);
+        setIsExpenseModalOpen(true);
+    };
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -134,9 +145,9 @@ const NgoDashboard = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Overview':
-                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
+                return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} onNavigate={setActiveTab} />;
             case 'My Active Campaigns':
-                return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} />;
+                return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} onUploadProof={openExpenseModal} />;
             default:
                 return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
         }
@@ -147,6 +158,10 @@ const NgoDashboard = () => {
             <Navbar />
             <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
                 <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                    {/* ... (Sidebar code unchanged) ... */}
+
+                    {/* Main Sidebar Content omitted for brevity in replace block, assuming it matches context */}
+
                     {/* Mobile Sidebar Toggle */}
                     {isMobile && (
                         <button
@@ -279,13 +294,20 @@ const NgoDashboard = () => {
                 </div>
             </div>
             <Footer />
+
+            <ExpenseUploadModal
+                isOpen={isExpenseModalOpen}
+                onClose={() => setIsExpenseModalOpen(false)}
+                campaignId={selectedCampaignId}
+                userId={user?.uid}
+            />
         </div>
     );
 };
 
 // --- Sub-Views ---
 
-const OverviewView = ({ name, campaigns, isMobile }) => {
+const OverviewView = ({ name, campaigns, isMobile, onNavigate }) => {
     const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
     const totalContributors = campaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
     const activeCount = campaigns.filter(c => c.isActive).length;
@@ -351,11 +373,20 @@ const OverviewView = ({ name, campaigns, isMobile }) => {
                     </div>
                 </div>
             </div>
+
+            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                <button
+                    onClick={() => onNavigate('My Active Campaigns')}
+                    style={styles.newCampaignBtn}
+                >
+                    <TrendingUp size={20} /> Active Campaigns
+                </button>
+            </div>
         </div>
     );
 };
 
-const MyCampaignsView = ({ campaigns, isMobile }) => {
+const MyCampaignsView = ({ campaigns, isMobile, onUploadProof }) => {
     return (
         <div style={styles.tabView}>
             <div style={styles.header}>
@@ -414,6 +445,12 @@ const MyCampaignsView = ({ campaigns, isMobile }) => {
                                         <span>{campaign.daysLeft || 0} days left</span>
                                     </div>
                                 </div>
+                                <button
+                                    onClick={() => onUploadProof(campaign.id)}
+                                    style={styles.uploadBtn}
+                                >
+                                    <FileCheck size={14} /> Upload Proof
+                                </button>
                             </div>
                         </div>
                     ))
@@ -798,6 +835,37 @@ const styles = {
         gap: '0.5rem',
         fontSize: '0.8rem',
         color: '#64748b',
+    },
+    uploadBtn: {
+        marginTop: '1rem',
+        width: '100%',
+        backgroundColor: '#2563EB',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '0.6rem',
+        fontSize: '0.9rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.5rem',
+        transition: 'background 0.2s',
+    },
+    actionBtn: {
+        border: '1px solid #cbd5e1',
+        background: 'white',
+        borderRadius: '8px',
+        padding: '0.4rem 0.8rem',
+        fontSize: '0.75rem',
+        fontWeight: '600',
+        color: '#334155',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        marginLeft: 'auto'
     }
 };
 

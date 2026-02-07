@@ -26,7 +26,9 @@ const StatsSection = () => {
     const stats = [
         {
             image: statMoney,
-            value: `LKR ${(totalRaised / 1000).toFixed(1)}K`, // Simple formatting
+            value: totalRaised >= 1000000
+                ? `LKR ${(totalRaised / 1000000).toFixed(1)}M`
+                : `LKR ${(totalRaised / 1000).toFixed(1)}K`,
             label: "Total Donated"
         },
         {

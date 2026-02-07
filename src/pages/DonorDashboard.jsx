@@ -86,15 +86,17 @@ const DonorDashboard = () => {
     const [uploading, setUploading] = useState(false);
 
     // Use logged in user info or fallback to mock Alicia (from image)
-    const displayName = user?.name || "Alicia Johns";
-    const displayEmail = user?.email || "alicia.johns@gmail.com";
+    // Use logged in user info or fallback
+    const displayName = user?.name || user?.displayName || "Donor";
+    const displayEmail = user?.email || "";
 
     // Real-time stats from Firestore
+    // Real-time stats from Firestore
     const [realStats, setRealStats] = React.useState({
-        totalDonated: 0,
-        campaignsSupported: 0,
-        livesImpacted: 0,
-        badgesEarned: 0
+        totalDonated: user?.stats?.totalDonated || 0,
+        campaignsSupported: user?.stats?.campaignsSupported || 0,
+        livesImpacted: user?.stats?.livesImpacted || 0,
+        badgesEarned: user?.stats?.badges || 0
     });
 
     // Fetch and calculate real stats from donations

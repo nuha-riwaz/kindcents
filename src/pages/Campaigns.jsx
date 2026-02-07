@@ -32,13 +32,20 @@ const imageMap = {
 };
 
 import { useCampaigns } from '../context/CampaignContext';
+import { useAuth } from '../context/AuthContext';
+
+import { collection, query, where, getDocs } from 'firebase/firestore'; // Import Firestore functions
+import { db } from '../firebase'; // Import db instance
 
 const Campaigns = () => {
     const navigate = useNavigate();
     const { campaigns } = useCampaigns();
+    const { user } = useAuth(); // Get user from AuthContext
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('Recent');
     const [currentPage, setCurrentPage] = useState(1);
+    const [recommendedCategories, setRecommendedCategories] = useState(new Set());
+    const [loadingRecs, setLoadingRecs] = useState(false);
     const itemsPerPage = 6;
 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -49,12 +56,60 @@ const Campaigns = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Fetch user's donation history to determine recommended categories
+    React.useEffect(() => {
+        const fetchUserInterests = async () => {
+            if (!user) {
+                setRecommendedCategories(new Set());
+                return;
+            }
+
+            setLoadingRecs(true);
+            try {
+                const donationsRef = collection(db, 'donations');
+                const q = query(donationsRef, where('userId', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                const interests = new Set();
+                querySnapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    // Find the campaign to get its category using the campaigns context
+                    const campaign = campaigns.find(c => c.id === data.campaignId);
+                    if (campaign && campaign.category) {
+                        interests.add(campaign.category);
+                    }
+                });
+                setRecommendedCategories(interests);
+            } catch (error) {
+                console.error("Error fetching recommended categories:", error);
+            } finally {
+                setLoadingRecs(false);
+            }
+        };
+
+        if (activeFilter === 'Recommended') {
+            fetchUserInterests();
+        }
+    }, [user, activeFilter, campaigns]);
+
     const filteredCampaigns = campaigns.filter(campaign => {
         // Exclude foundation/NGO cards as they have their own section
         if (campaign.type === 'ngo') return false;
 
         if (!campaign.isActive) return false;
-        const categoryMatch = activeFilter === 'Recent' || campaign.category === activeFilter;
+
+        let categoryMatch = true;
+        if (activeFilter === 'Recent') {
+            categoryMatch = true;
+        } else if (activeFilter === 'Recommended') {
+            if (!user) return false; // Must be logged in
+            // If user has no history, maybe show nothing or generic? showing nothing for now effectively
+            if (recommendedCategories.size === 0) return false;
+            categoryMatch = recommendedCategories.has(campaign.category);
+        } else {
+            categoryMatch = campaign.category === activeFilter;
+        }
+
         const searchMatch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
         return categoryMatch && searchMatch;
     });
@@ -98,12 +153,16 @@ const Campaigns = () => {
                         }} />}
                     </div>
                     <div style={styles.filterTabs}>
-                        {['Recent', 'Medical', 'Social', 'Individual'].map(filter => (
+                        {['Recent', 'Recommended', 'Medical', 'Social', 'Individual'].map(filter => (
                             <button
                                 key={filter}
                                 onClick={() => {
+                                    if (filter === 'Recommended' && !user) {
+                                        alert("Please log in to see recommended campaigns based on your history.");
+                                        return;
+                                    }
                                     setActiveFilter(filter);
-                                    setCurrentPage(1); // Reset to first page on filter change
+                                    setCurrentPage(1);
                                 }}
                                 style={{
                                     ...styles.filterBtn,
@@ -199,8 +258,14 @@ const Campaigns = () => {
                     ) : (
                         <div style={styles.emptyState}>
                             <Search size={48} color="#94a3b8" style={{ marginBottom: '1rem' }} />
-                            <h3 style={styles.emptyTitle}>No campaigns found</h3>
-                            <p style={styles.emptyText}>We couldn't find any campaigns matching your current filter or search criteria.</p>
+                            <h3 style={styles.emptyTitle}>
+                                {activeFilter === 'Recommended' ? "No recommendations yet" : "No campaigns found"}
+                            </h3>
+                            <p style={styles.emptyText}>
+                                {activeFilter === 'Recommended'
+                                    ? "Start donating to campaigns to get personalized recommendations based on your interests!"
+                                    : "We couldn't find any campaigns matching your current filter or search criteria."}
+                            </p>
                             <button
                                 onClick={() => {
                                     setSearchQuery('');
@@ -209,7 +274,7 @@ const Campaigns = () => {
                                 }}
                                 style={styles.resetBtn}
                             >
-                                Clear All Filters
+                                {activeFilter === 'Recommended' ? "Browse All Campaigns" : "Clear All Filters"}
                             </button>
                         </div>
                     )}

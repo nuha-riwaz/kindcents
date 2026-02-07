@@ -67,28 +67,49 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 const userRef = doc(db, 'users', googleUser.uid);
                 const userSnap = await getDoc(userRef);
 
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    if (userData.role) {
-                        const role = userData.role.toLowerCase();
-                        onClose();
-                        if (role === 'ngo' || role === 'nonprofit') {
-                            navigate('/');
-                        } else if (role === 'individual') {
-                            navigate('/');
-                        } else {
-                            navigate('/');
-                        }
+                const userExists = userSnap.exists() && userSnap.data().role;
+
+                if (mode === 'login') {
+                    if (!userExists) {
+                        // User is trying to login but has no account. 
+                        // Sign them out and ask them to sign up.
+                        await auth.signOut();
+                        alert("Account not found. Please sign up to create a new account.");
+                        setMode('signup');
+                        setStep(1); // Go back to start of signup
                         return;
                     }
+                    // If user exists, proceed to navigation logic below
+                } else if (mode === 'signup' || mode === 'email-signup') {
+                    if (userExists) {
+                        alert("Account already exists. Logging you in...");
+                        // Proceed to navigation logic below as if logged in
+                    }
+                    // If new user in signup mode, proceed to Step 2 below
+                }
+
+                if (userExists) {
+                    const userData = userSnap.data();
+                    const role = userData.role.toLowerCase();
+                    onClose();
+                    // Admin check
+                    if (role === 'admin' || googleUser.email === 'admin@kindcents.org') {
+                        navigate('/dashboard/admin');
+                        return;
+                    }
+                    // For all other roles, go to home
+                    navigate('/');
+                    return;
                 }
             } catch (error) {
                 console.error("Error checking user role:", error);
             }
 
-            // If not already returned (meaning no specialized role found), 
-            // allow the new google user to choose their role (Step 2)
-            setMode('email-signup'); // Use signup mode UI
+            // If we are here, it means:
+            // 1. We are in signup mode (or switched to it)
+            // 2. User does not exist in DB
+            // So we proceed to role selection
+            setMode('email-signup'); // Ensure UI is in signup mode
             setStep(2);
         }
     };
@@ -508,10 +529,10 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    login("Simulated", formData.firstName, "donor");
+                                                onClick={async () => {
+                                                    await saveUserRole('donor');
                                                     onClose();
-                                                    navigate('/dashboard/donor');
+                                                    navigate('/');
                                                 }}
                                                 style={styles.nextBtn}
                                             >
@@ -752,7 +773,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                             } else {
                                                 await saveUserRole('donor');
                                                 onClose();
-                                                navigate('/dashboard/donor');
+                                                navigate('/');
                                             }
                                         }}
                                         style={{

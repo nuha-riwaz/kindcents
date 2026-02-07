@@ -49,12 +49,23 @@ const imageMap = {
 };
 
 
+import ExpenseUploadModal from '../components/ExpenseUploadModal';
+
 const IndividualDashboard = () => {
     const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    // Expense Modal State
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+    const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+
+    const openExpenseModal = (campaignId) => {
+        setSelectedCampaignId(campaignId);
+        setIsExpenseModalOpen(true);
+    };
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -221,6 +232,10 @@ const IndividualDashboard = () => {
         }
     };
 
+    const navigateToCampaigns = () => {
+        setActiveTab('My Active Campaigns');
+    };
+
     return (
         <div style={styles.page}>
             <Navbar />
@@ -346,26 +361,32 @@ const IndividualDashboard = () => {
                         {activeTab === 'Overview' ? (
                             <div style={styles.tabContent}>
                                 <div style={styles.welcomeSection}>
-                                    <h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>Welcome back, {(user?.name || "Rashid").split(' ')[0]}!</h1>
-                                    <p style={styles.welcomeSub}>Track your fundraising progress and manage your campaigns.</p>
+                                    <h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>Welcome back, {user?.name || 'User'}!</h1>
+                                    <p style={styles.welcomeSub}>Track your personal fundraising impact.</p>
                                 </div>
 
                                 <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
-                                    {stats.map((stat, i) => (
-                                        <div key={i} style={{
-                                            ...styles.statCard,
-                                            ...(stat.label === 'Total Raised' ? styles.activeStatCard : {})
-                                        }}>
+                                    {stats.map((stat, index) => (
+                                        <div key={index} style={{ ...styles.statCard, ...(index === 2 ? styles.activeStatCard : {}) }}>
                                             <div style={styles.statInfo}>
                                                 <p style={styles.statLabel}>{stat.label}</p>
-                                                <h2 style={styles.statValue}>{stat.value}</h2>
+                                                <h3 style={styles.statValue}>{stat.value}</h3>
                                                 <p style={styles.statChange}>{stat.change}</p>
                                             </div>
-                                            <div style={{ ...styles.statIconWrapper, backgroundColor: stat.color }}>
+                                            <div style={styles.statIconWrapper} className="stat-icon">
                                                 {stat.icon}
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+
+                                <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                                    <button
+                                        onClick={navigateToCampaigns}
+                                        style={styles.newCampaignBtn}
+                                    >
+                                        <TrendingUp size={20} /> Active Campaigns
+                                    </button>
                                 </div>
                             </div>
                         ) : (
@@ -401,15 +422,16 @@ const IndividualDashboard = () => {
                                                         <div style={styles.progressTrack}>
                                                             <div style={{ ...styles.progressFill, width: `${progress}%` }} />
                                                         </div>
-                                                        <div style={styles.campaignStats}>
-                                                            <div style={styles.statItem}>
-                                                                <Users size={14} /> {campaign.contributors || 0} donors
-                                                            </div>
-                                                            <div style={styles.statItem}>
-                                                                <TrendingUp size={14} /> {campaign.status === 'completed' ? 'Finished' : '9 days left'}
-                                                            </div>
+                                                        <div style={styles.statItem}>
+                                                            <TrendingUp size={14} /> {campaign.status === 'completed' ? 'Finished' : '9 days left'}
                                                         </div>
                                                     </div>
+                                                    <button
+                                                        onClick={() => openExpenseModal(campaign.id)}
+                                                        style={styles.actionBtn}
+                                                    >
+                                                        <CheckCircle2 size={14} /> Upload Proof
+                                                    </button>
                                                 </div>
                                             </div>
                                         );
@@ -426,6 +448,13 @@ const IndividualDashboard = () => {
             </div>
 
             <Footer />
+
+            <ExpenseUploadModal
+                isOpen={isExpenseModalOpen}
+                onClose={() => setIsExpenseModalOpen(false)}
+                campaignId={selectedCampaignId}
+                userId={user?.uid}
+            />
         </div>
     );
 };
@@ -795,7 +824,23 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
-    }
+    },
+    actionBtn: {
+        marginTop: '1rem',
+        width: '100%',
+        backgroundColor: '#2563EB',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '0.6rem',
+        fontSize: '0.9rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.5rem',
+    },
 };
 
 export default IndividualDashboard;

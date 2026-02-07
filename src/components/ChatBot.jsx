@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, MoreVertical, ChevronDown, Paperclip, Smile } from 'lucide-react';
+import { MessageCircle, X, Send, MoreVertical, ChevronDown, Paperclip, Smile, ChevronLeft } from 'lucide-react';
 import logo from '../assets/logo.png';
+import { faqData } from '../data/kindbotData';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const ChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { id: 1, text: "Hi 👋 How can I help you?", isBot: true }
+        { id: 1, text: "Hi 👋 I'm KindBot. How can I help you today?", isBot: true, type: 'text' }
     ]);
-    const [inputText, setInputText] = useState("");
+    const [mode, setMode] = useState('chat'); // 'chat' or 'contact'
+    const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const messagesEndRef = useRef(null);
-    const fileInputRef = useRef(null);
 
-    const commonEmojis = ["😊", "👋", "❤️", "🙌", "👍", "✨", "🙏", "💡", "🔥", "✅"];
+    // Auto-scroll ref
+    const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -21,78 +24,186 @@ const ChatBot = () => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isTyping]);
+    }, [messages, isTyping, mode]);
 
     const toggleChat = () => setIsOpen(!isOpen);
 
-    const getBotResponse = (text) => {
-        const input = text.toLowerCase();
-        if (input.includes("how") && input.includes("donate")) {
-            return "To donate, simply click the 'Donate Now' button on any campaign page. You'll be guided through a secure payment process!";
+    // Helper to add a user message
+    const addUserMessage = (text) => {
+        setMessages(prev => [...prev, { id: Date.now(), text, isBot: false, type: 'text' }]);
+    };
+
+    // Helper to add a bot message with delay
+    const addBotMessage = (text, type = 'text', options = []) => {
+        setIsTyping(true);
+        setTimeout(() => {
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                text,
+                isBot: true,
+                type,
+                options
+            }]);
+            setIsTyping(false);
+        }, 800);
+    };
+
+    // Initial Options
+    useEffect(() => {
+        if (messages.length === 1 && isOpen) {
+            const categories = faqData.categories.map(c => ({ label: c.label, value: c.id, icon: c.icon }));
+            categories.push({ label: "Contact Admin", value: "contact_admin", icon: "📧" });
+
+            addBotMessage("Please select a topic below:", 'options', categories);
         }
-        if (input.includes("who") || input.includes("what is kindcents")) {
-            return "KindCents is a transparent donation tracking platform based in Sri Lanka. We ensure every cent you donate reaches its intended cause!";
+    }, [isOpen]);
+
+    const handleOptionClick = (option) => {
+        addUserMessage(option.label);
+
+        if (option.value === 'contact_admin') {
+            setMode('contact');
+            addBotMessage("Sure, I can help you contact an admin. Please fill out the form below:", 'text');
+            return;
         }
-        if (input.includes("hello") || input.includes("hi")) {
-            return "Hello! I'm KindBot. I'm here to help you with any questions about our platform or active campaigns.";
+
+        if (option.value === 'go_back') {
+            const categories = faqData.categories.map(c => ({ label: c.label, value: c.id, icon: c.icon }));
+            categories.push({ label: "Contact Admin", value: "contact_admin", icon: "📧" });
+            addBotMessage("How else can I help you?", 'options', categories);
+            return;
         }
-        if (input.includes("campaign") || input.includes("project")) {
-            return "You can browse all our active campaigns on the 'Campaigns' page. We have medical, social, and individual causes that need your support!";
+
+        // It's a category
+        const categoryQuestions = faqData[option.value];
+        if (categoryQuestions) {
+            const questionOptions = categoryQuestions.map((q, index) => ({
+                label: q.q,
+                value: `q_${option.value}_${index}`,
+                answer: q.a
+            }));
+            questionOptions.push({ label: "⬅️ Go Back", value: "go_back" });
+
+            addBotMessage(`Here are some common questions about ${option.label}:`, 'options', questionOptions);
         }
-        return "That's a great question! I'm still learning, but I can tell you that KindCents is dedicated to transparent giving. Would you like to know more about how to donate or our active campaigns?";
+    };
+
+    const handleQuestionClick = (option) => {
+        addUserMessage(option.label);
+
+        if (option.value === 'go_back') {
+            const categories = faqData.categories.map(c => ({ label: c.label, value: c.id, icon: c.icon }));
+            categories.push({ label: "Contact Admin", value: "contact_admin", icon: "📧" });
+            addBotMessage("What else can I help you with?", 'options', categories);
+            return;
+        }
+
+        // Show Answer
+        addBotMessage(option.answer);
+
+        // Follow up options
+        setTimeout(() => {
+            addBotMessage("Did that help?", 'options', [
+                { label: "Yes, thanks!", value: "go_back" },
+                { label: "No, contact admin", value: "contact_admin" }
+            ]);
+        }, 1500);
+    };
+
+    const handleContactSubmit = async (e) => {
+        e.preventDefault();
+        if (!contactForm.name || !contactForm.email || !contactForm.message) return;
+
+        setIsSubmitting(true);
+        try {
+            await addDoc(collection(db, "contact_requests"), {
+                ...contactForm,
+                createdAt: serverTimestamp(),
+                status: 'new'
+            });
+
+            setMode('chat');
+            setContactForm({ name: '', email: '', message: '' });
+            addUserMessage("Message Sent");
+            addBotMessage("Your message has been sent successfully! An admin will get back to you shortly.");
+
+            // Return to main menu
+            setTimeout(() => {
+                const categories = faqData.categories.map(c => ({ label: c.label, value: c.id, icon: c.icon }));
+                categories.push({ label: "Contact Admin", value: "contact_admin", icon: "📧" });
+                addBotMessage("Is there anything else?", 'options', categories);
+            }, 2000);
+
+        } catch (error) {
+            console.error("Error sending message: ", error);
+            addBotMessage("Something went wrong. Please try again later.");
+        }
+        setIsSubmitting(false);
+    };
+
+    // Fuzzy Search Helper
+    const findBestMatch = (input) => {
+        const lowerInput = input.toLowerCase();
+        let bestMatch = null;
+        let maxScore = 0;
+
+        // Flatten all questions
+        const allQuestions = [
+            ...faqData.general,
+            ...faqData.donor,
+            ...faqData.ngo,
+            ...faqData.individual
+        ];
+
+        allQuestions.forEach(q => {
+            const words = q.q.toLowerCase().split(" ");
+            let score = 0;
+            words.forEach(word => {
+                if (lowerInput.includes(word) && word.length > 3) {
+                    score++;
+                }
+            });
+            if (score > maxScore) {
+                maxScore = score;
+                bestMatch = q;
+            }
+        });
+
+        // Simple threshold match
+        if (maxScore >= 1) { // At least one significant word match
+            return bestMatch;
+        }
+        return null;
     };
 
     const handleSendMessage = (e) => {
         e.preventDefault();
-        if (!inputText.trim()) return;
+        if (!contactForm.message && mode === 'chat') {
+            // Handle chat input
+            const text = e.target.elements.messageInput.value.trim();
+            if (!text) return;
 
-        const userMsg = { id: Date.now(), text: inputText, isBot: false };
-        setMessages(prev => [...prev, userMsg]);
-        setInputText("");
-        setIsTyping(true);
-        setShowEmojiPicker(false);
+            e.target.elements.messageInput.value = "";
+            addUserMessage(text);
 
-        // Simulate AI response delay
-        setTimeout(() => {
-            const response = getBotResponse(userMsg.text);
-            const botMsg = {
-                id: Date.now() + 1,
-                text: response,
-                isBot: true
-            };
-            setMessages(prev => [...prev, botMsg]);
-            setIsTyping(false);
-        }, 1500);
-    };
+            // Check for keywords
+            const match = findBestMatch(text);
 
-    const handleEmojiClick = (emoji) => {
-        setInputText(prev => prev + emoji);
-    };
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const userMsg = {
-                    id: Date.now(),
-                    text: "Sent an image",
-                    imageUrl: event.target.result,
-                    isBot: false
-                };
-                setMessages(prev => [...prev, userMsg]);
-
-                setIsTyping(true);
+            if (match) {
+                addBotMessage(match.a);
                 setTimeout(() => {
-                    setMessages(prev => [...prev, {
-                        id: Date.now() + 1,
-                        text: "Thanks for sharing! That looks interesting. How can I help you with this?",
-                        isBot: true
-                    }]);
-                    setIsTyping(false);
+                    addBotMessage("Did that answer your question?", 'options', [
+                        { label: "Yes, thanks!", value: "go_back" },
+                        { label: "No", value: "contact_admin" }
+                    ]);
                 }, 1500);
-            };
-            reader.readAsDataURL(file);
+            } else {
+                addBotMessage("I'm not sure about that one. Would you like to contact an admin?", 'options', [
+                    { label: "Contact Admin", value: "contact_admin" },
+                    { label: "Show Menu", value: "go_back" }
+                ]);
+            }
+            return;
         }
     };
 
@@ -100,6 +211,7 @@ const ChatBot = () => {
         <div style={styles.wrapper}>
             {isOpen && (
                 <div style={styles.chatWindow}>
+                    {/* Header */}
                     <div style={styles.header}>
                         <div style={styles.headerLeft}>
                             <div style={styles.logoContainer}>
@@ -110,104 +222,135 @@ const ChatBot = () => {
                                 <span style={styles.botName}>KindBot</span>
                                 <div style={styles.statusLine}>
                                     <div style={styles.statusDot}></div>
-                                    <span style={styles.statusText}>Online • responds immediately</span>
+                                    <span style={styles.statusText}>Online</span>
                                 </div>
                             </div>
                         </div>
-                        <div style={styles.headerRight}>
-                            <button style={styles.iconBtn}><MoreVertical size={18} color="#64748b" /></button>
-                            <button onClick={toggleChat} style={styles.iconBtn}><ChevronDown size={20} color="#64748b" /></button>
-                        </div>
+                        <button onClick={toggleChat} style={styles.iconBtn}><ChevronDown size={20} color="#64748b" /></button>
                     </div>
 
+                    {/* Content Area */}
                     <div style={styles.messagesArea}>
-                        {messages.map(msg => (
-                            <div key={msg.id} style={{
-                                ...styles.messageRow,
-                                justifyContent: msg.isBot ? 'flex-start' : 'flex-end',
-                            }}>
-                                <div style={{
-                                    ...styles.messageBubble,
-                                    backgroundColor: msg.isBot ? '#f0f7ff' : '#4F96FF',
-                                    color: msg.isBot ? '#334155' : 'white',
-                                    borderRadius: msg.isBot ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
-                                    border: msg.isBot ? '1px solid #e2e8f0' : 'none',
-                                    textAlign: 'left', // Aligns text to left for ALL bubbles
-                                }}>
-                                    {msg.imageUrl && (
-                                        <img src={msg.imageUrl} alt="Uploaded" style={{
-                                            ...styles.messageImage,
-                                            marginLeft: '0',
-                                            marginRight: 'auto',
-                                        }} />
-                                    )}
-                                    {msg.text}
-                                </div>
-                            </div>
-                        ))}
-
-                        {isTyping && (
-                            <div style={styles.messageRow}>
-                                <div style={{ ...styles.messageBubble, backgroundColor: '#f0f7ff', border: '1px solid #e2e8f0', borderRadius: '16px 16px 16px 4px' }}>
-                                    <div style={styles.typingIndicator}>
-                                        <span></span><span></span><span></span>
+                        {mode === 'chat' ? (
+                            <>
+                                {messages.map(msg => (
+                                    <div key={msg.id} style={{
+                                        ...styles.messageRow,
+                                        justifyContent: msg.isBot ? 'flex-start' : 'flex-end',
+                                    }}>
+                                        {!msg.type || msg.type === 'text' ? (
+                                            <div style={{
+                                                ...styles.messageBubble,
+                                                backgroundColor: msg.isBot ? '#f0f7ff' : '#4F96FF',
+                                                color: msg.isBot ? '#334155' : 'white',
+                                                borderRadius: msg.isBot ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
+                                                border: msg.isBot ? '1px solid #e2e8f0' : 'none',
+                                            }}>
+                                                {msg.text}
+                                            </div>
+                                        ) : msg.type === 'options' ? (
+                                            <div style={styles.optionsContainer}>
+                                                <div style={{
+                                                    ...styles.messageBubble,
+                                                    backgroundColor: '#f0f7ff',
+                                                    color: '#334155',
+                                                    borderRadius: '16px 16px 16px 4px',
+                                                    marginBottom: '8px'
+                                                }}>
+                                                    {msg.text}
+                                                </div>
+                                                <div style={styles.optionsGrid}>
+                                                    {msg.options.map((opt, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            style={styles.optionBtn}
+                                                            onClick={() => opt.answer ? handleQuestionClick(opt) : handleOptionClick(opt)}
+                                                        >
+                                                            {opt.icon && <span style={{ marginRight: '6px' }}>{opt.icon}</span>}
+                                                            {opt.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : null}
                                     </div>
-                                </div>
+                                ))}
+                                {isTyping && (
+                                    <div style={styles.messageRow}>
+                                        <div style={{ ...styles.messageBubble, backgroundColor: '#f0f7ff', border: '1px solid #e2e8f0', borderRadius: '16px 16px 16px 4px' }}>
+                                            <div style={styles.typingIndicator}>
+                                                <span></span><span></span><span></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div style={styles.formContainer}>
+                                <h3 style={styles.formTitle}>Contact Support</h3>
+                                <p style={styles.formSubtitle}>We typically reply within 24 hours.</p>
+                                <form onSubmit={handleContactSubmit}>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Name</label>
+                                        <input
+                                            style={styles.input}
+                                            value={contactForm.name}
+                                            onChange={e => setContactForm({ ...contactForm, name: e.target.value })}
+                                            required
+                                            placeholder="Your Name"
+                                        />
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Email</label>
+                                        <input
+                                            style={styles.input}
+                                            type="email"
+                                            value={contactForm.email}
+                                            onChange={e => setContactForm({ ...contactForm, email: e.target.value })}
+                                            required
+                                            placeholder="your@email.com"
+                                        />
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Message</label>
+                                        <textarea
+                                            style={styles.textarea}
+                                            value={contactForm.message}
+                                            onChange={e => setContactForm({ ...contactForm, message: e.target.value })}
+                                            required
+                                            placeholder="How can we help?"
+                                            rows={4}
+                                        />
+                                    </div>
+                                    <div style={styles.formActions}>
+                                        <button type="button" onClick={() => setMode('chat')} style={styles.cancelBtn}>Cancel</button>
+                                        <button type="submit" style={styles.submitBtn} disabled={isSubmitting}>
+                                            {isSubmitting ? 'Sending...' : 'Send Message'}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>
 
-                    <div style={styles.footer}>
-                        {showEmojiPicker && (
-                            <div style={styles.emojiPicker}>
-                                {commonEmojis.map(emoji => (
-                                    <button
-                                        key={emoji}
-                                        onClick={() => handleEmojiClick(emoji)}
-                                        style={styles.emojiBtn}
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        <form onSubmit={handleSendMessage} style={styles.inputContainer}>
-                            <input
-                                type="text"
-                                placeholder="Enter your message..."
-                                style={styles.input}
-                                value={inputText}
-                                onChange={(e) => setInputText(e.target.value)}
-                            />
-                            <button type="submit" style={styles.sendBtn}>
-                                <Send size={16} color="white" />
-                            </button>
-                        </form>
-                        <div style={styles.footerActions}>
-                            <div style={styles.leftActions}>
-                                <button
-                                    style={styles.utilityBtn}
-                                    onClick={() => fileInputRef.current.click()}
-                                >
-                                    <Paperclip size={16} color="#64748b" />
-                                </button>
-                                <button
-                                    style={styles.utilityBtn}
-                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                >
-                                    <Smile size={16} color="#64748b" />
-                                </button>
+                    {/* Footer Input */}
+                    {mode === 'chat' && (
+                        <div style={styles.footer}>
+                            <form onSubmit={handleSendMessage} style={styles.inputContainer}>
                                 <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    style={{ display: 'none' }}
-                                    accept="image/*"
-                                    onChange={handleFileChange}
+                                    name="messageInput"
+                                    type="text"
+                                    placeholder="Type a question..."
+                                    style={styles.input}
+                                    autoComplete="off"
                                 />
-                            </div>
+                                <button type="submit" style={styles.sendBtn}>
+                                    <Send size={16} color="white" />
+                                </button>
+                            </form>
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
 
@@ -219,6 +362,7 @@ const ChatBot = () => {
     );
 };
 
+// Styles
 const styles = {
     wrapper: {
         position: 'fixed',
@@ -254,8 +398,8 @@ const styles = {
         border: '2px solid white',
     },
     chatWindow: {
-        width: '320px',
-        height: '500px',
+        width: '340px',
+        height: '450px',
         backgroundColor: 'white',
         borderRadius: '20px',
         boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
@@ -296,16 +440,15 @@ const styles = {
         flexDirection: 'column',
     },
     chatWith: {
-        fontSize: '0.9rem',
+        fontSize: '0.8rem',
         color: '#475569',
         lineHeight: '1',
     },
     botName: {
-        fontSize: '1.4rem',
+        fontSize: '1.2rem',
         fontWeight: '800',
         color: '#1e293b',
         lineHeight: '1.1',
-        letterSpacing: '-0.5px',
     },
     statusLine: {
         display: 'flex',
@@ -324,10 +467,6 @@ const styles = {
         color: '#64748b',
         fontStyle: 'italic',
     },
-    headerRight: {
-        display: 'flex',
-        gap: '2px',
-    },
     iconBtn: {
         background: 'none',
         border: 'none',
@@ -345,6 +484,7 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
+        paddingBottom: '0', // Adjust for footer
     },
     messageRow: {
         display: 'flex',
@@ -353,92 +493,125 @@ const styles = {
     messageBubble: {
         maxWidth: '85%',
         padding: '10px 14px',
-        fontSize: '0.85rem',
+        fontSize: '0.9rem',
         lineHeight: '1.4',
     },
-    messageImage: {
-        width: '100%',
-        maxHeight: '150px',
-        borderRadius: '8px',
-        marginBottom: '6px',
-        objectFit: 'cover',
+    optionsContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        maxWidth: '90%',
     },
+    optionsGrid: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+    },
+    optionBtn: {
+        padding: '8px 12px',
+        backgroundColor: 'white',
+        border: '1px solid #4F96FF',
+        borderRadius: '8px',
+        color: '#4F96FF',
+        fontSize: '0.9rem',
+        fontWeight: '500',
+        cursor: 'pointer',
+        textAlign: 'left',
+        transition: 'all 0.2s',
+    },
+    typingIndicator: {
+        display: 'flex',
+        gap: '3px',
+    },
+    // Form Styles
+    formContainer: {
+        padding: '10px',
+    },
+    formTitle: {
+        fontSize: '1.2rem',
+        fontWeight: '700',
+        color: '#1e293b',
+        marginBottom: '4px',
+    },
+    formSubtitle: {
+        fontSize: '0.9rem',
+        color: '#64748b',
+        marginBottom: '16px',
+    },
+    formGroup: {
+        marginBottom: '12px',
+    },
+    label: {
+        display: 'block',
+        fontSize: '0.85rem',
+        fontWeight: '600',
+        color: '#475569',
+        marginBottom: '4px',
+    },
+    input: {
+        width: '100%',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e1',
+        fontSize: '0.9rem',
+        outline: 'none',
+    },
+    textarea: {
+        width: '100%',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e1',
+        fontSize: '0.9rem',
+        outline: 'none',
+        resize: 'vertical',
+    },
+    formActions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '10px',
+        marginTop: '16px',
+    },
+    cancelBtn: {
+        padding: '8px 16px',
+        borderRadius: '8px',
+        border: 'none',
+        backgroundColor: '#f1f5f9',
+        color: '#64748b',
+        fontWeight: '600',
+        cursor: 'pointer',
+    },
+    submitBtn: {
+        padding: '8px 16px',
+        borderRadius: '8px',
+        border: 'none',
+        backgroundColor: '#4F96FF',
+        color: 'white',
+        fontWeight: '600',
+        cursor: 'pointer',
+    },
+    // Footer Styles from original
     footer: {
         padding: '10px 16px 14px',
         borderTop: '1px solid #f1f5f9',
         backgroundColor: 'white',
         position: 'relative',
     },
-    emojiPicker: {
-        position: 'absolute',
-        bottom: '100%',
-        left: '16px',
-        backgroundColor: 'white',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        padding: '8px',
-        boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(5, 1fr)',
-        gap: '4px',
-        marginBottom: '4px',
-        zIndex: 10,
-    },
-    emojiBtn: {
-        background: 'none',
-        border: 'none',
-        fontSize: '1.2rem',
-        cursor: 'pointer',
-        padding: '4px',
-        borderRadius: '4px',
-    },
     inputContainer: {
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
     },
-    input: {
-        flex: 1,
-        border: 'none',
-        outline: 'none',
-        fontSize: '0.9rem',
-        color: '#334155',
-        backgroundColor: 'transparent',
-    },
     sendBtn: {
         width: '32px',
         height: '32px',
         borderRadius: '50%',
-        backgroundColor: '#dbeafe',
+        backgroundColor: '#4F96FF',
         border: 'none',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
     },
-    footerActions: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: '6px',
-    },
-    leftActions: {
-        display: 'flex',
-        gap: '10px',
-    },
-    utilityBtn: {
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '2px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    typingIndicator: {
-        display: 'flex',
-        gap: '3px',
-    }
 };
 
 export default ChatBot;

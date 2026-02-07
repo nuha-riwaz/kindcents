@@ -93,9 +93,7 @@ const Onboarding = () => {
     const handleFinish = () => {
         const role = (selectedRole || 'donor').toLowerCase();
         if (role === 'admin') navigate('/dashboard/admin');
-        else if (role === 'ngo' || role === 'nonprofit') navigate('/dashboard/ngo');
-        else if (role === 'individual') navigate('/dashboard/individual');
-        else navigate('/'); // Redirect donors to Home Page
+        else navigate('/'); // Redirect all other roles to Home Page
     };
 
     const renderStep2 = () => (
