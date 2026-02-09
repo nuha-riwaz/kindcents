@@ -5,6 +5,18 @@ import { useCampaigns } from '../context/CampaignContext';
 const ExpensesViewModal = ({ isOpen, onClose, campaign, expenses }) => {
     const { deleteExpense } = useCampaigns();
 
+    // Add styles for hover effects
+    React.useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .hover-btn-ghost-red:hover { background-color: #fef2f2 !important; color: #dc2626 !important; }
+            .hover-btn-ghost-blue:hover { background-color: #eff6ff !important; color: #2563eb !important; }
+            .hover-close-btn:hover { background-color: #f1f5f9 !important; }
+        `;
+        document.head.appendChild(style);
+        return () => document.head.removeChild(style);
+    }, []);
+
     if (!isOpen || !campaign) return null;
 
     const openImageInNewTab = (base64String) => {
@@ -29,7 +41,7 @@ const ExpensesViewModal = ({ isOpen, onClose, campaign, expenses }) => {
                         <h3 style={styles.title}>Campaign Expenses</h3>
                         <p style={styles.subtitle}>{campaign.title}</p>
                     </div>
-                    <button onClick={onClose} style={styles.closeBtn}>
+                    <button onClick={onClose} style={styles.closeBtn} className="hover-close-btn">
                         <X size={24} />
                     </button>
                 </div>
@@ -71,6 +83,7 @@ const ExpensesViewModal = ({ isOpen, onClose, campaign, expenses }) => {
                                         <button
                                             onClick={() => openImageInNewTab(expense.image)}
                                             style={styles.viewProofBtn}
+                                            className="hover-btn-ghost-blue"
                                         >
                                             <ZoomIn size={14} /> View Full Image
                                         </button>
@@ -87,6 +100,7 @@ const ExpensesViewModal = ({ isOpen, onClose, campaign, expenses }) => {
                                         }
                                     }}
                                     style={styles.deleteExpenseBtn}
+                                    className="hover-btn-ghost-red"
                                 >
                                     <Trash2 size={14} /> Delete Expense
                                 </button>

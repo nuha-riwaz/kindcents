@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Building2, User, Heart, ChevronRight, ChevronLeft, CloudUpload, Loader2 } from 'lucide-react';
+import { X, Building2, User, Heart, ChevronRight, ChevronLeft, CloudUpload, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { auth, db } from '../firebase';
@@ -18,7 +18,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     });
     const [uploadedFiles, setUploadedFiles] = useState({});
     const [passwordError, setPasswordError] = useState('');
-    const { login, signup, loginEmail, saveUserRole, updateUserDocuments } = useAuth();
+    const [loginError, setLoginError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetStatus, setResetStatus] = useState({ type: '', message: '' });
+    const { login, signup, loginEmail, saveUserRole, updateUserDocuments, resetPassword } = useAuth();
     const navigate = useNavigate();
 
     const fileInputRefs = {
@@ -54,6 +58,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 password: ''
             });
             setUploadedFiles({});
+            setShowPassword(false);
+            setResetEmail('');
+            setResetStatus({ type: '', message: '' });
         }
     }, [isOpen, initialMode]);
 
@@ -118,11 +125,27 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         setMode('email-signup');
     };
 
+    const getFriendlyErrorMessage = (error) => {
+        switch (error.code) {
+            case 'auth/invalid-credential':
+            case 'auth/user-not-found':
+            case 'auth/wrong-password':
+                return "The email or password you entered is incorrect.";
+            case 'auth/too-many-requests':
+                return "Access disabled temporarily due to many failed attempts. Try again later.";
+            case 'auth/network-request-failed':
+                return "Network error. Please check your internet connection.";
+            default:
+                return "Login failed. Please try again.";
+        }
+    };
+
     const handleEmailLoginAction = async (e) => {
         e.preventDefault(); // Prevent form submission refresh
+        setLoginError('');
 
-        const email = formData.email.trim().toLowerCase();
-        const password = formData.password.trim();
+        const email = formData.email ? formData.email.trim().toLowerCase() : '';
+        const password = formData.password ? formData.password.trim() : '';
 
         // Bypass for test accounts
         if (password === 'Test@123') {
@@ -142,7 +165,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
         try {
             // For demo, keep admin check if you want, or remove it.
-            const loggedInUser = await loginEmail(formData.email, formData.password);
+            const loggedInUser = await loginEmail(email, password);
 
             if (loggedInUser) {
                 // Fetch the user role to decide where to go
@@ -163,7 +186,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             }
         } catch (error) {
             console.error("Login failed", error);
-            alert("Login Failed: " + error.message);
+            setLoginError(getFriendlyErrorMessage(error));
         }
     };
 
@@ -179,6 +202,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'email' || name === 'password') {
+            setLoginError('');
+        }
     };
 
     const handleFileChange = (e, key) => {
@@ -204,6 +230,27 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     const handleBrowseClick = (key) => {
         if (fileInputRefs[key].current) {
             fileInputRefs[key].current.click();
+        }
+    };
+
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        if (!resetEmail) {
+            setResetStatus({ type: 'error', message: 'Please enter your email address.' });
+            return;
+        }
+
+        try {
+            setResetStatus({ type: '', message: '' });
+            await resetPassword(resetEmail);
+            setResetStatus({ type: 'success', message: 'Password reset link sent! Check your email.' });
+        } catch (error) {
+            console.error("Reset password error", error);
+            if (error.code === 'auth/user-not-found') {
+                setResetStatus({ type: 'error', message: 'No account found with this email.' });
+            } else {
+                setResetStatus({ type: 'error', message: 'Failed to send reset email. Please try again.' });
+            }
         }
     };
 
@@ -261,7 +308,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
+                                <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -318,15 +365,33 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>Password*</label>
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        required
-                                        placeholder="Create a password"
-                                        style={styles.input}
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                    />
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            required
+                                            placeholder="Create a password"
+                                            style={{ ...styles.input, paddingRight: '40px' }}
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            style={{
+                                                position: 'absolute',
+                                                right: '10px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                color: '#94a3b8'
+                                            }}
+                                        >
+                                            {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                                        </button>
+                                    </div>
                                     <p style={{ fontSize: '0.75rem', color: passwordError ? '#ef4444' : '#64748b', marginTop: '0.5rem' }}>
                                         {passwordError || "Your password must include at least 8 characters, an uppercase letter, a lowercase letter, and a number."}
                                     </p>
@@ -338,7 +403,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                             </form>
 
                             <p style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '1rem' }}>
-                                By clicking on "Create an account", you accept our <a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Terms of Use</a>
+                                By clicking on "Create an account", you accept our <a href="/terms-and-conditions" style={{ color: '#2596be', textDecoration: 'none' }}>Terms of Use</a>
                             </p>
 
                             <div style={{ ...styles.trustBadge, marginTop: '2rem' }}>
@@ -442,7 +507,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
+                                <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -560,7 +625,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
+                                <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
                             </div>
 
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -798,7 +863,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                     <div style={styles.modal}>
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
-                                <img src={logo} alt="KindCents" style={{ height: '60px' }} />
+                                <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
                             </div>
 
                             <div style={{ ...isCardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '3rem 2rem' }}>
@@ -841,6 +906,77 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         }
     }
 
+    if (mode === 'forgot-password') {
+        return (
+            <div style={styles.overlay}>
+                <div style={styles.modal}>
+                    <button onClick={onClose} style={styles.closeBtn}>
+                        <X size={24} />
+                    </button>
+
+                    <div style={styles.content}>
+                        <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
+                            <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
+                        </div>
+
+                        <h2 style={{ ...styles.title, fontSize: '1.5rem', marginBottom: '1rem', textAlign: 'left', width: '100%' }}>
+                            Reset Password
+                        </h2>
+                        <p style={{ ...styles.subtitle, textAlign: 'left', marginBottom: '1.5rem' }}>
+                            Enter your email address and we'll send you a link to reset your password.
+                        </p>
+
+                        <form style={{ width: '100%', textAlign: 'left' }} onSubmit={handleForgotPassword}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Email*</label>
+                                <input
+                                    type="email"
+                                    required
+                                    placeholder="Enter your email"
+                                    style={styles.input}
+                                    value={resetEmail}
+                                    onChange={(e) => {
+                                        setResetEmail(e.target.value);
+                                        setResetStatus({ type: '', message: '' });
+                                    }}
+                                />
+                            </div>
+
+                            {resetStatus.message && (
+                                <div style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '8px',
+                                    marginBottom: '1.5rem',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '500',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    backgroundColor: resetStatus.type === 'success' ? '#f0fdf4' : '#fef2f2',
+                                    border: `1px solid ${resetStatus.type === 'success' ? '#dcfce7' : '#fee2e2'}`,
+                                    color: resetStatus.type === 'success' ? '#166534' : '#ef4444'
+                                }}>
+                                    {resetStatus.type === 'success' ? <CloudUpload size={20} /> : <AlertCircle size={20} />}
+                                    <span>{resetStatus.message}</span>
+                                </div>
+                            )}
+
+                            <div style={styles.buttonRow}>
+                                <button type="button" onClick={() => setMode('login')} style={styles.backLinkBtn}>
+                                    <ChevronLeft size={16} /> Back to Login
+                                </button>
+                                <button type="submit" style={styles.nextBtn}>
+                                    Send Reset Link
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
 
 
     // Render the Main Mode (Login/Signup Selection)
@@ -863,7 +999,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                             <div style={styles.actions}>
                                 <button onClick={handleGoogleLogin} style={styles.googleBtn}>
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style={{ width: '18px', marginRight: '10px' }} />
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Sign-In Logo" style={{ width: '18px', marginRight: '10px' }} />
                                     Sign up with Google
                                 </button>
 
@@ -884,7 +1020,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                             <div style={{ width: '100%', marginBottom: '1.5rem' }}>
                                 <button onClick={handleGoogleLogin} style={styles.googleBtn}>
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style={{ width: '18px', marginRight: '10px' }} />
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Sign-In Logo" style={{ width: '18px', marginRight: '10px' }} />
                                     Log in with Google
                                 </button>
                             </div>
@@ -904,14 +1040,32 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Password*</label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    placeholder="Enter your password"
-                                    style={styles.input}
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                />
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="Enter your password"
+                                        style={{ ...styles.input, paddingRight: '40px' }}
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: '#94a3b8'
+                                        }}
+                                    >
+                                        {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                                    </button>
+                                </div>
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', width: '100%' }}>
@@ -919,8 +1073,34 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     <input type="checkbox" id="remember" style={{ cursor: 'pointer' }} />
                                     <label htmlFor="remember" style={{ fontSize: '0.85rem', color: '#64748b', cursor: 'pointer' }}>Remember me</label>
                                 </div>
-                                <button style={{ ...styles.linkBtn, fontSize: '0.85rem', color: '#94a3b8', margin: 0 }}>Forgot password?</button>
+                                <button
+                                    onClick={() => setMode('forgot-password')}
+                                    style={{ ...styles.linkBtn, fontSize: '0.85rem', color: '#94a3b8', margin: 0 }}
+                                >
+                                    Forgot password?
+                                </button>
                             </div>
+
+                            {loginError && (
+                                <div style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    backgroundColor: '#fef2f2',
+                                    border: '1px solid #fee2e2',
+                                    borderRadius: '8px',
+                                    marginBottom: '1.5rem',
+                                    color: '#ef4444',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '500',
+                                    textAlign: 'left'
+                                }}>
+                                    <AlertCircle size={20} />
+                                    <span>{loginError}</span>
+                                </div>
+                            )}
 
                             <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                                 <button

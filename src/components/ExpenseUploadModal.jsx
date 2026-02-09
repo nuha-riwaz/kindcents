@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, Check, Loader2, IndianRupee, FileText } from 'lucide-react';
 import { useCampaigns } from '../context/CampaignContext';
 
@@ -10,6 +10,18 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
     const [preview, setPreview] = useState(null);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
+
+    // Add styles for hover effects
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .hover-btn-blue:hover { background-color: #2563eb !important; transform: translateY(-1px); }
+            .hover-btn-ghost-gray:hover { background-color: #f1f5f9 !important; }
+            .hover-upload-box:hover { background-color: #eff6ff !important; border-color: #3b82f6 !important; }
+        `;
+        document.head.appendChild(style);
+        return () => document.head.removeChild(style);
+    }, []);
 
     if (!isOpen) return null;
 
@@ -103,6 +115,7 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
                         <label style={styles.label}>Receipt / Photo Proof</label>
                         <div
                             style={styles.uploadBox}
+                            className="hover-upload-box"
                             onClick={() => fileInputRef.current.click()}
                         >
                             {preview ? (
@@ -123,7 +136,7 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
                         </div>
                     </div>
 
-                    <button type="submit" style={styles.submitBtn} disabled={uploading}>
+                    <button type="submit" style={styles.submitBtn} disabled={uploading} className="hover-btn-blue">
                         {uploading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                         {uploading ? 'Uploading...' : 'Submit Expense'}
                     </button>

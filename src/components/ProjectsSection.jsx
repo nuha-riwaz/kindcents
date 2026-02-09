@@ -40,6 +40,7 @@ const ProjectsSection = () => {
             id: 'emma-home',
             title: "Rebuild Emma's Home",
             image: projectEmma,
+            imageAlt: "A tan ranch-style house heavily damaged by a landslide in Ratnapura, Sri Lanka, with a large pile of rocks, uprooted trees, and wooden debris covering the front entrance",
             raised: 100000,
             status: 'completed',
             isPastProject: true
@@ -48,6 +49,7 @@ const ProjectsSection = () => {
             id: 'mrs-perera',
             title: "Medical Aid for Mrs. Perera",
             image: mrsPerera,
+            imageAlt: "An elderly Sri Lankan woman in Colombo receiving medical care, sitting in a hospital bed with medical equipment and caring healthcare staff nearby",
             raised: 80000,
             status: 'completed',
             isPastProject: true
@@ -56,6 +58,7 @@ const ProjectsSection = () => {
             id: 'arklow-boys',
             title: "Renovations in Arklow Ireland Boys Home",
             image: "orphanCare",
+            imageAlt: "A children's home facility showing areas under renovation, with construction materials and improvement work visible to create a better living environment for the boys",
             raised: 80000,
             status: 'completed',
             isPastProject: true
@@ -137,7 +140,7 @@ const ProjectsSection = () => {
                                     <div style={styles.imageContainer}>
                                         <img
                                             src={imageMap[campaign.image] || campaign.image}
-                                            alt={campaign.title}
+                                            alt={campaign.imageAlt || campaign.title}
                                             style={styles.image}
                                         />
                                     </div>

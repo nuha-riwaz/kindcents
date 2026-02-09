@@ -22,7 +22,8 @@ import {
     X,
     Camera,
     User,
-    Search
+    Search,
+    Trash2
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
@@ -82,8 +83,18 @@ const DonorDashboard = () => {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState(user?.name || '');
+    const [previewImage, setPreviewImage] = useState(user?.photoURL || null);
     const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
+
+    // Initial load and sync of user data
+    React.useEffect(() => {
+        if (user) {
+            setNewName(user.name || '');
+            setPreviewImage(user.photoURL || null);
+        }
+    }, [user]);
+
 
     // Use logged in user info or fallback to mock Alicia (from image)
     // Use logged in user info or fallback
@@ -160,28 +171,28 @@ const DonorDashboard = () => {
             label: 'Total Donated',
             value: `Rs. ${realStats.totalDonated.toLocaleString()}`,
             change: null,
-            icon: <img src={iconCampaigns} alt="Total Donated" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            icon: <img src={iconCampaigns} alt="" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
             color: '#eff6ff'
         },
         {
             label: 'Campaigns Supported',
             value: realStats.campaignsSupported,
             change: null,
-            icon: <img src={iconLivesImpacted} alt="Campaigns" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            icon: <img src={iconLivesImpacted} alt="" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
             color: '#f0fdf4'
         },
         {
             label: 'Lives Impacted',
             value: realStats.livesImpacted,
             change: null,
-            icon: <img src={iconBadges} alt="Lives Impacted" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            icon: <img src={iconBadges} alt="" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
             color: '#fef2f2'
         },
         {
             label: 'Badges Earned',
             value: realStats.badgesEarned,
             change: null,
-            icon: <img src={iconDonatedRupee} alt="Badges" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
+            icon: <img src={iconDonatedRupee} alt="" style={{ width: '72px', height: '72px', objectFit: 'contain' }} />,
             color: '#fffbeb'
         },
     ];
@@ -192,7 +203,7 @@ const DonorDashboard = () => {
         }
     };
 
-    const handleImageChange = async (e) => {
+    const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -202,51 +213,29 @@ const DonorDashboard = () => {
             return;
         }
 
-        console.log('Starting Base64 conversion for file:', file.name);
-        setUploading(true);
-
-        try {
-            // Convert image to Base64
-            const reader = new FileReader();
-
-            reader.onloadend = async () => {
-                const base64String = reader.result;
-                console.log('Base64 conversion complete, updating profile...');
-
-                try {
-                    await updateUserProfile({ photoURL: base64String });
-                    console.log('Profile updated successfully!');
-                    alert('Profile picture updated successfully!');
-                } catch (error) {
-                    console.error("Error updating profile:", error);
-                    alert(`Failed to update profile: ${error.message}`);
-                }
-                setUploading(false);
-            };
-
-            reader.onerror = () => {
-                console.error("Error reading file");
-                alert('Failed to read image file. Please try again.');
-                setUploading(false);
-            };
-
-            // Read file as Base64
-            reader.readAsDataURL(file);
-
-        } catch (error) {
-            console.error("Error processing image:", error);
-            alert(`Failed to process image: ${error.message}`);
-            setUploading(false);
-        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
 
     const saveProfile = async () => {
+        console.log("DonorDashboard: saveProfile called with newName:", newName);
+        console.log("DonorDashboard: previewImage present:", !!previewImage);
+        setUploading(true);
         try {
-            await updateUserProfile({ name: newName });
+            await updateUserProfile({
+                name: newName,
+                photoURL: previewImage
+            });
+            console.log("DonorDashboard: updateUserProfile finished (silently or success)");
             setIsEditing(false);
         } catch (error) {
-            console.error("Error updating profile:", error);
+            console.error("DonorDashboard: Error in saveProfile:", error);
             alert("Failed to update profile.");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -256,9 +245,11 @@ const DonorDashboard = () => {
     };
 
     const renderTabContent = () => {
+        // Use full reactive user name for the greeting within sub-views if they show it
+        const currentName = user?.name || 'Donor';
         switch (activeTab) {
             case 'Overview':
-                return <OverviewView name={displayName.split(' ')[0]} stats={stats} isMobile={isMobile} />;
+                return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
             case 'My Campaigns':
                 return <MyCampaignsView isMobile={isMobile} />;
             case 'Achievements':
@@ -266,7 +257,7 @@ const DonorDashboard = () => {
             case 'Recent Donations':
                 return <RecentDonationsView />;
             default:
-                return <OverviewView name={displayName.split(' ')[0]} isMobile={isMobile} />;
+                return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
         }
     };
 
@@ -278,7 +269,9 @@ const DonorDashboard = () => {
                     {/* Sidebar */}
                     <div style={{ ...styles.sidebar, width: isMobile ? '100%' : '280px', padding: isMobile ? '1.5rem' : '2rem 1.5rem' }}>
                         <div style={styles.profileSection}>
-                            <img src={logo} alt="KindCents" style={{ ...styles.logoSmall, alignSelf: isMobile ? 'center' : 'flex-start' }} />
+                            <div style={styles.logoContainer}>
+                                <img src={logo} alt="KindCents Logo" style={styles.logoSmall} />
+                            </div>
                             <div style={styles.avatarContainer}>
                                 <div
                                     style={{
@@ -289,25 +282,63 @@ const DonorDashboard = () => {
                                     }}
                                     onClick={handleImageClick}
                                 >
-                                    {user?.photoURL ? (
-                                        <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    {previewImage ? (
+                                        <img src={imageMap[previewImage] || previewImage} alt="User Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     ) : (
-                                        <Users size={40} color="#64748b" />
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9' }}>
+                                            <Users size={40} color="#64748b" />
+                                        </div>
                                     )}
-
+                                    {uploading && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            backgroundColor: 'rgba(255,255,255,0.7)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            zIndex: 5
+                                        }}>
+                                            <div style={{ width: '20px', height: '20px', border: '2px solid #e2e8f0', borderTop: '2px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                                        </div>
+                                    )}
                                     {isEditing && (
                                         <div style={{
                                             position: 'absolute',
                                             bottom: 0,
                                             left: 0,
                                             right: 0,
-                                            height: '30px',
-                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            height: '40px',
+                                            backgroundColor: 'rgba(0,0,0,0.6)',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            justifyContent: 'center',
+                                            gap: '12px'
                                         }}>
-                                            <Camera size={16} color="#fff" />
+                                            <Camera size={18} color="#fff" />
+                                            {previewImage && (
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setPreviewImage(null);
+                                                    }}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: '4px',
+                                                        borderRadius: '6px',
+                                                        backgroundColor: 'rgba(239, 68, 68, 0.2)'
+                                                    }}
+                                                    title="Remove Photo"
+                                                >
+                                                    <Trash2 size={18} color="#ef4444" />
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -329,15 +360,29 @@ const DonorDashboard = () => {
                                             onChange={(e) => setNewName(e.target.value)}
                                             style={styles.editInput}
                                         />
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button onClick={saveProfile} style={styles.saveBtn}><Save size={14} /></button>
-                                            <button onClick={cancelEdit} style={styles.cancelBtn}><X size={14} /></button>
+                                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
+                                            <button
+                                                onClick={saveProfile}
+                                                style={{ ...styles.saveBtn, padding: '8px 16px', opacity: uploading ? 0.7 : 1 }}
+                                                disabled={uploading}
+                                                aria-label="Save Name"
+                                            >
+                                                {uploading ? '...' : <Save size={16} />}
+                                            </button>
+                                            <button
+                                                onClick={cancelEdit}
+                                                style={{ ...styles.cancelBtn, padding: '8px 16px' }}
+                                                disabled={uploading}
+                                                aria-label="Cancel Edit"
+                                            >
+                                                <X size={16} />
+                                            </button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div style={styles.nameRow}>
                                         <strong style={styles.profileName}>{user?.name || 'Guest User'}</strong>
-                                        <button onClick={() => { setIsEditing(true); setNewName(user?.name || ''); }} style={styles.editBtn}>
+                                        <button onClick={() => { setIsEditing(true); setNewName(user?.name || ''); }} style={styles.editBtn} aria-label="Edit Name">
                                             <Edit size={14} />
                                         </button>
                                     </div>
@@ -561,7 +606,7 @@ const MyCampaignsView = ({ isMobile }) => {
                                 </div>
                             </div>
                             <div style={styles.myDonationRow}>
-                                <span style={styles.donationIcon}><img src="https://img.icons8.com/fluency/48/heart-with-pulse.png" alt="heart" style={{ width: 14 }} /> Your donation</span>
+                                <span style={styles.donationIcon}><img src="https://img.icons8.com/fluency/48/heart-with-pulse.png" alt="Heart Icon" style={{ width: 14 }} /> Your donation</span>
                                 <span style={styles.donationAmount}>Rs. {c.donation.toLocaleString()}</span>
                             </div>
                         </div>
@@ -870,10 +915,20 @@ const styles = {
         width: 'auto',
         marginBottom: '1.5rem',
         objectFit: 'contain',
+        display: 'block',
+        margin: '0 auto',
     },
     profileSection: {
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%',
+        gap: '0.5rem',
+    },
+    logoContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%',
     },
     avatarContainer: {
         display: 'flex',
@@ -927,23 +982,29 @@ const styles = {
         backgroundColor: '#10b981',
         color: '#fff',
         border: 'none',
-        borderRadius: '6px',
-        padding: '4px 8px',
+        borderRadius: '8px',
+        padding: '0.6rem 1.2rem',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        fontWeight: '600',
+        transition: 'all 0.2s',
+        minWidth: '80px',
     },
     cancelBtn: {
         backgroundColor: '#ef4444',
         color: '#fff',
         border: 'none',
-        borderRadius: '6px',
-        padding: '4px 8px',
+        borderRadius: '8px',
+        padding: '0.6rem 1.2rem',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        fontWeight: '600',
+        transition: 'all 0.2s',
+        minWidth: '80px',
     },
     sidebarNav: {
         display: 'flex',

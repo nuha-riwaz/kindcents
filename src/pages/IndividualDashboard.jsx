@@ -16,7 +16,8 @@ import {
     Camera,
     User as UserIcon,
     Loader2,
-    Menu
+    Menu,
+    Trash2
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
@@ -86,8 +87,18 @@ const IndividualDashboard = () => {
 
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState(user?.name || '');
+    const [previewImage, setPreviewImage] = useState(user?.photoURL || null);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = React.useRef(null);
+
+    // Initial load and sync of user data
+    React.useEffect(() => {
+        if (user) {
+            setNewName(user.name || '');
+            setPreviewImage(user.photoURL || null);
+        }
+    }, [user]);
+
 
     const [realStats, setRealStats] = useState({
         totalRaised: 0,
@@ -192,7 +203,7 @@ const IndividualDashboard = () => {
         }
     };
 
-    const handleImageChange = async (e) => {
+    const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -201,34 +212,26 @@ const IndividualDashboard = () => {
             return;
         }
 
-        setUploading(true);
-        try {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64String = reader.result;
-                try {
-                    await updateUserProfile({ photoURL: base64String });
-                    alert('Profile picture updated!');
-                } catch (error) {
-                    console.error("Error updating profile:", error);
-                    alert(`Failed: ${error.message}`);
-                }
-                setUploading(false);
-            };
-            reader.readAsDataURL(file);
-        } catch (error) {
-            console.error("Error processing image:", error);
-            setUploading(false);
-        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
 
     const saveProfile = async () => {
+        setUploading(true);
         try {
-            await updateUserProfile({ name: newName });
+            await updateUserProfile({
+                name: newName,
+                photoURL: previewImage
+            });
             setIsEditing(false);
         } catch (error) {
             console.error("Error updating profile:", error);
             alert("Failed to update profile.");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -248,6 +251,7 @@ const IndividualDashboard = () => {
                             className="sidebar-toggle"
                             style={styles.sidebarToggle}
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            aria-label="Toggle Sidebar"
                         >
                             {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
@@ -262,7 +266,9 @@ const IndividualDashboard = () => {
                         }}
                     >
                         <div style={styles.profileSection}>
-                            <img src={logo} alt="KindCents" style={styles.sideLogo} />
+                            <div style={styles.logoContainer}>
+                                <img src={logo} alt="KindCents Logo" style={styles.sideLogo} />
+                            </div>
                             <div style={styles.avatarWrapper} onClick={handleImageClick}>
                                 <div style={{
                                     ...styles.avatar,
@@ -270,14 +276,35 @@ const IndividualDashboard = () => {
                                     position: 'relative',
                                     overflow: 'hidden'
                                 }}>
-                                    {user?.photoURL ? (
-                                        <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    {previewImage ? (
+                                        <img src={imageMap[previewImage] || previewImage} alt="User Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     ) : (
                                         <Users size={40} color="#64748b" />
                                     )}
                                     {isEditing && (
                                         <div style={styles.cameraOverlay}>
-                                            <Camera size={20} color="white" />
+                                            <Camera size={18} color="white" />
+                                            {previewImage && (
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setPreviewImage(null);
+                                                    }}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        marginLeft: '12px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: '4px',
+                                                        borderRadius: '6px',
+                                                        backgroundColor: 'rgba(239, 68, 68, 0.2)'
+                                                    }}
+                                                    title="Remove Photo"
+                                                >
+                                                    <Trash2 size={18} color="#ef4444" />
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     {uploading && (
@@ -305,21 +332,26 @@ const IndividualDashboard = () => {
                                                 style={styles.editInput}
                                                 autoFocus
                                             />
-                                            <button onClick={saveProfile} style={styles.iconBtn} title="Save">
+                                            <button onClick={saveProfile} style={styles.iconBtn} title="Save" aria-label="Save Name">
                                                 <Save size={16} color="#10b981" />
                                             </button>
-                                            <button onClick={() => setIsEditing(false)} style={styles.iconBtn} title="Cancel">
+                                            <button onClick={() => setIsEditing(false)} style={styles.iconBtn} title="Cancel" aria-label="Cancel Edit">
                                                 <X size={16} color="#ef4444" />
                                             </button>
                                         </div>
                                     ) : (
                                         <>
                                             <h3 style={styles.userName}>{user?.name}</h3>
-                                            <Edit2
-                                                size={14}
-                                                style={{ cursor: 'pointer', color: '#64748b' }}
+                                            <button
                                                 onClick={() => setIsEditing(true)}
-                                            />
+                                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
+                                                aria-label="Edit Name"
+                                            >
+                                                <Edit2
+                                                    size={14}
+                                                    style={{ color: '#64748b' }}
+                                                />
+                                            </button>
                                         </>
                                     )}
                                 </div>
@@ -380,14 +412,7 @@ const IndividualDashboard = () => {
                                     ))}
                                 </div>
 
-                                <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                                    <button
-                                        onClick={navigateToCampaigns}
-                                        style={styles.newCampaignBtn}
-                                    >
-                                        <TrendingUp size={20} /> Active Campaigns
-                                    </button>
-                                </div>
+
                             </div>
                         ) : (
                             <div style={styles.tabContent}>
@@ -402,7 +427,7 @@ const IndividualDashboard = () => {
                                         return (
                                             <div key={campaign.id} style={{ ...styles.activeCampaignCard, maxWidth: isMobile ? '100%' : '350px' }}>
                                                 <div style={styles.campaignImageWrapper}>
-                                                    <img src={imageMap[campaign.image] || projectEmma} alt={campaign.title} style={styles.campaignImage} />
+                                                    <img src={imageMap[campaign.image] || projectEmma} alt={campaign.imageAlt || campaign.title} style={styles.campaignImage} />
                                                     <div style={styles.liveBadge}>
                                                         <div style={styles.pulseDot} /> {campaign.status === 'completed' ? 'Completed' : 'Live'}
                                                     </div>
@@ -519,12 +544,19 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        width: '100%',
     },
     logoContainer: {
         marginBottom: '1.5rem',
+        display: 'flex',
+        justifyContent: 'center',
     },
     sideLogo: {
         height: '60px',
+        width: 'auto',
+        display: 'block',
+        margin: '0 auto',
+        objectFit: 'contain',
     },
     avatarWrapper: {
         display: 'flex',
@@ -544,6 +576,7 @@ const styles = {
     userInfo: {
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         gap: '0.25rem',
     },
     nameRow: {
@@ -643,11 +676,12 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        border: '1px solid #f1f5f9',
+        border: '1px solid #e2e8f0', // Standardized light border
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
     },
     activeStatCard: {
-        border: '3px solid #3b82f6',
+        background: 'white',
+        border: '1px solid #e2e8f0', // Explicitly match normal cards
     },
     statInfo: {
         display: 'flex',
@@ -808,8 +842,8 @@ const styles = {
         bottom: 0,
         right: 0,
         left: 0,
-        background: 'rgba(0,0,0,0.5)',
-        height: '30%',
+        background: 'rgba(0,0,0,0.6)',
+        height: '40px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'

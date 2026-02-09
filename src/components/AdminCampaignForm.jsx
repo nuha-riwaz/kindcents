@@ -59,6 +59,19 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
         }
     }, [campaign, isOpen]);
 
+    // Add styles for hover effects
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .hover-btn-blue:hover { background-color: #2563eb !important; transform: translateY(-1px); }
+            .hover-btn-ghost-blue:hover { background-color: #eff6ff !important; color: #2563eb !important; }
+            .hover-btn-ghost-red:hover { color: #dc2626 !important; text-decoration: underline !important; }
+            .hover-btn-gray:hover { background-color: #e2e8f0 !important; }
+        `;
+        document.head.appendChild(style);
+        return () => document.head.removeChild(style);
+    }, []);
+
     const handleAddFund = () => {
         setFormData({
             ...formData,
@@ -289,10 +302,10 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                                     onChange={(e) => handleFundChange(index, 'desc', e.target.value)}
                                     style={{ ...styles.input, marginTop: '0.5rem' }}
                                 />
-                                <button type="button" onClick={() => handleRemoveFund(index)} style={styles.removeBtn}>Remove</button>
+                                <button type="button" onClick={() => handleRemoveFund(index)} style={styles.removeBtn} className="hover-btn-ghost-red">Remove</button>
                             </div>
                         ))}
-                        <button type="button" onClick={handleAddFund} style={styles.addItemBtn}>+ Add Fund Item</button>
+                        <button type="button" onClick={handleAddFund} style={styles.addItemBtn} className="hover-btn-ghost-blue">+ Add Fund Item</button>
                     </div>
 
                     {/* Updates Section */}
@@ -320,10 +333,10 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                                     onChange={(e) => handleUpdateChange(index, 'content', e.target.value)}
                                     style={{ ...styles.input, height: '80px', marginTop: '0.5rem' }}
                                 />
-                                <button type="button" onClick={() => handleRemoveUpdate(index)} style={styles.removeBtn}>Remove</button>
+                                <button type="button" onClick={() => handleRemoveUpdate(index)} style={styles.removeBtn} className="hover-btn-ghost-red">Remove</button>
                             </div>
                         ))}
-                        <button type="button" onClick={handleAddUpdate} style={styles.addItemBtn}>+ Add Update</button>
+                        <button type="button" onClick={handleAddUpdate} style={styles.addItemBtn} className="hover-btn-ghost-blue">+ Add Update</button>
                     </div>
 
                     <div style={styles.field}>
@@ -358,8 +371,8 @@ const AdminCampaignForm = ({ isOpen, onClose, onSave, campaign = null }) => {
                     </div>
 
                     <div style={styles.actions}>
-                        <button type="button" onClick={onClose} style={styles.cancelBtn}>Cancel</button>
-                        <button type="submit" style={styles.saveBtn}>
+                        <button type="button" onClick={onClose} style={styles.cancelBtn} className="hover-btn-gray">Cancel</button>
+                        <button type="submit" style={styles.saveBtn} className="hover-btn-blue">
                             <Save size={18} /> {campaign ? 'Update Campaign' : 'Create Campaign'}
                         </button>
                     </div>

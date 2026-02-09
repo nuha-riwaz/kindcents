@@ -18,7 +18,8 @@ import {
     Check,
     X,
     Camera,
-    Menu
+    Menu,
+    Trash2
 } from 'lucide-react';
 import { useCampaigns } from '../context/CampaignContext';
 import logo from '../assets/logo.png';
@@ -158,16 +159,13 @@ const NgoDashboard = () => {
             <Navbar />
             <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
                 <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
-                    {/* ... (Sidebar code unchanged) ... */}
-
-                    {/* Main Sidebar Content omitted for brevity in replace block, assuming it matches context */}
-
                     {/* Mobile Sidebar Toggle */}
                     {isMobile && (
                         <button
                             className="sidebar-toggle"
                             style={styles.sidebarToggle}
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            aria-label="Toggle Sidebar"
                         >
                             {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
@@ -182,7 +180,7 @@ const NgoDashboard = () => {
                         }}>
                         <div style={styles.profileSection}>
                             <div style={styles.logoContainer}>
-                                <img src={logo} alt="KindCents" style={styles.sidebarLogo} />
+                                <img src={logo} alt="KindCents Logo" style={styles.sidebarLogo} />
                             </div>
 
                             {/* Avatar Section */}
@@ -197,71 +195,97 @@ const NgoDashboard = () => {
                                     onClick={triggerFileInput}
                                 >
                                     {previewImage ? (
-                                        <img src={previewImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img
+                                            src={imageMap[previewImage] || previewImage}
+                                            alt="NGO Organization Profile"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
                                     ) : (
                                         <Users size={30} color="#64748b" />
                                     )}
 
-                                    {/* Camera Overlay for Edit Mode */}
+                                    {/* Camera & Trash Overlays for Edit Mode */}
                                     {isEditing && (
                                         <div style={{
                                             position: 'absolute',
                                             bottom: 0,
                                             left: 0,
                                             right: 0,
-                                            height: '30%',
-                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            height: '40px',
+                                            backgroundColor: 'rgba(0,0,0,0.6)',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            justifyContent: 'center',
+                                            gap: '12px'
                                         }}>
-                                            <Camera size={12} color="white" />
+                                            <Camera size={18} color="white" />
+                                            {previewImage && (
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setPreviewImage(null);
+                                                    }}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: '4px',
+                                                        borderRadius: '6px',
+                                                        backgroundColor: 'rgba(239, 68, 68, 0.2)'
+                                                    }}
+                                                    title="Remove Photo"
+                                                >
+                                                    <Trash2 size={18} color="#ef4444" />
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    style={{ display: 'none' }}
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                />
-                            </div>
-
-                            {/* Profile Info Section */}
-                            <div style={styles.profileInfo}>
-                                {isEditing ? (
-                                    // Edit Mode Inputs
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                                        <input
-                                            type="text"
-                                            value={editName}
-                                            onChange={(e) => setEditName(e.target.value)}
-                                            style={styles.editInput}
-                                            placeholder="NGO Name"
-                                        />
-                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                            <button onClick={handleSaveClick} style={styles.saveBtn}>
-                                                <Check size={14} />
-                                            </button>
-                                            <button onClick={handleCancelClick} style={styles.cancelBtn}>
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    // View Mode
-                                    <div style={styles.nameRow}>
-                                        <strong style={styles.profileName}>{user?.name}</strong>
-                                        <button onClick={handleEditClick} style={styles.editBtn}>
-                                            <Edit size={14} />
-                                        </button>
-                                    </div>
-                                )}
-                                <p style={styles.profileEmail}>{user?.email}</p>
                             </div>
                         </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
 
+                        {/* Profile Info Section */}
+                        <div style={styles.profileInfo}>
+                            {isEditing ? (
+                                // Edit Mode Inputs
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                                    <input
+                                        type="text"
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        style={styles.editInput}
+                                        placeholder="NGO Name"
+                                    />
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                        <button onClick={handleSaveClick} style={styles.saveBtn} aria-label="Save Name">
+                                            <Check size={14} />
+                                        </button>
+                                        <button onClick={handleCancelClick} style={styles.cancelBtn} aria-label="Cancel Edit">
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                // View Mode
+                                <div style={styles.nameRow}>
+                                    <strong style={styles.profileName}>{user?.name}</strong>
+                                    <button onClick={handleEditClick} style={styles.editBtn} aria-label="Edit Name">
+                                        <Edit size={14} />
+                                    </button>
+                                </div>
+                            )}
+                            <p style={styles.profileEmail}>{user?.email}</p>
+                        </div>
+
+                        {/* Navigation Section (Now inside Sidebar) */}
                         <nav style={styles.sidebarNav}>
                             {navItems.map(item => (
                                 <button
@@ -278,6 +302,7 @@ const NgoDashboard = () => {
                             ))}
                         </nav>
 
+                        {/* Action Button (Now inside Sidebar) */}
                         <button
                             style={styles.newCampaignBtn}
                             onClick={() => navigate('/create-campaign')}
@@ -287,12 +312,13 @@ const NgoDashboard = () => {
                         </button>
                     </div>
 
-                    {/* Main Content Area */}
+                    {/* Main Content Area (Now inside dashboardCard) */}
                     <div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
                         {renderTabContent()}
                     </div>
                 </div>
             </div>
+
             <Footer />
 
             <ExpenseUploadModal
@@ -301,7 +327,7 @@ const NgoDashboard = () => {
                 campaignId={selectedCampaignId}
                 userId={user?.uid}
             />
-        </div>
+        </div >
     );
 };
 
@@ -374,14 +400,7 @@ const OverviewView = ({ name, campaigns, isMobile, onNavigate }) => {
                 </div>
             </div>
 
-            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                <button
-                    onClick={() => onNavigate('My Active Campaigns')}
-                    style={styles.newCampaignBtn}
-                >
-                    <TrendingUp size={20} /> Active Campaigns
-                </button>
-            </div>
+
         </div>
     );
 };
@@ -406,7 +425,7 @@ const MyCampaignsView = ({ campaigns, isMobile, onUploadProof }) => {
                             <div style={styles.campaignImageWrapper}>
                                 <img
                                     src={imageMap[campaign.image] || campaign.image || projectImage}
-                                    alt={campaign.title}
+                                    alt={campaign.imageAlt || campaign.title}
                                     style={styles.campaignImage}
                                 />
                                 <span style={styles.statusBadge}>
@@ -525,9 +544,15 @@ const styles = {
     },
     logoContainer: {
         marginBottom: '1.5rem',
+        display: 'flex',
+        justifyContent: 'center',
     },
     sidebarLogo: {
         height: '60px',
+        width: 'auto',
+        display: 'block',
+        margin: '0 auto',
+        objectFit: 'contain',
     },
     avatarWrapper: {
         marginBottom: '1rem',

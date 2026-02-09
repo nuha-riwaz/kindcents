@@ -8,7 +8,7 @@ const AboutSection = () => {
             <div className="container" style={styles.container}>
                 <div style={styles.content}>
                     <h2 style={styles.heading}>
-                        About <img src={logo} alt="KindCents" style={{ height: '50px', marginLeft: '0.5rem' }} />
+                        About <img src={logo} alt="KindCents Logo" style={{ height: '50px', marginLeft: '0.5rem' }} />
                     </h2>
                     <p style={styles.description}>
                         KindCents is a transparent, AI-powered web application designed to eliminate
@@ -59,7 +59,7 @@ const styles = {
         marginBottom: '3rem',
     },
     heading: {
-        fontSize: '2rem',
+        fontSize: '2.5rem',
         marginBottom: '1.5rem',
         display: 'flex',
         alignItems: 'center',

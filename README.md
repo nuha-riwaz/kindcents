@@ -52,6 +52,11 @@ All data is stored in Firebase Firestore (NoSQL) with real-time synchronization.
    ```
    Access at `http://localhost:5173`.
 
+5. **(Optional) Seed the database**:
+   - To populate the database with mock campaigns and users, visit `http://localhost:5173/seed` in your browser.
+   - Click the **"Seed Database"** button to initialize the Firestore collections.
+   - *Note: The application includes fallback data, so the UI will remain populated even if you skip this step.*
+
 ## Admin Credentials (For Testing)
 - **Email**: `admin@kindcents.org`
 - **Password**: `Admin@123`

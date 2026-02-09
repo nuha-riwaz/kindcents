@@ -165,8 +165,8 @@ const DonationModal = ({ isOpen, onClose, campaignTitle, onDonate }) => {
                                             required
                                         />
                                         <div style={styles.brandIcon}>
-                                            {brand === 'Visa' && <img src="https://img.icons8.com/color/48/visa.png" width="24" alt="visa" />}
-                                            {brand === 'Mastercard' && <img src="https://img.icons8.com/color/48/mastercard.png" width="24" alt="master" />}
+                                            {brand === 'Visa' && <img src="https://img.icons8.com/color/48/visa.png" width="24" alt="Visa Card Logo" />}
+                                            {brand === 'Mastercard' && <img src="https://img.icons8.com/color/48/mastercard.png" width="24" alt="Mastercard Logo" />}
                                             {brand === 'Generic' && <CreditCard size={18} color="#94a3b8" />}
                                         </div>
                                     </div>

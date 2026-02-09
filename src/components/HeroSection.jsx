@@ -10,9 +10,16 @@ const HeroSection = () => {
     const navigate = useNavigate();
 
     const userRole = user?.role?.toLowerCase();
-    const ctaText = (userRole === 'ngo' || userRole === 'individual' || userRole === 'nonprofit')
-        ? "Fundraise Now"
-        : "Donate Now";
+
+    // Determine CTA text based on user login status and role
+    let ctaText;
+    if (!user) {
+        ctaText = "Create a free account";
+    } else if (userRole === 'ngo' || userRole === 'individual' || userRole === 'nonprofit') {
+        ctaText = "Fundraise Now";
+    } else {
+        ctaText = "Donate Now";
+    }
 
     const handleCtaClick = () => {
         if (!user) {
@@ -34,11 +41,11 @@ const HeroSection = () => {
         }}>
             <div className="container" style={styles.container}>
                 <div style={styles.content}>
-                    <img src={heroTextImg} alt="Kind Cents" style={{ maxWidth: '650px', width: '100%', marginBottom: '0.5rem' }} />
-                    <h2 style={styles.headline}>
+                    <img src={heroTextImg} alt="KindCents Platform Banner" style={{ maxWidth: '650px', width: '100%', marginBottom: '0.5rem' }} />
+                    <h1 style={styles.headline}>
                         Transparent donation tracking that shows<br />
                         exactly where your generosity goes.
-                    </h2>
+                    </h1>
                     <p style={styles.subheadline}>
                         Watch your contributions create real change in real-time.
                     </p>

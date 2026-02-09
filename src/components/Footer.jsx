@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Instagram, Youtube, Linkedin, X } from 'lucide-react';
+import { Instagram, Youtube, Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { useAuth } from '../context/AuthContext';
@@ -39,7 +39,7 @@ const Footer = () => {
                 }}>
                     {/* Logo and Description Column */}
                     <div style={{ ...styles.logoColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
-                        <img src={logo} alt="KindCents" style={{
+                        <img src={logo} alt="KindCents Footer Logo" style={{
                             ...styles.logo,
                             marginLeft: isMobile ? '0' : '50px',
                             height: isMobile ? '80px' : '100px'
@@ -52,10 +52,27 @@ const Footer = () => {
                             }
                         </p>
                         <div style={{ ...styles.socials, justifyContent: isMobile ? 'center' : 'flex-start' }}>
-                            <X size={20} style={styles.socialIcon} />
-                            <Instagram size={20} style={styles.socialIcon} />
-                            <Youtube size={20} style={styles.socialIcon} />
-                            <Linkedin size={20} style={styles.socialIcon} />
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
+                                {/* Twitter X Logo */}
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    width="20"
+                                    height="20"
+                                    style={styles.socialIcon}
+                                    fill="currentColor"
+                                >
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                </svg>
+                            </a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
+                                <Instagram size={20} style={styles.socialIcon} />
+                            </a>
+                            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
+                                <Youtube size={20} style={styles.socialIcon} />
+                            </a>
+                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
+                                <Linkedin size={20} style={styles.socialIcon} />
+                            </a>
                         </div>
                     </div>
 
@@ -145,9 +162,16 @@ const styles = {
         gap: '1rem',
         marginTop: '0.5rem',
     },
-    socialIcon: {
+    socialLink: {
+        textDecoration: 'none',
+        color: 'inherit',
+        display: 'inline-flex',
+        transition: 'opacity 0.2s ease, transform 0.2s ease',
         cursor: 'pointer',
+    },
+    socialIcon: {
         color: '#1e293b',
+        pointerEvents: 'none',
     },
     linkColumn: {
         display: 'flex',

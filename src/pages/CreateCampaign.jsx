@@ -93,7 +93,7 @@ const CreateCampaign = () => {
                 <div className="container" style={styles.content}>
                     <div style={styles.modalContent}>
                         <div style={styles.headerTop}>
-                            <img src={logo} alt="KindCents" style={styles.logo} />
+                            <img src={logo} alt="KindCents Logo" style={styles.logo} />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '2rem 0' }}>
                             <div style={styles.spinnerWrapper}>
@@ -120,7 +120,7 @@ const CreateCampaign = () => {
                 <div style={styles.modalContent}>
                     {/* Header with Logo and Progress */}
                     <div style={styles.headerTop}>
-                        <img src={logo} alt="KindCents" style={styles.logo} />
+                        <img src={logo} alt="KindCents Logo" style={styles.logo} />
                     </div>
 
                     <div style={styles.progressSection}>

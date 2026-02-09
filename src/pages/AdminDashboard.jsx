@@ -61,6 +61,23 @@ const AdminDashboard = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Add styles for hover effects
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .hover-btn-blue:hover { background-color: #2563eb !important; transform: translateY(-1px); }
+            .hover-btn-green:hover { background-color: #059669 !important; transform: translateY(-1px); }
+            .hover-btn-red:hover { background-color: #dc2626 !important; transform: translateY(-1px); }
+            .hover-btn-ghost-blue:hover { background-color: #eff6ff !important; color: #2563eb !important; }
+            .hover-btn-ghost-red:hover { background-color: #fef2f2 !important; color: #dc2626 !important; }
+            .nav-item:hover { background-color: #f8fafc; color: #334155; }
+            .nav-item.active:hover { background-color: #eff6ff; color: #4F96FF; }
+            .action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        `;
+        document.head.appendChild(style);
+        return () => document.head.removeChild(style);
+    }, []);
+
     // Close sidebar when clicking outside on mobile
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -218,6 +235,7 @@ const AdminDashboard = () => {
                             <button
                                 onClick={() => { setActiveTab('Payments'); setIsSidebarOpen(false); }}
                                 style={{ ...styles.navItem, ...(activeTab === 'Payments' ? styles.activeNavItem : {}) }}
+                                className={`nav-item ${activeTab === 'Payments' ? 'active' : ''}`}
                             >
                                 <CreditCard size={20} /> Payment Approvals
                                 {pendingDonations.length > 0 && (
@@ -243,7 +261,7 @@ const AdminDashboard = () => {
                                     />
                                 </div>
                                 {activeTab === 'Campaigns' && (
-                                    <button onClick={handleAddCampaign} style={{ ...styles.addBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}>
+                                    <button onClick={handleAddCampaign} style={{ ...styles.addBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }} className="hover-btn-blue">
                                         <Plus size={18} /> New Campaign
                                     </button>
                                 )}
@@ -293,7 +311,7 @@ const AdminDashboard = () => {
                                                     <div style={styles.progressCell}>
                                                         <span>Rs. {c.raised.toLocaleString()}</span>
                                                         <div style={styles.miniProgressTrack}>
-                                                            <div style={{ ...styles.miniProgressFill, width: `${(c.raised / c.goal) * 100}%` }} />
+                                                            <div style={{ ...styles.miniProgressFill, width: `${c.goal > 0 ? (c.raised / c.goal) * 100 : 0}%` }} />
                                                         </div>
                                                     </div>
                                                 </td>
@@ -308,6 +326,7 @@ const AdminDashboard = () => {
                                                             style={{ ...styles.actionBtn, color: '#3b82f6', borderColor: '#3b82f6' }}
                                                             onClick={() => setViewExpensesCampaign(c)}
                                                             title="View Expenses"
+                                                            className="hover-btn-ghost-blue"
                                                         >
                                                             <Eye size={14} /> View Expenses
                                                         </button>
@@ -315,6 +334,7 @@ const AdminDashboard = () => {
                                                             <button
                                                                 style={styles.actionBtn}
                                                                 onClick={() => handleStatusUpdate(c.id, 'active')}
+                                                                className="hover-btn-green"
                                                             >
                                                                 Approve
                                                             </button>
@@ -322,6 +342,7 @@ const AdminDashboard = () => {
                                                         <button
                                                             style={{ ...styles.actionBtn, color: '#ef4444', borderColor: '#ef4444' }}
                                                             onClick={() => handleDeleteCampaign(c.id)}
+                                                            className="hover-btn-ghost-red"
                                                         >
                                                             Delete
                                                         </button>
@@ -382,12 +403,14 @@ const AdminDashboard = () => {
                                                     <button
                                                         onClick={() => updateUserStatus(u.id, 'Verified')}
                                                         style={{ ...styles.approveBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+                                                        className="hover-btn-blue"
                                                     >
                                                         <Check size={16} /> Approve
                                                     </button>
                                                     <button
                                                         onClick={() => updateUserStatus(u.id, 'Rejected')}
                                                         style={{ ...styles.rejectBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+                                                        className="hover-btn-ghost-red"
                                                     >
                                                         <X size={16} /> Reject
                                                     </button>
@@ -495,6 +518,7 @@ const AdminDashboard = () => {
                                                                     onClick={() => approveDonation(d.id)}
                                                                     style={styles.approveIconBtn}
                                                                     title="Approve"
+                                                                    className="hover-btn-ghost-blue"
                                                                 >
                                                                     <Check size={16} />
                                                                 </button>
@@ -502,6 +526,7 @@ const AdminDashboard = () => {
                                                                     onClick={() => rejectDonation(d.id)}
                                                                     style={styles.rejectIconBtn}
                                                                     title="Reject"
+                                                                    className="hover-btn-ghost-red"
                                                                 >
                                                                     <X size={16} />
                                                                 </button>
@@ -559,6 +584,7 @@ const AdminDashboard = () => {
                                                             }}
                                                             style={styles.deleteBtn}
                                                             title="Delete User"
+                                                            className="hover-btn-ghost-red"
                                                         >
                                                             <Trash2 size={16} />
                                                         </button>

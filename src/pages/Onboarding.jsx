@@ -209,7 +209,7 @@ const Onboarding = () => {
         <div style={styles.page}>
             <div style={styles.container}>
                 <div style={{ width: '100%', textAlign: 'center', marginBottom: '2rem' }}>
-                    <img src={logo} alt="KindCents" style={{ height: '70px' }} />
+                    <img src={logo} alt="KindCents Logo" style={{ height: '70px' }} />
                     {step < stepsCount && (
                         <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
                             <p style={styles.stepText}>Step {step} of {stepsCount}</p>

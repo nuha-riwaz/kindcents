@@ -66,7 +66,6 @@ const Navbar = ({ minimal = false }) => {
     <>
       {!minimal && (
         <>
-          <NavLink to="/" style={styles.link} onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
           {user && (user.role || 'donor').toLowerCase() === 'donor' && <NavLink to="/campaigns" style={styles.link} onClick={() => setIsMobileMenuOpen(false)}>Campaigns</NavLink>}
           <button onClick={() => { scrollToSection('about'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>About Us</button>
           <button onClick={() => { scrollToSection('contact'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Contact</button>
@@ -116,8 +115,8 @@ const Navbar = ({ minimal = false }) => {
     <>
       <nav style={styles.nav}>
         <div className="container" style={styles.container}>
-          <div style={styles.logo}>
-            <img src={logo} alt="KindCents" style={{ height: '50px' }} />
+          <div style={styles.logo} onClick={() => navigate('/')}>
+            <img src={logo} alt="KindCents Logo" style={{ height: '50px' }} />
           </div>
 
           {/* Desktop Menu */}
@@ -170,6 +169,9 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  logo: {
+    cursor: 'pointer',
   },
   logoText: {
     fontFamily: 'var(--font-script)',

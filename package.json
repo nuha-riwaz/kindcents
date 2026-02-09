@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "firebase deploy"
   },
   "dependencies": {
     "firebase": "^12.8.0",
@@ -27,6 +28,9 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "firebase-tools": "^15.5.1",
     "globals": "^16.5.0",
+    "imagemin": "^9.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
     "vite": "^6.0.0"
   }
 }

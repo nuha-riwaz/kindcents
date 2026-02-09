@@ -28,8 +28,58 @@ const imageMap = {
     orgLotus,
     templeRenovation,
     ruralMedical,
-    orphanCare
+    orphanCare,
+    logo
 };
+
+// Fallback projects to ensure visibility even if Firestore is empty
+const fallbackProjects = [
+    {
+        id: 'emma-home',
+        title: "Rebuild Emma's Home",
+        image: 'projectEmma',
+        imageAlt: "A tan ranch-style house heavily damaged by a landslide in Ratnapura, Sri Lanka",
+        raised: 100000,
+        goal: 100000,
+        contributors: 42,
+        rating: 5,
+        category: 'Social',
+        type: 'campaign',
+        status: 'completed',
+        isActive: true,
+        isPastProject: true
+    },
+    {
+        id: 'mrs-perera',
+        title: "Medical Aid for Mrs. Perera",
+        image: 'mrsPerera',
+        imageAlt: "An elderly Sri Lankan woman in Colombo receiving medical care",
+        raised: 80000,
+        goal: 80000,
+        contributors: 28,
+        rating: 4,
+        category: 'Medical',
+        type: 'campaign',
+        status: 'completed',
+        isActive: true,
+        isPastProject: true
+    },
+    {
+        id: 'arklow-boys',
+        title: "Renovations in Arklow Boys Home",
+        image: 'orphanCare',
+        imageAlt: "A children's home facility showing areas under renovation",
+        raised: 150000,
+        goal: 150000,
+        contributors: 56,
+        rating: 5,
+        category: 'Social',
+        type: 'campaign',
+        status: 'completed',
+        isActive: true,
+        isPastProject: true
+    }
+];
 
 import { useCampaigns } from '../context/CampaignContext';
 import { useAuth } from '../context/AuthContext';
@@ -92,11 +142,16 @@ const Campaigns = () => {
         }
     }, [user, activeFilter, campaigns]);
 
-    const filteredCampaigns = campaigns.filter(campaign => {
+    // Combine real campaigns with fallback projects
+    const allCampaigns = [...fallbackProjects, ...campaigns];
+
+    const filteredCampaigns = allCampaigns.filter(campaign => {
         // Exclude foundation/NGO cards as they have their own section
         if (campaign.type === 'ngo') return false;
 
-        if (!campaign.isActive) return false;
+        // Treat undefined/missing isActive as true (active by default)
+        // Only filter out if explicitly set to false
+        if (campaign.isActive === false) return false;
 
         let categoryMatch = true;
         if (activeFilter === 'Recent') {
@@ -110,7 +165,7 @@ const Campaigns = () => {
             categoryMatch = campaign.category === activeFilter;
         }
 
-        const searchMatch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const searchMatch = (campaign.title || '').toLowerCase().includes(searchQuery.toLowerCase());
         return categoryMatch && searchMatch;
     });
 
@@ -129,7 +184,7 @@ const Campaigns = () => {
             <div className="container" style={styles.container}>
                 <div style={styles.headerBox}>
                     <div style={{ ...styles.headerContent, flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : 'left' }}>
-                        <img src={logo} alt="KindCents" style={styles.headerLogo} />
+                        <img src={logo} alt="KindCents Header Logo" style={styles.headerLogo} />
                         <div>
                             <h1 style={styles.headerTitle}>Donate Now - Track every step of your donation.</h1>
                             <p style={styles.headerSubtitle}>See our past and ongoing campaigns</p>
@@ -191,7 +246,7 @@ const Campaigns = () => {
                                     <div style={styles.imageWrapper}>
                                         <img
                                             src={imageMap[campaign.image] || campaign.image}
-                                            alt={campaign.title}
+                                            alt={campaign.imageAlt || campaign.title}
                                             style={styles.cardImage}
                                         />
                                         {isCompleted && (
@@ -211,8 +266,8 @@ const Campaigns = () => {
                                         </div>
                                         <div style={styles.statsRow}>
                                             <div style={styles.statItem}>
-                                                <span style={styles.statLabel}>Rs. {campaign.raised.toLocaleString()}</span>
-                                                <span style={styles.statSublabel}>Rs. {campaign.goal.toLocaleString()}</span>
+                                                <span style={styles.statLabel}>Rs. {(campaign.raised || 0).toLocaleString()}</span>
+                                                <span style={styles.statSublabel}>Rs. {(campaign.goal || 0).toLocaleString()}</span>
                                             </div>
                                             <div style={styles.statItem}>
                                                 <div style={styles.contributors}>
@@ -320,25 +375,25 @@ const Campaigns = () => {
                             style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/akshay-society')}
                         >
-                            <img src={orgAkshay} alt="Akshay Society" style={styles.orgLogo} />
+                            <img src={orgAkshay} alt="Akshay Society Logo" style={styles.orgLogo} />
                         </div>
                         <div
                             style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/keithston-foundation')}
                         >
-                            <img src={orgKeithston} alt="Keithston Foundation" style={styles.orgLogo} />
+                            <img src={orgKeithston} alt="Keithston Foundation Logo" style={styles.orgLogo} />
                         </div>
                         <div
                             style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/smile-foundation')}
                         >
-                            <img src={orgSmile} alt="Smile Foundation" style={styles.orgLogo} />
+                            <img src={orgSmile} alt="Smile Foundation Logo" style={styles.orgLogo} />
                         </div>
                         <div
                             style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
                             onClick={() => navigate('/campaign/lotus-born-foundation')}
                         >
-                            <img src={orgLotus} alt="Lotus Born Foundation" style={styles.orgLogo} />
+                            <img src={orgLotus} alt="Lotus Born Foundation Logo" style={styles.orgLogo} />
                         </div>
                     </div>
                 </div>

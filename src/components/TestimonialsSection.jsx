@@ -1,34 +1,34 @@
 import React from 'react';
-import { Quote } from 'lucide-react';
+import { Quote, User } from 'lucide-react';
 
 const TestimonialsSection = () => {
     const testimonials = [
         {
-            name: "Anjali Josep",
-            initials: "AJ",
-            color: "#DBEAFE",
-            textColor: "#1D4ED8",
+            name: "Anonymous Donor",
+            location: "Colombo",
+            color: "#E2E8F0",
+            iconColor: "#94A3B8",
             quote: "I love being able to see exactly where my donation goes. It makes giving feel meaningful."
         },
         {
-            name: "Sarah Lokman",
-            initials: "SL",
-            color: "#DBEAFE",
-            textColor: "#1D4ED8",
+            name: "Anonymous Donor",
+            location: "Kandy",
+            color: "#E2E8F0",
+            iconColor: "#94A3B8",
             quote: "The transparency on this platform gave me confidence to donate again."
         },
         {
-            name: "Rivindu G.",
-            initials: "RG",
-            color: "#DBEAFE",
-            textColor: "#1D4ED8",
+            name: "Anonymous Donor",
+            location: "Galle",
+            color: "#E2E8F0",
+            iconColor: "#94A3B8",
             quote: "Everything was laid out in a way that just made sense."
         },
         {
-            name: "Chamod K.",
-            initials: "CK",
-            color: "#DBEAFE",
-            textColor: "#1D4ED8",
+            name: "Anonymous Donor",
+            location: "Jaffna",
+            color: "#E2E8F0",
+            iconColor: "#94A3B8",
             quote: "For my first donation, this was smooth and reassuring."
         }
     ];
@@ -41,21 +41,28 @@ const TestimonialsSection = () => {
 
                 <div style={styles.grid}>
                     {testimonials.map((t, i) => (
-                        <div key={i} style={styles.card}>
+                        <figure key={i} style={styles.card} className="testimonial">
                             <div style={styles.header}>
-                                <div style={{ ...styles.avatar, backgroundColor: t.color, color: t.textColor }}>
-                                    {t.initials}
+                                <div style={{ ...styles.avatar, backgroundColor: t.color }}>
+                                    <User size={40} color={t.iconColor} strokeWidth={1.5} />
                                 </div>
                                 <Quote size={40} color="#CBD5E1" style={styles.quoteIcon} />
                             </div>
 
-                            <h4 style={styles.name}>{t.name}</h4>
-                            <div style={styles.stars}>★★★★★</div>
+                            <figcaption style={styles.figcaption}>
+                                <cite style={styles.cite}>
+                                    <strong>{t.name}</strong>
+                                </cite>
+                                <div style={styles.location}>{t.location}</div>
+                                <div style={styles.stars}>★★★★★</div>
+                            </figcaption>
 
-                            <p style={styles.quote}>
-                                "{t.quote}"
-                            </p>
-                        </div>
+                            <blockquote style={styles.blockquote}>
+                                <p style={styles.quote}>
+                                    "{t.quote}"
+                                </p>
+                            </blockquote>
+                        </figure>
                     ))}
                 </div>
             </div>
@@ -123,21 +130,36 @@ const styles = {
         top: '0',
         opacity: 0.5,
     },
-    name: {
-        fontSize: '1.1rem',
-        fontWeight: '700',
-        marginBottom: '0.25rem',
-    },
-    stars: {
-        color: '#EAB308', // Yellow
-        marginBottom: '1rem',
-        fontSize: '1.2rem',
+    blockquote: {
+        margin: '1rem 0',
+        padding: 0,
     },
     quote: {
         color: '#475569',
         fontSize: '0.95rem',
         fontStyle: 'italic',
         lineHeight: '1.5',
+        margin: 0,
+    },
+    figcaption: {
+        marginTop: '1rem',
+    },
+    stars: {
+        color: '#EAB308', // Yellow
+        marginTop: '0.5rem',
+        fontSize: '1.2rem',
+    },
+    cite: {
+        fontSize: '1.1rem',
+        fontWeight: '700',
+        fontStyle: 'normal',
+        color: '#1e293b',
+    },
+    location: {
+        fontSize: '0.9rem',
+        color: '#64748b',
+        marginTop: '0.25rem',
+        fontStyle: 'italic',
     }
 };
 
