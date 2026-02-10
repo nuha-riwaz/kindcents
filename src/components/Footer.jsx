@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Instagram, Youtube, Linkedin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     useEffect(() => {
@@ -14,14 +15,32 @@ const Footer = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const scrollToSection = (sectionId) => {
+        if (window.location.pathname !== '/') {
+            navigate('/#' + sectionId);
+            setTimeout(() => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        } else {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
     const getUserDashboardPath = () => {
-        if (!user) return '/';
-        const role = (user.role || 'donor').toLowerCase();
+        if (!user || !user.role) return '/';
+        const role = String(user.role).toLowerCase();
 
         if (role === 'admin') return '/dashboard/admin';
         if (role === 'ngo' || role === 'nonprofit') return '/dashboard/ngo';
         if (role === 'individual') return '/dashboard/individual';
-        return '/dashboard/donor';
+        if (role === 'donor') return '/dashboard/donor';
+        return '/';
     };
 
     return (
@@ -80,7 +99,15 @@ const Footer = () => {
                     <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
                         <h4 style={styles.heading}>Quick Links</h4>
                         <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
-                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => scrollToSection('about')}
+                                    style={styles.footerButtonLink}
+                                >
+                                    About Us
+                                </button>
+                            </li>
                             {user && <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
                         </ul>
                     </div>
@@ -100,7 +127,11 @@ const Footer = () => {
                     <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
                         <h4 style={styles.heading}>Contact</h4>
                         <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
-                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+                            <li style={{ textAlign: isMobile ? 'center' : 'left' }}>
+                                <a href="mailto:support@kindcents.org" style={styles.footerLink}>
+                                    support@kindcents.org
+                                </a>
+                            </li>
                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
@@ -205,7 +236,17 @@ const styles = {
         textDecoration: 'none',
         color: 'inherit',
         cursor: 'pointer',
-    }
+    },
+    footerButtonLink: {
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        margin: 0,
+        font: 'inherit',
+        textDecoration: 'none',
+        color: 'inherit',
+        cursor: 'pointer',
+    },
 };
 
 export default Footer;

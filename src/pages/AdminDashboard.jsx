@@ -5,6 +5,8 @@ import AdminCampaignForm from '../components/AdminCampaignForm';
 import ExpensesViewModal from '../components/ExpensesViewModal';
 import { useAuth } from '../context/AuthContext';
 import { useCampaigns } from '../context/CampaignContext';
+import { db } from '../firebase';
+import { collection, onSnapshot, query, orderBy, updateDoc, doc } from 'firebase/firestore';
 import {
     Users,
     FileCheck,
@@ -21,7 +23,8 @@ import {
     Shield,
     CreditCard,
     User,
-    Menu // Add Menu icon
+    Menu, // Add Menu icon
+    MessageCircle
 } from 'lucide-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import logo from '../assets/logo.png';
@@ -116,6 +119,9 @@ const AdminDashboard = () => {
     // Expenses Modal State
     const [viewExpensesCampaign, setViewExpensesCampaign] = useState(null);
 
+    // Support messages from ChatBot (contact_requests collection)
+    const [contactRequests, setContactRequests] = useState([]);
+
     // Redirect to home if user logs out
     useEffect(() => {
         if (!user) {
@@ -127,14 +133,44 @@ const AdminDashboard = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingCampaign, setEditingCampaign] = useState(null);
 
+    // Subscribe to contact_requests for admin support inbox
+    useEffect(() => {
+        const q = query(collection(db, 'contact_requests'), orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(
+            q,
+            (snapshot) => {
+                const list = [];
+                snapshot.forEach((docSnap) => {
+                    list.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                setContactRequests(list);
+            },
+            (error) => {
+                console.error('Error fetching contact requests:', error);
+            }
+        );
+        return () => unsubscribe();
+    }, []);
+
+    const handleMarkSupportDone = async (id) => {
+        try {
+            const reqRef = doc(db, 'contact_requests', id);
+            await updateDoc(reqRef, { status: 'done' });
+        } catch (error) {
+            console.error('Error marking support message as done:', error);
+        }
+    };
+
     // Final safety check for users/campaigns before rendering
     if (!Array.isArray(campaigns) || !Array.isArray(users)) {
         console.error("Campaigns or Users data is not an array", { campaigns, users });
         return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading dashboard data...</div>;
     }
 
-    // Calculate real-time statistics
-    const nonAdminUsers = users.filter(u => (u.role || '').toLowerCase() !== 'admin' && (u.email || '').toLowerCase() !== 'admin@kindcents.org');
+    // Calculate real-time statistics (all campaigns, including NGO profiles)
+    const nonAdminUsers = users.filter(
+        u => (u.role || '').toLowerCase() !== 'admin' && (u.email || '').toLowerCase() !== 'admin@kindcents.org'
+    );
     const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
     const activeCampaignsCount = campaigns.filter(c => c.isActive).length;
     const pendingVerifications = nonAdminUsers.filter(u => u.status === 'Pending').length;
@@ -260,6 +296,17 @@ const AdminDashboard = () => {
                                 <CreditCard size={20} /> Payment Approvals
                                 {pendingDonations.length > 0 && (
                                     <span style={styles.tabBadge}>{pendingDonations.length}</span>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => { setActiveTab('Support'); setIsSidebarOpen(false); }}
+                                style={{ ...styles.navItem, ...(activeTab === 'Support' ? styles.activeNavItem : {}) }}
+                            >
+                                <MessageCircle size={20} /> Support Messages
+                                {contactRequests.filter(r => (r.status || 'new') === 'new').length > 0 && (
+                                    <span style={styles.tabBadge}>
+                                        {contactRequests.filter(r => (r.status || 'new') === 'new').length}
+                                    </span>
                                 )}
                             </button>
                         </nav>
@@ -615,6 +662,180 @@ const AdminDashboard = () => {
                                     </table>
                                 </div>
                             )}
+
+                            {activeTab === 'Support' && (
+                                <div style={styles.supportList}>
+                                    {contactRequests.length === 0 ? (
+                                        <div style={styles.emptyState}>No support messages yet</div>
+                                    ) : (
+                                        contactRequests.map((req) => {
+                                            let createdAtText = 'N/A';
+                                            try {
+                                                if (req.createdAt?.toDate) {
+                                                    createdAtText = req.createdAt
+                                                        .toDate()
+                                                        .toLocaleString('en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        });
+                                                }
+                                            } catch {
+                                                // keep default
+                                            }
+                                            const statusLabel = (req.status || 'new').toUpperCase();
+                                            const isDone = (req.status || 'new') === 'done';
+                                            return (
+                                                <div key={req.id} style={styles.supportCard}>
+                                                    <div style={styles.supportHeader}>
+                                                        <div style={styles.supportAvatar}>
+                                                            {(req.name || req.email || '?').charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <div style={styles.supportName}>{req.name || 'Anonymous user'}</div>
+                                                            <div style={styles.supportMeta}>
+                                                                {req.email || 'No email'} • {createdAtText} • {statusLabel}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <p style={styles.supportMessage}>{req.message}</p>
+                                                    {!isDone && (
+                                                        <div style={styles.supportActions}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleMarkSupportDone(req.id)}
+                                                                style={styles.supportDoneBtn}
+                                                            >
+                                                                Mark as done
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'Data Explorer' && (
+                                <div style={styles.dataExplorer}>
+                                    <section style={styles.dataSection}>
+                                        <h4 style={styles.dataSectionTitle}>
+                                            Campaigns <span style={styles.dataCount}>({campaigns.length})</span>
+                                        </h4>
+                                        <table style={styles.table}>
+                                            <thead>
+                                                <tr style={styles.tableHeader}>
+                                                    <th style={styles.th}>Title</th>
+                                                    <th style={styles.th}>Type</th>
+                                                    <th style={styles.th}>Goal</th>
+                                                    <th style={styles.th}>Raised</th>
+                                                    <th style={styles.th}>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {campaigns.map(c => (
+                                                    <tr key={c.id} style={styles.tr}>
+                                                        <td style={styles.td}>{c.title}</td>
+                                                        <td style={styles.td}>{c.type || 'campaign'}</td>
+                                                        <td style={styles.td}>Rs. {(c.goal || 0).toLocaleString()}</td>
+                                                        <td style={styles.td}>Rs. {(c.raised || 0).toLocaleString()}</td>
+                                                        <td style={styles.td}>{c.isActive ? 'Active' : (c.status || 'Draft')}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </section>
+
+                                    <section style={styles.dataSection}>
+                                        <h4 style={styles.dataSectionTitle}>
+                                            Users <span style={styles.dataCount}>({users.length})</span>
+                                        </h4>
+                                        <table style={styles.table}>
+                                            <thead>
+                                                <tr style={styles.tableHeader}>
+                                                    <th style={styles.th}>Name</th>
+                                                    <th style={styles.th}>Email</th>
+                                                    <th style={styles.th}>Role</th>
+                                                    <th style={styles.th}>Status</th>
+                                                    <th style={styles.th}>Joined</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {users.map(u => (
+                                                    <tr key={u.id} style={styles.tr}>
+                                                        <td style={styles.td}>{u.name || 'N/A'}</td>
+                                                        <td style={styles.td}>{u.email}</td>
+                                                        <td style={styles.td}>{u.role || 'N/A'}</td>
+                                                        <td style={styles.td}>{u.status || 'N/A'}</td>
+                                                        <td style={styles.td}>{u.signupDate || 'N/A'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </section>
+
+                                    <section style={styles.dataSection}>
+                                        <h4 style={styles.dataSectionTitle}>
+                                            Donations <span style={styles.dataCount}>{(campaignsData.donations || []).length}</span>
+                                        </h4>
+                                        <table style={styles.table}>
+                                            <thead>
+                                                <tr style={styles.tableHeader}>
+                                                    <th style={styles.th}>Donor</th>
+                                                    <th style={styles.th}>Email/User</th>
+                                                    <th style={styles.th}>Campaign</th>
+                                                    <th style={styles.th}>Amount</th>
+                                                    <th style={styles.th}>Status</th>
+                                                    <th style={styles.th}>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(campaignsData.donations || []).map(d => (
+                                                    <tr key={d.id} style={styles.tr}>
+                                                        <td style={styles.td}>{d.cardName || 'Anonymous'}</td>
+                                                        <td style={styles.td}>{d.email || d.userId}</td>
+                                                        <td style={styles.td}>{d.campaignTitle}</td>
+                                                        <td style={styles.td}>Rs. {(d.amount || 0).toLocaleString()}</td>
+                                                        <td style={styles.td}>{d.status}</td>
+                                                        <td style={styles.td}>{d.date}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </section>
+
+                                    <section style={styles.dataSection}>
+                                        <h4 style={styles.dataSectionTitle}>
+                                            Expenses <span style={styles.dataCount}>{(expenses || []).length}</span>
+                                        </h4>
+                                        <table style={styles.table}>
+                                            <thead>
+                                                <tr style={styles.tableHeader}>
+                                                    <th style={styles.th}>Campaign ID</th>
+                                                    <th style={styles.th}>User ID</th>
+                                                    <th style={styles.th}>Amount</th>
+                                                    <th style={styles.th}>Description</th>
+                                                    <th style={styles.th}>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(expenses || []).map(e => (
+                                                    <tr key={e.id} style={styles.tr}>
+                                                        <td style={styles.td}>{e.campaignId}</td>
+                                                        <td style={styles.td}>{e.userId}</td>
+                                                        <td style={styles.td}>Rs. {(e.amount || 0).toLocaleString()}</td>
+                                                        <td style={styles.td}>{e.description}</td>
+                                                        <td style={styles.td}>{e.date}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </section>
+                                </div>
+                            )}
                         </div>
                     </main>
 
@@ -842,7 +1063,45 @@ const styles = {
     quickStats: { display: 'flex', flexDirection: 'column', gap: '1rem' },
     quickStatItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '8px' },
     quickStatLabel: { fontSize: '0.9rem', color: '#64748b', fontWeight: '500' },
-    quickStatValue: { fontSize: '1.25rem', fontWeight: '700', color: '#2563eb' }
+    quickStatValue: { fontSize: '1.25rem', fontWeight: '700', color: '#2563eb' },
+
+    // Support messages
+    supportList: { padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
+    supportCard: {
+        backgroundColor: '#f8fafc',
+        borderRadius: '16px',
+        padding: '1rem 1.25rem',
+        border: '1px solid #e2e8f0',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem'
+    },
+    supportHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem' },
+    supportAvatar: {
+        width: '36px',
+        height: '36px',
+        borderRadius: '50%',
+        backgroundColor: '#e0f2fe',
+        color: '#2563eb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 700
+    },
+    supportName: { fontSize: '0.95rem', fontWeight: 600, margin: 0, color: '#0f172a' },
+    supportMeta: { fontSize: '0.8rem', color: '#64748b', marginTop: '0.1rem' },
+    supportMessage: { margin: 0, fontSize: '0.9rem', color: '#1f2933', lineHeight: 1.4 },
+    supportActions: { display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' },
+    supportDoneBtn: {
+        padding: '0.35rem 0.9rem',
+        borderRadius: '999px',
+        border: '1px solid #22c55e',
+        backgroundColor: '#f0fdf4',
+        color: '#16a34a',
+        fontSize: '0.8rem',
+        fontWeight: 600,
+        cursor: 'pointer'
+    }
 };
 
 const AdminDashboardWithBoundary = () => (

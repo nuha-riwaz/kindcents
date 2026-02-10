@@ -33,8 +33,7 @@ const CreateCampaign = () => {
     // Create a ref for each section
     const fileInputRefs = useRef({});
 
-    const handleFileChange = (e, id) => {
-        const file = e.target.files[0];
+    const processFile = (file, id) => {
         if (file) {
             // Check size (limit to 300KB to prevent Firestore bloat)
             if (file.size > 300 * 1024) {
@@ -51,6 +50,11 @@ const CreateCampaign = () => {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleFileChange = (e, id) => {
+        const file = e.target.files[0];
+        processFile(file, id);
     };
 
     const handleBrowseClick = (id) => {
@@ -169,6 +173,18 @@ const CreateCampaign = () => {
                                         cursor: 'pointer'
                                     }}
                                     onClick={() => handleBrowseClick(section.id)}
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const file = e.dataTransfer.files?.[0];
+                                        if (file) {
+                                            processFile(file, section.id);
+                                        }
+                                    }}
                                 >
                                     <CloudUpload size={28} color={uploadedFiles[section.id] ? "#10b981" : "#3b82f6"} style={{ marginBottom: '0.4rem' }} />
                                     <p style={{

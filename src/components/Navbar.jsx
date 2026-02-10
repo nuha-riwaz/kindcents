@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import LocationWarningModal from './LocationWarningModal';
 
-const Navbar = ({ minimal = false }) => {
+const Navbar = ({ minimal = false, hideUserMenu = false }) => {
   const {
     user, logout,
     isAuthModalOpen, setIsAuthModalOpen,
@@ -53,26 +53,29 @@ const Navbar = ({ minimal = false }) => {
   };
 
   const getUserDashboardPath = () => {
-    if (!user) return '/';
-    const role = (user.role || 'donor').toLowerCase();
+    if (!user || !user.role) return '/';
+    const role = String(user.role).toLowerCase();
 
     if (role === 'admin') return '/dashboard/admin';
     if (role === 'ngo' || role === 'nonprofit') return '/dashboard/ngo';
     if (role === 'individual') return '/dashboard/individual';
-    return '/dashboard/donor';
+    if (role === 'donor') return '/dashboard/donor';
+    return '/';
   };
 
   const navLinks = (
     <>
       {!minimal && (
         <>
-          {user && (user.role || 'donor').toLowerCase() === 'donor' && <NavLink to="/campaigns" style={styles.link} onClick={() => setIsMobileMenuOpen(false)}>Campaigns</NavLink>}
+          {user && String(user.role || '').toLowerCase() === 'donor' && (
+            <NavLink to="/campaigns" style={styles.link} onClick={() => setIsMobileMenuOpen(false)}>Campaigns</NavLink>
+          )}
           <button onClick={() => { scrollToSection('about'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>About Us</button>
           <button onClick={() => { scrollToSection('contact'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Contact</button>
         </>
       )}
 
-      {user ? (
+      {user && !hideUserMenu ? (
         <div
           style={styles.userMenuContainer}
           onMouseEnter={() => !isMobileMenuOpen && setIsDropdownOpen(true)}
@@ -101,13 +104,13 @@ const Navbar = ({ minimal = false }) => {
             </div>
           )}
         </div>
-      ) : (
+      ) : (!user && !hideUserMenu && (
         <div style={styles.authButtons}>
           <button onClick={() => { openAuthModal('login'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Log in</button>
           <span style={{ color: '#cbd5e1' }}>|</span>
           <button onClick={() => { openAuthModal('signup'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Sign Up</button>
         </div>
-      )}
+      ))}
     </>
   );
 

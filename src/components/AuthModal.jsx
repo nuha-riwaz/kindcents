@@ -176,7 +176,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                 onClose();
 
                 if (userSnap.exists()) {
-                    const role = (userSnap.data().role || 'donor').toLowerCase();
+                    const role = String(userSnap.data().role || '').toLowerCase();
                     if (role === 'admin' || email === 'admin@kindcents.org') navigate('/dashboard/admin');
                     else navigate('/');
                 } else {
@@ -208,8 +208,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
         }
     };
 
-    const handleFileChange = (e, key) => {
-        const file = e.target.files[0];
+    const processFile = (file, key) => {
         if (file) {
             // Check size (limit to 300KB to prevent Firestore bloat)
             if (file.size > 300 * 1024) {
@@ -226,6 +225,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleFileChange = (e, key) => {
+        const file = e.target.files[0];
+        processFile(file, key);
     };
 
     const handleBrowseClick = (key) => {
@@ -301,11 +305,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        {mode === 'login' && (
-                            <button onClick={onClose} style={styles.closeBtn}>
-                                <X size={24} />
-                            </button>
-                        )}
+                        <button onClick={onClose} style={styles.closeBtn}>
+                            <X size={24} />
+                        </button>
 
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
@@ -421,12 +423,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        {mode === 'login' && (
-                            <button onClick={onClose} style={styles.closeBtn}>
-                                <X size={24} />
-                            </button>
-                        )}
-
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'center', marginBottom: '2rem' }}>
                                 <img src={logo} alt="KindCents" style={{ height: '70px' }} />
@@ -500,12 +496,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        {mode === 'login' && (
-                            <button onClick={onClose} style={styles.closeBtn}>
-                                <X size={24} />
-                            </button>
-                        )}
-
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
                                 <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
@@ -618,12 +608,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
-                        {mode === 'login' && (
-                            <button onClick={onClose} style={styles.closeBtn}>
-                                <X size={24} />
-                            </button>
-                        )}
-
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
                                 <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
@@ -645,7 +629,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     <>
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Government certification*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('cert')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('cert')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'cert');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -665,7 +662,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Previous projects completed</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('projects')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('projects')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'projects');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -685,7 +695,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Project proposal*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('proposal')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('proposal')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'proposal');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -707,7 +730,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                     <>
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Government ID/Passport*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('govId')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('govId')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'govId');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -727,7 +763,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Birth Certificate*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('birthCert')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('birthCert')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'birthCert');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -747,7 +796,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Medical Records*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('medicalRecords')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('medicalRecords')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'medicalRecords');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -767,7 +829,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Letter from Attending Doctor*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('doctorLetter')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('doctorLetter')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'doctorLetter');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -787,7 +862,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Lawyer/ Justice of Peace Attestation*</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('attestation')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('attestation')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'attestation');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -807,7 +895,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
 
                                         <div style={styles.uploadSection}>
                                             <label style={styles.label}>Financial Statement</label>
-                                            <div style={styles.uploadCard} onClick={() => handleBrowseClick('finance')}>
+                                            <div
+                                                style={styles.uploadCard}
+                                                onClick={() => handleBrowseClick('finance')}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file) processFile(file, 'finance');
+                                                }}
+                                            >
                                                 <CloudUpload size={32} color="#3b82f6" style={{ marginBottom: '0.5rem' }} />
                                                 <p style={styles.uploadText}>Drag and drop a file to upload</p>
                                                 <button style={styles.browseBtn}>Browse file</button>
@@ -862,6 +963,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
             return (
                 <div style={styles.overlay}>
                     <div style={styles.modal}>
+                        <button onClick={onClose} style={styles.closeBtn}>
+                            <X size={24} />
+                        </button>
                         <div style={styles.content}>
                             <div style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
                                 <img src={logo} alt="KindCents Logo" style={{ height: '60px', marginBottom: '1rem' }} />
@@ -998,11 +1102,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
-                {mode === 'login' && (
-                    <button onClick={onClose} style={styles.closeBtn}>
-                        <X size={24} />
-                    </button>
-                )}
+                <button onClick={onClose} style={styles.closeBtn}>
+                    <X size={24} />
+                </button>
 
                 <div style={styles.content}>
                     <img src={logo} alt="KindCents" style={{ height: '60px', marginBottom: '1rem' }} />

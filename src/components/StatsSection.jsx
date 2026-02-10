@@ -16,12 +16,11 @@ const StatsSection = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Filter out NGO profile cards, only count real campaigns
-    const realCampaigns = campaigns.filter(c => c.type === 'campaign');
-
-    const totalRaised = realCampaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
-    const totalDonors = realCampaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
-    const totalProjects = realCampaigns.length;
+    // Count all campaigns, including NGO profile cards, to match Admin dashboard
+    const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
+    // Active Donors = sum of contributors across all campaigns
+    const totalDonors = campaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
+    const totalProjects = campaigns.length;
 
     const stats = [
         {

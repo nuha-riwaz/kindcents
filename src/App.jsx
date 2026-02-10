@@ -11,6 +11,7 @@ import DonorDashboard from "./pages/DonorDashboard";
 import NgoDashboard from "./pages/NgoDashboard";
 import IndividualDashboard from "./pages/IndividualDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import JudgeData from "./pages/JudgeData";
 import CreateCampaign from "./pages/CreateCampaign";
 import DatabaseSeeder from "./components/DatabaseSeeder";
 import Onboarding from "./pages/Onboarding";
@@ -39,6 +40,7 @@ function App() {
               <Route path="/dashboard/ngo" element={<NgoDashboard />} />
               <Route path="/dashboard/individual" element={<IndividualDashboard />} />
               <Route path="/dashboard/admin" element={<AdminDashboard />} />
+              <Route path="/judge" element={<JudgeData />} />
               <Route path="/create-campaign" element={<CreateCampaign />} />
               <Route path="/seed" element={<DatabaseSeeder />} />
               <Route path="/onboarding" element={<Onboarding />} />

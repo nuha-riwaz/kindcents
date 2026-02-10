@@ -91,9 +91,8 @@ const Onboarding = () => {
     };
 
     const handleFinish = () => {
-        const role = (selectedRole || 'donor').toLowerCase();
-        if (role === 'admin') navigate('/dashboard/admin');
-        else navigate('/'); // Redirect all other roles to Home Page
+        // After onboarding, always send users to home; no implicit default role
+        navigate('/');
     };
 
     const renderStep2 = () => (
