@@ -156,7 +156,7 @@ const PrivacyPolicy = () => {
                 <div style={styles.section}>
                     <h2 style={styles.sectionTitle}>How to Contact Us</h2>
                     <p style={styles.text}>
-                        You can contact the KindCents administrators through the platform's official support/contact mechanism <a href="mailto:support@kindcents.org" style={{ color: '#2596be', textDecoration: 'none' }}>support@kindcents.org</a>
+                        You can contact the KindCents administrators through the platform's official support/contact mechanism <a href="mailto:kindcents.org@gmail.com" style={{ color: '#2596be', textDecoration: 'none' }}>kindcents.org@gmail.com</a>
                     </p>
                 </div>
             </div>

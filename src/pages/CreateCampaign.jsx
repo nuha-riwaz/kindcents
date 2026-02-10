@@ -126,8 +126,8 @@ const CreateCampaign = () => {
                                 <Loader2 size={48} color="#94a3b8" className="animate-spin" />
                             </div>
                             <h2 style={{ ...styles.title, marginBottom: '1rem' }}>Documents being Verified!</h2>
-                            <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.5', marginBottom: '2rem' }}>
-                                Our team will get back to you soon after the documents are verified.
+                            <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.5', marginBottom: '2rem', padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}>
+                                Our verification team will review your new campaign and documents and get back to you within <strong>24–48 hours</strong>, including any required changes or clarifications. For questions, contact us at <a href="mailto:kindcents.org@gmail.com" style={{ color: '#2563eb', fontWeight: 600 }}>kindcents.org@gmail.com</a>.
                             </p>
                             <button onClick={handleClose} style={styles.nextBtn}>Home</button>
                         </div>

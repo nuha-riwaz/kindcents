@@ -128,8 +128,8 @@ const Footer = () => {
                         <h4 style={styles.heading}>Contact</h4>
                         <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>
-                                <a href="mailto:support@kindcents.org" style={styles.footerLink}>
-                                    support@kindcents.org
+                                <a href="mailto:kindcents.org@gmail.com" style={styles.footerLink}>
+                                    kindcents.org@gmail.com
                                 </a>
                             </li>
                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
