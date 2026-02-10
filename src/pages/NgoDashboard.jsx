@@ -43,7 +43,10 @@ import ExpenseUploadModal from '../components/ExpenseUploadModal';
 const NgoDashboard = () => {
     const { user, updateUserProfile } = useAuth();
     const navigate = useNavigate();
-    const { campaigns } = useCampaigns();
+    const { campaigns: contextCampaigns } = useCampaigns();
+
+    // Merge and deduplicate
+    let campaigns = [...contextCampaigns];
     const [activeTab, setActiveTab] = useState('Overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -133,10 +136,23 @@ const NgoDashboard = () => {
 
     // Filter campaigns for this NGO
     // We match by name for seeded data, but we should ideally use user.uid
-    const myCampaigns = campaigns.filter(c =>
-        (c.userId === user?.uid) ||
-        (c.organizer?.name?.toLowerCase() === user?.name?.toLowerCase())
-    );
+    const myCampaigns = campaigns.filter(c => {
+        const organizerName = c.organizer?.name?.trim().toLowerCase();
+        const userName = user?.name?.trim().toLowerCase();
+        const userEmail = user?.email?.trim().toLowerCase();
+
+        // Legacy Mapping for Demo Accounts
+        const legacyIds = {
+            'admin@akshay.org': ['3', 'akshay-society'], // 'akshay-society' might be the ID too
+            'rashid.hsn@gmail.com': ['1'] // Unlikely to be here but safe to add
+        };
+
+        const isLegacyMatch = legacyIds[userEmail]?.includes(c.userId) || legacyIds[userEmail]?.includes(c.creatorId);
+
+        return (user?.uid && c.userId === user.uid) ||
+            (userName && organizerName && organizerName === userName) ||
+            isLegacyMatch;
+    });
 
     const navItems = [
         { id: 'Overview', icon: <Home size={20} />, label: 'Overview' },

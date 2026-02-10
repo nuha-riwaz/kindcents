@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Upload, Check, Loader2, IndianRupee, FileText } from 'lucide-react';
+import { X, Upload, Check, Loader2, FileText } from 'lucide-react';
 import { useCampaigns } from '../context/CampaignContext';
+// import { storage } from '../firebase'; // Removed storage
+// import { ref, uploadString, getDownloadURL } from 'firebase/storage'; // Removed storage
 
 const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
     const { addExpense } = useCampaigns();
@@ -25,19 +27,49 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
 
     if (!isOpen) return null;
 
-    const handleFileChange = (e) => {
+    // Helper to compress image
+    const compressImage = (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Resize to max width 800px
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Compress to JPEG with 0.7 quality
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(compressedDataUrl);
+                };
+            };
+        });
+    };
+
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 1024 * 1024) {
-                alert("File too large. Max 1MB.");
+            if (!file.type.startsWith('image/')) {
+                alert("Please upload an image file.");
                 return;
             }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result);
-                setImage(reader.result); // Storing base64 for simplicity
-            };
-            reader.readAsDataURL(file);
+
+            try {
+                // Compress immediately on selection
+                const compressed = await compressImage(file);
+                setImage(compressed);
+                setPreview(compressed);
+            } catch (err) {
+                console.error("Compression error:", err);
+                alert("Failed to process image.");
+            }
         }
     };
 
@@ -50,14 +82,23 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
 
         setUploading(true);
         try {
+            // Check size (Base64 string length * 0.75 gives approx bytes)
+            const sizeInBytes = image.length * 0.75;
+            if (sizeInBytes > 950000) { // Safety buffer for 1MB limit
+                alert("Image is still too large. Please pick a smaller image.");
+                setUploading(false);
+                return;
+            }
+
             await addExpense({
                 campaignId,
                 userId,
                 amount: parseFloat(amount),
                 description,
-                image,
-                status: 'Pending' // Optional: if you want admin approval for expenses too
+                image: image, // Saving Base64 directly to Firestore
+                status: 'Pending'
             });
+
             onClose();
             setAmount('');
             setDescription('');
@@ -66,7 +107,7 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
             alert("Expense uploaded successfully!");
         } catch (error) {
             console.error("Upload failed", error);
-            alert("Failed to upload expense.");
+            alert("Failed to save expense details: " + error.message);
         } finally {
             setUploading(false);
         }
@@ -84,7 +125,7 @@ const ExpenseUploadModal = ({ isOpen, onClose, campaignId, userId }) => {
                     <div style={styles.formGroup}>
                         <label style={styles.label}>Amount Spent (Rs.)</label>
                         <div style={styles.inputWrapper}>
-                            <IndianRupee size={16} color="#64748b" style={styles.inputIcon} />
+                            <span style={{ position: 'absolute', left: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.9rem' }}>Rs.</span>
                             <input
                                 type="number"
                                 value={amount}

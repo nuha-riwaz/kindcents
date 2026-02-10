@@ -33,6 +33,13 @@ const ProjectsSection = () => {
     const navigate = useNavigate();
     const { campaigns } = useCampaigns();
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Hardcoded past projects (always shown as completed)
     const pastProjects = [
@@ -72,7 +79,7 @@ const ProjectsSection = () => {
     const allCompletedProjects = [...pastProjects, ...realCompletedCampaigns];
 
     // Number of cards to show at once
-    const cardsToShow = 3;
+    const cardsToShow = isMobile ? 1.2 : 3;
 
     const nextSlide = () => {
         setCurrentIndex((prev) => (prev + 1) % allCompletedProjects.length);
@@ -84,24 +91,24 @@ const ProjectsSection = () => {
 
     // Auto-slide every 5 seconds only if there are more items than cardsToShow
     useEffect(() => {
-        if (allCompletedProjects.length <= cardsToShow) return;
+        if (allCompletedProjects.length <= (isMobile ? 1 : 3)) return;
 
         const interval = setInterval(() => {
             nextSlide();
         }, 5000);
         return () => clearInterval(interval);
-    }, [allCompletedProjects.length, cardsToShow]);
+    }, [allCompletedProjects.length, isMobile]);
 
     // Always render (we have past projects as fallback)
 
     return (
         <section style={styles.section}>
             <div className="container">
-                <h2 style={styles.heading}>Together, We Achieved</h2>
-                <p style={styles.subHeading}>Real projects. Real impact. See the difference your generosity makes.</p>
+                <h2 style={{ ...styles.heading, fontSize: isMobile ? '1.8rem' : '2.5rem' }}>Together, We Achieved</h2>
+                <p style={{ ...styles.subHeading, fontSize: isMobile ? '0.95rem' : '1.1rem' }}>Real projects. Real impact. See the difference your generosity makes.</p>
 
-                <div style={styles.carouselContainer}>
-                    {allCompletedProjects.length > cardsToShow && (
+                <div style={{ ...styles.carouselContainer, gap: isMobile ? '0' : '2rem' }}>
+                    {!isMobile && allCompletedProjects.length > 3 && (
                         <button
                             onClick={prevSlide}
                             style={styles.navButton}
@@ -110,20 +117,32 @@ const ProjectsSection = () => {
                         </button>
                     )}
 
-                    <div style={styles.cardsWrapper}>
+                    <div style={{
+                        ...styles.cardsWrapper,
+                        overflowX: isMobile ? 'auto' : 'hidden',
+                        padding: isMobile ? '1rem' : '1rem 0',
+                        scrollSnapType: isMobile ? 'x mandatory' : 'none',
+                        WebkitOverflowScrolling: 'touch',
+                        scrollbarWidth: 'none', // Hide scrollbar for Firefox
+                        msOverflowStyle: 'none',   // Hide scrollbar for Edge/IE
+                    }} className="hide-scrollbar">
                         <div style={{
                             display: 'flex',
                             gap: '1.5rem',
-                            justifyContent: allCompletedProjects.length <= cardsToShow ? 'center' : 'flex-start',
-                            transition: 'transform 0.5s ease-in-out',
-                            transform: `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, cardsToShow))}%)`
+                            justifyContent: allCompletedProjects.length <= (isMobile ? 1 : 3) ? 'center' : 'flex-start',
+                            transition: isMobile ? 'none' : 'transform 0.5s ease-in-out',
+                            transform: isMobile ? 'none' : `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, 3))}%)`,
+                            width: isMobile ? 'max-content' : '100%'
                         }}>
                             {allCompletedProjects.map((campaign, index) => (
                                 <div
                                     key={campaign.id}
                                     style={{
                                         ...styles.card,
-                                        minWidth: `calc(${100 / cardsToShow}% - ${(1.5 * (cardsToShow - 1)) / cardsToShow}rem)`,
+                                        minWidth: isMobile
+                                            ? '75vw' // Show part of the next card to invite scrolling
+                                            : `calc(${100 / 3}% - ${(1.5 * 2) / 3}rem)`,
+                                        scrollSnapAlign: 'center',
                                         cursor: campaign.isPastProject ? 'default' : 'pointer'
                                     }}
                                     onClick={() => !campaign.isPastProject && navigate(`/campaign/${campaign.id}`)}
@@ -133,7 +152,7 @@ const ProjectsSection = () => {
                                         <span>Completed</span>
                                     </div>
 
-                                    <h3 style={styles.cardTitle}>
+                                    <h3 style={{ ...styles.cardTitle, fontSize: isMobile ? '1rem' : '1.1rem' }}>
                                         {campaign.title}
                                     </h3>
 
@@ -153,7 +172,7 @@ const ProjectsSection = () => {
                         </div>
                     </div>
 
-                    {allCompletedProjects.length > cardsToShow && (
+                    {!isMobile && allCompletedProjects.length > 3 && (
                         <button
                             onClick={nextSlide}
                             style={styles.navButton}
@@ -163,7 +182,7 @@ const ProjectsSection = () => {
                     )}
                 </div>
 
-                {allCompletedProjects.length > cardsToShow && (
+                {!isMobile && allCompletedProjects.length > 3 && (
                     <div style={styles.dots}>
                         {allCompletedProjects.map((_, index) => (
                             <div

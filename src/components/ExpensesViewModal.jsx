@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileText, Calendar, IndianRupee, ZoomIn, Trash2 } from 'lucide-react';
+import { X, FileText, Calendar, ZoomIn, Trash2 } from 'lucide-react';
 import { useCampaigns } from '../context/CampaignContext';
 
 const ExpensesViewModal = ({ isOpen, onClose, campaign, expenses }) => {
@@ -19,14 +19,23 @@ const ExpensesViewModal = ({ isOpen, onClose, campaign, expenses }) => {
 
     if (!isOpen || !campaign) return null;
 
-    const openImageInNewTab = (base64String) => {
+    const openImageInNewTab = (imageSource) => {
+        if (!imageSource) return;
+
+        // If it's a remote URL, just open it
+        if (imageSource.startsWith('http')) {
+            window.open(imageSource, '_blank');
+            return;
+        }
+
         // Convert base64 to Blob to allow opening in new tab without URL length limits
-        fetch(base64String)
+        fetch(imageSource)
             .then(res => res.blob())
             .then(blob => {
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
-            });
+            })
+            .catch(err => console.error("Error opening image:", err));
     };
 
     // Filter expenses for this campaign

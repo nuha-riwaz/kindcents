@@ -66,18 +66,35 @@ const CreateCampaign = () => {
     };
 
     const handleSubmit = async () => {
-        if (isDocsValid()) {
-            setIsSaving(true);
-            try {
-                // Update user logic (set status to pending and save docs)
-                await updateUserDocuments(uploadedFiles);
-                setIsSubmitted(true);
-            } catch (error) {
-                console.error("Error submitting documents:", error);
-                alert("Failed to submit documents. Please try again.");
-            } finally {
+        console.log("CreateCampaign: Submit clicked");
+        if (!isDocsValid()) {
+            const missing = uploadSections.filter(s => s.mandatory && !uploadedFiles[s.id]).map(s => s.label);
+            alert(`Please upload all mandatory documents:\n${missing.join('\n')}`);
+            return;
+        }
+
+        setIsSaving(true);
+
+        // Global Safety Valve: Force stop after 45 seconds
+        const safetyTimer = setTimeout(() => {
+            if (isSaving) {
+                console.error("Global Safety Timeout reached. Forcing stop.");
                 setIsSaving(false);
+                alert("Submission is taking longer than expected. Please check your connection and try again, or contact support if this persists.");
             }
+        }, 45000);
+
+        try {
+            // Update user logic (set status to pending and save docs)
+            await updateUserDocuments(uploadedFiles);
+            clearTimeout(safetyTimer); // Clear timer if successful
+            setIsSubmitted(true);
+        } catch (error) {
+            clearTimeout(safetyTimer);
+            console.error("Error submitting documents:", error);
+            alert("Failed to submit documents. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -176,11 +193,12 @@ const CreateCampaign = () => {
                         <button
                             style={{
                                 ...styles.nextBtn,
-                                opacity: isDocsValid() && !isSaving ? 1 : 0.5,
-                                cursor: isDocsValid() && !isSaving ? 'pointer' : 'not-allowed'
+                                opacity: isSaving ? 0.7 : 1,
+                                cursor: isSaving ? 'not-allowed' : 'pointer',
+                                backgroundColor: isDocsValid() ? '#2596be' : '#94a3b8' // Visual cue
                             }}
-                            onClick={isDocsValid() && !isSaving ? handleSubmit : null}
-                            disabled={!isDocsValid() || isSaving}
+                            onClick={handleSubmit}
+                            disabled={isSaving}
                         >
                             {isSaving ? 'Submitting...' : 'Submit Documents'}
                         </button>

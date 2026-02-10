@@ -1,0 +1,1071 @@
+src\components\Footer.jsx:9
+    const Footer = () => {
+        const { user } = useAuth();
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        useEffect(() => {
+----------------------------------------
+src\components\Footer.jsx:32
+                    <div style={{
+                        ...styles.topSection,
+>>>                     gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1.2fr',
+                        display: isMobile ? 'flex' : 'grid',
+                        flexDirection: isMobile ? 'column' : 'row',
+----------------------------------------
+src\components\Footer.jsx:33
+                        ...styles.topSection,
+                        gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1.2fr',
+>>>                     display: isMobile ? 'flex' : 'grid',
+                        flexDirection: isMobile ? 'column' : 'row',
+                        textAlign: isMobile ? 'center' : 'left',
+----------------------------------------
+src\components\Footer.jsx:34
+                        gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1.2fr',
+                        display: isMobile ? 'flex' : 'grid',
+>>>                     flexDirection: isMobile ? 'column' : 'row',
+                        textAlign: isMobile ? 'center' : 'left',
+                        alignItems: isMobile ? 'center' : 'start',
+----------------------------------------
+src\components\Footer.jsx:35
+                        display: isMobile ? 'flex' : 'grid',
+                        flexDirection: isMobile ? 'column' : 'row',
+>>>                     textAlign: isMobile ? 'center' : 'left',
+                        alignItems: isMobile ? 'center' : 'start',
+                        width: '100%',
+----------------------------------------
+src\components\Footer.jsx:36
+                        flexDirection: isMobile ? 'column' : 'row',
+                        textAlign: isMobile ? 'center' : 'left',
+>>>                     alignItems: isMobile ? 'center' : 'start',
+                        width: '100%',
+                        gap: isMobile ? '2rem' : '3rem'
+----------------------------------------
+src\components\Footer.jsx:38
+                        alignItems: isMobile ? 'center' : 'start',
+                        width: '100%',
+>>>                     gap: isMobile ? '2rem' : '3rem'
+                    }}>
+                        {/* Logo and Description Column */}
+----------------------------------------
+src\components\Footer.jsx:41
+                    }}>
+                        {/* Logo and Description Column */}
+>>>                     <div style={{ ...styles.logoColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <img src={logo} alt="KindCents Footer Logo" style={{
+                                ...styles.logo,
+----------------------------------------
+src\components\Footer.jsx:44
+                            <img src={logo} alt="KindCents Footer Logo" style={{
+                                ...styles.logo,
+>>>                             marginLeft: isMobile ? '0' : '50px',
+                                height: isMobile ? '80px' : '100px'
+                            }} />
+----------------------------------------
+src\components\Footer.jsx:45
+                                ...styles.logo,
+                                marginLeft: isMobile ? '0' : '50px',
+>>>                             height: isMobile ? '80px' : '100px'
+                            }} />
+                            <p style={styles.tagline}>Verified donations. Real Impact.</p>
+----------------------------------------
+src\components\Footer.jsx:48
+                            }} />
+                            <p style={styles.tagline}>Verified donations. Real Impact.</p>
+>>>                         <p style={{ ...styles.description, textAlign: isMobile ? 'center' : 'left' }}>
+                                {isMobile ?
+                                    "A transparent crowdfunding platform connecting verified recipients with trusted donors." :
+----------------------------------------
+src\components\Footer.jsx:49
+                            <p style={styles.tagline}>Verified donations. Real Impact.</p>
+                            <p style={{ ...styles.description, textAlign: isMobile ? 'center' : 'left' }}>
+>>>                             {isMobile ?
+                                    "A transparent crowdfunding platform connecting verified recipients with trusted donors." :
+                                    <>A transparent crowdfunding platform<br />connecting verified recipients with<br />trusted donors.</>
+----------------------------------------
+src\components\Footer.jsx:54
+                                }
+                            </p>
+>>>                         <div style={{ ...styles.socials, justifyContent: isMobile ? 'center' : 'flex-start' }}>
+                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
+                                    {/* Twitter X Logo */}
+----------------------------------------
+src\components\Footer.jsx:80
+    
+                        {/* Quick Links Column */}
+>>>                     <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <h4 style={styles.heading}>Quick Links</h4>
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+----------------------------------------
+src\components\Footer.jsx:82
+                        <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <h4 style={styles.heading}>Quick Links</h4>
+>>>                         <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
+                                {user && <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
+----------------------------------------
+src\components\Footer.jsx:83
+                            <h4 style={styles.heading}>Quick Links</h4>
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
+                                {user && <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
+                            </ul>
+----------------------------------------
+src\components\Footer.jsx:84
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
+>>>                             {user && <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
+                            </ul>
+                        </div>
+----------------------------------------
+src\components\Footer.jsx:89
+    
+                        {/* Policy Column */}
+>>>                     <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <h4 style={styles.heading}>Policy</h4>
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+----------------------------------------
+src\components\Footer.jsx:91
+                        <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <h4 style={styles.heading}>Policy</h4>
+>>>                         <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+----------------------------------------
+src\components\Footer.jsx:92
+                            <h4 style={styles.heading}>Policy</h4>
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+----------------------------------------
+src\components\Footer.jsx:93
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
+----------------------------------------
+src\components\Footer.jsx:94
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
+                            </ul>
+----------------------------------------
+src\components\Footer.jsx:95
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
+                            </ul>
+                        </div>
+----------------------------------------
+src\components\Footer.jsx:100
+    
+                        {/* Contact Column */}
+>>>                     <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <h4 style={styles.heading}>Contact</h4>
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+----------------------------------------
+src\components\Footer.jsx:102
+                        <div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+                            <h4 style={styles.heading}>Contact</h4>
+>>>                         <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+----------------------------------------
+src\components\Footer.jsx:103
+                            <h4 style={styles.heading}>Contact</h4>
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+----------------------------------------
+src\components\Footer.jsx:104
+                            <ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+----------------------------------------
+src\components\Footer.jsx:105
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Colombo 04,</li>
+----------------------------------------
+src\components\Footer.jsx:106
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Colombo 04,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Sri Lanka.</li>
+----------------------------------------
+src\components\Footer.jsx:107
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Colombo 04,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Sri Lanka.</li>
+                            </ul>
+----------------------------------------
+src\components\Footer.jsx:108
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+                                <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Colombo 04,</li>
+>>>                             <li style={{ textAlign: isMobile ? 'center' : 'left' }}>Sri Lanka.</li>
+                            </ul>
+                        </div>
+----------------------------------------
+src\components\Navbar.jsx:20
+      const navigate = useNavigate();
+      const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+>>>   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
+      const scrollToSection = (sectionId) => {
+----------------------------------------
+src\components\Navbar.jsx:78
+            <div
+              style={styles.userMenuContainer}
+>>>           onMouseEnter={() => !isMobileMenuOpen && setIsDropdownOpen(true)}
+              onMouseLeave={() => !isMobileMenuOpen && setIsDropdownOpen(false)}
+              onClick={() => isMobileMenuOpen && setIsDropdownOpen(!isDropdownOpen)}
+----------------------------------------
+src\components\Navbar.jsx:79
+              style={styles.userMenuContainer}
+              onMouseEnter={() => !isMobileMenuOpen && setIsDropdownOpen(true)}
+>>>           onMouseLeave={() => !isMobileMenuOpen && setIsDropdownOpen(false)}
+              onClick={() => isMobileMenuOpen && setIsDropdownOpen(!isDropdownOpen)}
+            >
+----------------------------------------
+src\components\Navbar.jsx:80
+              onMouseEnter={() => !isMobileMenuOpen && setIsDropdownOpen(true)}
+              onMouseLeave={() => !isMobileMenuOpen && setIsDropdownOpen(false)}
+>>>           onClick={() => isMobileMenuOpen && setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <div style={styles.userMenu}>
+----------------------------------------
+src\components\Navbar.jsx:87
+              </div>
+    
+>>>           {(isDropdownOpen || (isMobileMenuOpen && isDropdownOpen)) && (
+                <div style={isMobileMenuOpen ? styles.mobileDropdown : styles.dropdown}>
+                  <button
+----------------------------------------
+src\components\Navbar.jsx:88
+    
+              {(isDropdownOpen || (isMobileMenuOpen && isDropdownOpen)) && (
+>>>             <div style={isMobileMenuOpen ? styles.mobileDropdown : styles.dropdown}>
+                  <button
+                    onClick={() => { navigate(getUserDashboardPath()); setIsMobileMenuOpen(false); }}
+----------------------------------------
+src\components\Navbar.jsx:128
+    
+              {/* Mobile Menu Button */}
+>>>           <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={styles.mobileMenuBtn}>
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+----------------------------------------
+src\components\Navbar.jsx:129
+              {/* Mobile Menu Button */}
+              <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={styles.mobileMenuBtn}>
+>>>             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+----------------------------------------
+src\components\Navbar.jsx:134
+    
+            {/* Mobile Menu Overlay */}
+>>>         {isMobileMenuOpen && (
+              <div style={styles.mobileMenuOverlay}>
+                <div style={styles.mobileMenuContent}>
+----------------------------------------
+src\components\ProjectsSection.jsx:36
+        const { campaigns } = useCampaigns();
+        const [currentIndex, setCurrentIndex] = useState(0);
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        useEffect(() => {
+----------------------------------------
+src\components\ProjectsSection.jsx:82
+    
+        // Number of cards to show at once
+>>>     const cardsToShow = isMobile ? 1.2 : 3;
+    
+        const nextSlide = () => {
+----------------------------------------
+src\components\ProjectsSection.jsx:94
+        // Auto-slide every 5 seconds only if there are more items than cardsToShow
+        useEffect(() => {
+>>>         if (allCompletedProjects.length <= (isMobile ? 1 : 3)) return;
+    
+            const interval = setInterval(() => {
+----------------------------------------
+src\components\ProjectsSection.jsx:100
+            }, 5000);
+            return () => clearInterval(interval);
+>>>     }, [allCompletedProjects.length, isMobile]);
+    
+        // Always render (we have past projects as fallback)
+----------------------------------------
+src\components\ProjectsSection.jsx:107
+            <section style={styles.section}>
+                <div className="container">
+>>>                 <h2 style={{ ...styles.heading, fontSize: isMobile ? '1.8rem' : '2.5rem' }}>Together, We Achieved</h2>
+                    <p style={{ ...styles.subHeading, fontSize: isMobile ? '0.95rem' : '1.1rem' }}>Real projects. Real impact. See the difference your generosity makes.</p>
+    
+----------------------------------------
+src\components\ProjectsSection.jsx:108
+                <div className="container">
+                    <h2 style={{ ...styles.heading, fontSize: isMobile ? '1.8rem' : '2.5rem' }}>Together, We Achieved</h2>
+>>>                 <p style={{ ...styles.subHeading, fontSize: isMobile ? '0.95rem' : '1.1rem' }}>Real projects. Real impact. See the difference your generosity makes.</p>
+    
+                    <div style={{ ...styles.carouselContainer, gap: isMobile ? '0' : '2rem' }}>
+----------------------------------------
+src\components\ProjectsSection.jsx:110
+                    <p style={{ ...styles.subHeading, fontSize: isMobile ? '0.95rem' : '1.1rem' }}>Real projects. Real impact. See the difference your generosity makes.</p>
+    
+>>>                 <div style={{ ...styles.carouselContainer, gap: isMobile ? '0' : '2rem' }}>
+                        {!isMobile && allCompletedProjects.length > 3 && (
+                            <button
+----------------------------------------
+src\components\ProjectsSection.jsx:111
+    
+                    <div style={{ ...styles.carouselContainer, gap: isMobile ? '0' : '2rem' }}>
+>>>                     {!isMobile && allCompletedProjects.length > 3 && (
+                            <button
+                                onClick={prevSlide}
+----------------------------------------
+src\components\ProjectsSection.jsx:122
+                        <div style={{
+                            ...styles.cardsWrapper,
+>>>                         overflowX: isMobile ? 'auto' : 'hidden',
+                            padding: isMobile ? '1rem' : '1rem 0',
+                            scrollSnapType: isMobile ? 'x mandatory' : 'none',
+----------------------------------------
+src\components\ProjectsSection.jsx:123
+                            ...styles.cardsWrapper,
+                            overflowX: isMobile ? 'auto' : 'hidden',
+>>>                         padding: isMobile ? '1rem' : '1rem 0',
+                            scrollSnapType: isMobile ? 'x mandatory' : 'none',
+                            WebkitOverflowScrolling: 'touch',
+----------------------------------------
+src\components\ProjectsSection.jsx:124
+                            overflowX: isMobile ? 'auto' : 'hidden',
+                            padding: isMobile ? '1rem' : '1rem 0',
+>>>                         scrollSnapType: isMobile ? 'x mandatory' : 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            scrollbarWidth: 'none', // Hide scrollbar for Firefox
+----------------------------------------
+src\components\ProjectsSection.jsx:132
+                                display: 'flex',
+                                gap: '1.5rem',
+>>>                             justifyContent: allCompletedProjects.length <= (isMobile ? 1 : 3) ? 'center' : 'flex-start',
+                                transition: isMobile ? 'none' : 'transform 0.5s ease-in-out',
+                                transform: isMobile ? 'none' : `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, 3))}%)`,
+----------------------------------------
+src\components\ProjectsSection.jsx:133
+                                gap: '1.5rem',
+                                justifyContent: allCompletedProjects.length <= (isMobile ? 1 : 3) ? 'center' : 'flex-start',
+>>>                             transition: isMobile ? 'none' : 'transform 0.5s ease-in-out',
+                                transform: isMobile ? 'none' : `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, 3))}%)`,
+                                width: isMobile ? 'max-content' : '100%'
+----------------------------------------
+src\components\ProjectsSection.jsx:134
+                                justifyContent: allCompletedProjects.length <= (isMobile ? 1 : 3) ? 'center' : 'flex-start',
+                                transition: isMobile ? 'none' : 'transform 0.5s ease-in-out',
+>>>                             transform: isMobile ? 'none' : `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, 3))}%)`,
+                                width: isMobile ? 'max-content' : '100%'
+                            }}>
+----------------------------------------
+src\components\ProjectsSection.jsx:135
+                                transition: isMobile ? 'none' : 'transform 0.5s ease-in-out',
+                                transform: isMobile ? 'none' : `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, 3))}%)`,
+>>>                             width: isMobile ? 'max-content' : '100%'
+                            }}>
+                                {allCompletedProjects.map((campaign, index) => (
+----------------------------------------
+src\components\ProjectsSection.jsx:142
+                                        style={{
+                                            ...styles.card,
+>>>                                         minWidth: isMobile
+                                                ? '75vw' // Show part of the next card to invite scrolling
+                                                : `calc(${100 / 3}% - ${(1.5 * 2) / 3}rem)`,
+----------------------------------------
+src\components\ProjectsSection.jsx:155
+                                        </div>
+    
+>>>                                     <h3 style={{ ...styles.cardTitle, fontSize: isMobile ? '1rem' : '1.1rem' }}>
+                                            {campaign.title}
+                                        </h3>
+----------------------------------------
+src\components\ProjectsSection.jsx:175
+                        </div>
+    
+>>>                     {!isMobile && allCompletedProjects.length > 3 && (
+                            <button
+                                onClick={nextSlide}
+----------------------------------------
+src\components\ProjectsSection.jsx:185
+                    </div>
+    
+>>>                 {!isMobile && allCompletedProjects.length > 3 && (
+                        <div style={styles.dots}>
+                            {allCompletedProjects.map((_, index) => (
+----------------------------------------
+src\components\StatsSection.jsx:11
+    const StatsSection = () => {
+        const { campaigns } = useCampaigns();
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        useEffect(() => {
+----------------------------------------
+src\components\StatsSection.jsx:57
+                <div className="container stats-row" style={{
+                    ...styles.grid,
+>>>                 gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+                    gap: isMobile ? '0.75rem' : '2rem'
+                }}>
+----------------------------------------
+src\components\StatsSection.jsx:58
+                    ...styles.grid,
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+>>>                 gap: isMobile ? '0.75rem' : '2rem'
+                }}>
+                    {stats.map((stat, index) => (
+----------------------------------------
+src\components\StatsSection.jsx:63
+                        <div key={index} style={{
+                            ...styles.card,
+>>>                         flexDirection: isMobile ? 'row' : 'column',
+                            alignItems: 'center',
+                            justifyContent: isMobile ? 'flex-start' : 'center', // Align left on mobile
+----------------------------------------
+src\components\StatsSection.jsx:65
+                            flexDirection: isMobile ? 'row' : 'column',
+                            alignItems: 'center',
+>>>                         justifyContent: isMobile ? 'flex-start' : 'center', // Align left on mobile
+                            padding: isMobile ? '0.75rem' : '0',
+                            backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+----------------------------------------
+src\components\StatsSection.jsx:66
+                            alignItems: 'center',
+                            justifyContent: isMobile ? 'flex-start' : 'center', // Align left on mobile
+>>>                         padding: isMobile ? '0.75rem' : '0',
+                            backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+                            borderRadius: isMobile ? '12px' : '0',
+----------------------------------------
+src\components\StatsSection.jsx:67
+                            justifyContent: isMobile ? 'flex-start' : 'center', // Align left on mobile
+                            padding: isMobile ? '0.75rem' : '0',
+>>>                         backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+                            borderRadius: isMobile ? '12px' : '0',
+                            border: isMobile ? '1px solid #e2e8f0' : 'none'
+----------------------------------------
+src\components\StatsSection.jsx:68
+                            padding: isMobile ? '0.75rem' : '0',
+                            backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+>>>                         borderRadius: isMobile ? '12px' : '0',
+                            border: isMobile ? '1px solid #e2e8f0' : 'none'
+                        }}>
+----------------------------------------
+src\components\StatsSection.jsx:69
+                            backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+                            borderRadius: isMobile ? '12px' : '0',
+>>>                         border: isMobile ? '1px solid #e2e8f0' : 'none'
+                        }}>
+                            <div style={{
+----------------------------------------
+src\components\StatsSection.jsx:73
+                            <div style={{
+                                ...styles.iconWrapper,
+>>>                             width: isMobile ? '60px' : '100px', // Smaller icon on mobile
+                                height: isMobile ? '60px' : '100px',
+                                marginBottom: isMobile ? '0' : '1.5rem', // Remove bottom margin on mobile
+----------------------------------------
+src\components\StatsSection.jsx:74
+                                ...styles.iconWrapper,
+                                width: isMobile ? '60px' : '100px', // Smaller icon on mobile
+>>>                             height: isMobile ? '60px' : '100px',
+                                marginBottom: isMobile ? '0' : '1.5rem', // Remove bottom margin on mobile
+                                marginRight: isMobile ? '1.5rem' : '0' // Add right margin on mobile
+----------------------------------------
+src\components\StatsSection.jsx:75
+                                width: isMobile ? '60px' : '100px', // Smaller icon on mobile
+                                height: isMobile ? '60px' : '100px',
+>>>                             marginBottom: isMobile ? '0' : '1.5rem', // Remove bottom margin on mobile
+                                marginRight: isMobile ? '1.5rem' : '0' // Add right margin on mobile
+                            }}>
+----------------------------------------
+src\components\StatsSection.jsx:76
+                                height: isMobile ? '60px' : '100px',
+                                marginBottom: isMobile ? '0' : '1.5rem', // Remove bottom margin on mobile
+>>>                             marginRight: isMobile ? '1.5rem' : '0' // Add right margin on mobile
+                            }}>
+                                <img src={stat.image} alt={stat.label} style={styles.icon} />
+----------------------------------------
+src\components\StatsSection.jsx:80
+                                <img src={stat.image} alt={stat.label} style={styles.icon} />
+                            </div>
+>>>                         <div style={{ textAlign: isMobile ? 'left' : 'center' }}>
+                                <h3 style={{ ...styles.value, fontSize: isMobile ? '1.5rem' : '1.8rem', marginBottom: '0' }}>{stat.value}</h3>
+                                <p style={{ ...styles.label, fontSize: isMobile ? '0.9rem' : '1rem', margin: 0 }}>{stat.label}</p>
+----------------------------------------
+src\components\StatsSection.jsx:81
+                            </div>
+                            <div style={{ textAlign: isMobile ? 'left' : 'center' }}>
+>>>                             <h3 style={{ ...styles.value, fontSize: isMobile ? '1.5rem' : '1.8rem', marginBottom: '0' }}>{stat.value}</h3>
+                                <p style={{ ...styles.label, fontSize: isMobile ? '0.9rem' : '1rem', margin: 0 }}>{stat.label}</p>
+                            </div>
+----------------------------------------
+src\components\StatsSection.jsx:82
+                            <div style={{ textAlign: isMobile ? 'left' : 'center' }}>
+                                <h3 style={{ ...styles.value, fontSize: isMobile ? '1.5rem' : '1.8rem', marginBottom: '0' }}>{stat.value}</h3>
+>>>                             <p style={{ ...styles.label, fontSize: isMobile ? '0.9rem' : '1rem', margin: 0 }}>{stat.label}</p>
+                            </div>
+                        </div>
+----------------------------------------
+src\pages\AdminDashboard.jsx:7
+    import ExpensesViewModal from '../components/ExpensesViewModal';
+    
+>>> const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+    import { useAuth } from '../context/AuthContext';
+    import { useCampaigns } from '../context/CampaignContext';
+----------------------------------------
+src\pages\AdminDashboard.jsx:59
+        const { user } = useAuth();
+        const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        useEffect(() => {
+----------------------------------------
+src\pages\AdminDashboard.jsx:87
+        useEffect(() => {
+            const handleClickOutside = (event) => {
+>>>             if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
+                    setIsSidebarOpen(false);
+                }
+----------------------------------------
+src\pages\AdminDashboard.jsx:93
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+>>>     }, [isSidebarOpen, isMobile]);
+        const navigate = useNavigate();
+        const campaignsData = useCampaigns();
+----------------------------------------
+src\pages\AdminDashboard.jsx:199
+                <Navbar minimal={true} />
+    
+>>>             <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+                    <div style={{ ...styles.dashboardLayout, flexDirection: isMobile ? 'column' : 'row' }} className="dashboard-layout">
+                        {/* Mobile Sidebar Toggle */}
+----------------------------------------
+src\pages\AdminDashboard.jsx:200
+    
+                <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+>>>                 <div style={{ ...styles.dashboardLayout, flexDirection: isMobile ? 'column' : 'row' }} className="dashboard-layout">
+                        {/* Mobile Sidebar Toggle */}
+                        <button
+----------------------------------------
+src\pages\AdminDashboard.jsx:204
+                        <button
+                            className="sidebar-toggle"
+>>>                         style={{ ...styles.sidebarToggle, display: isMobile ? 'block' : 'none' }}
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        >
+----------------------------------------
+src\pages\AdminDashboard.jsx:215
+                            style={{
+                                ...styles.sidebar,
+>>>                             ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                            }}
+                        >
+----------------------------------------
+src\pages\AdminDashboard.jsx:268
+                        {/* Main Content Area */}
+                        <main style={styles.mainArea}>
+>>>                         <header style={{ ...styles.areaHeader, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem' }}>
+                                <h2 style={styles.areaTitle}>{activeTab}</h2>
+                                <div style={{ ...styles.headerActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+----------------------------------------
+src\pages\AdminDashboard.jsx:270
+                            <header style={{ ...styles.areaHeader, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem' }}>
+                                <h2 style={styles.areaTitle}>{activeTab}</h2>
+>>>                             <div style={{ ...styles.headerActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+                                    <div style={{ ...styles.searchBox, width: isMobile ? '100%' : '300px' }}>
+                                        <Search size={18} color="#94a3b8" />
+----------------------------------------
+src\pages\AdminDashboard.jsx:271
+                                <h2 style={styles.areaTitle}>{activeTab}</h2>
+                                <div style={{ ...styles.headerActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+>>>                                 <div style={{ ...styles.searchBox, width: isMobile ? '100%' : '300px' }}>
+                                        <Search size={18} color="#94a3b8" />
+                                        <input
+----------------------------------------
+src\pages\AdminDashboard.jsx:282
+                                    </div>
+                                    {activeTab === 'Campaigns' && (
+>>>                                     <button onClick={handleAddCampaign} style={{ ...styles.addBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }} className="hover-btn-blue">
+                                            <Plus size={18} /> New Campaign
+                                        </button>
+----------------------------------------
+src\pages\AdminDashboard.jsx:290
+    
+                            {/* Top Stats */}
+>>>                         <div style={{ ...styles.statsRow, gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)' }}>
+                                {stats.map((stat, i) => (
+                                    <div key={i} style={styles.statCard}>
+----------------------------------------
+src\pages\AdminDashboard.jsx:303
+    
+                            {/* Content Grid */}
+>>>                         <div style={{ ...styles.contentCard, overflowX: isMobile ? 'auto' : 'hidden' }}>
+                                {activeTab === 'Campaigns' && (
+                                    <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+----------------------------------------
+src\pages\AdminDashboard.jsx:305
+                            <div style={{ ...styles.contentCard, overflowX: isMobile ? 'auto' : 'hidden' }}>
+                                {activeTab === 'Campaigns' && (
+>>>                                 <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+                                        <thead>
+                                            <tr style={styles.tableHeader}>
+----------------------------------------
+src\pages\AdminDashboard.jsx:420
+                                                        )}
+                                                    </div>
+>>>                                                 <div style={{ ...styles.vActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+                                                        <button
+                                                            onClick={() => updateUserStatus(u.id, 'Verified')}
+----------------------------------------
+src\pages\AdminDashboard.jsx:423
+                                                        <button
+                                                            onClick={() => updateUserStatus(u.id, 'Verified')}
+>>>                                                         style={{ ...styles.approveBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+                                                            className="hover-btn-blue"
+                                                        >
+----------------------------------------
+src\pages\AdminDashboard.jsx:430
+                                                        <button
+                                                            onClick={() => updateUserStatus(u.id, 'Rejected')}
+>>>                                                         style={{ ...styles.rejectBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+                                                            className="hover-btn-ghost-red"
+                                                        >
+----------------------------------------
+src\pages\AdminDashboard.jsx:446
+                                        <h3 style={styles.overviewTitle}>Platform Overview</h3>
+    
+>>>                                     <div style={{ ...styles.overviewGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+                                            <div style={styles.overviewCard}>
+                                                <h4 style={styles.overviewCardTitle}>Recent Activity</h4>
+----------------------------------------
+src\pages\AdminDashboard.jsx:500
+    
+                                {activeTab === 'Payments' && (
+>>>                                 <div style={{ ...styles.paymentApprovalList, overflowX: isMobile ? 'auto' : 'hidden' }}>
+                                        {(pendingDonations || []).length === 0 ? (
+                                            <div style={styles.emptyState}>No pending payment approvals</div>
+----------------------------------------
+src\pages\AdminDashboard.jsx:504
+                                            <div style={styles.emptyState}>No pending payment approvals</div>
+                                        ) : (
+>>>                                         <table style={{ ...styles.table, minWidth: isMobile ? '700px' : 'auto' }}>
+                                                <thead>
+                                                    <tr style={styles.tableHeader}>
+----------------------------------------
+src\pages\AdminDashboard.jsx:562
+    
+                                {activeTab === 'Users' && (
+>>>                                 <div style={{ overflowX: isMobile ? 'auto' : 'hidden' }}>
+                                        <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+                                            <thead>
+----------------------------------------
+src\pages\AdminDashboard.jsx:563
+                                {activeTab === 'Users' && (
+                                    <div style={{ overflowX: isMobile ? 'auto' : 'hidden' }}>
+>>>                                     <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+                                            <thead>
+                                                <tr style={styles.tableHeader}>
+----------------------------------------
+src\pages\CampaignDetails.jsx:63
+        const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+    
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        React.useEffect(() => {
+----------------------------------------
+src\pages\CampaignDetails.jsx:118
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+>>>                         padding: isMobile ? '2rem' : '3rem',
+                        }}>
+                        <div style={{ ...styles.heroLayout, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'flex-end' }}>
+----------------------------------------
+src\pages\CampaignDetails.jsx:120
+                            padding: isMobile ? '2rem' : '3rem',
+                        }}>
+>>>                     <div style={{ ...styles.heroLayout, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'flex-end' }}>
+                            {/* Hero Left Content */}
+                            <div style={styles.heroMain}>
+----------------------------------------
+src\pages\CampaignDetails.jsx:127
+                                </div>
+    
+>>>                             <h1 style={{ ...styles.titleCompact, fontSize: isMobile ? '2rem' : '2.5rem' }}>{campaign.title}</h1>
+    
+                                <div style={styles.progressSectionCompact}>
+----------------------------------------
+src\pages\CampaignDetails.jsx:166
+    
+                            {/* Hero Right Content */}
+>>>                         <div style={{ ...styles.heroActions, width: isMobile ? '100%' : 'auto', alignItems: isMobile ? 'flex-start' : 'center' }}>
+                                <div style={styles.ratingStarsBox}>
+                                    {[...Array(5)].map((_, i) => (
+----------------------------------------
+src\pages\CampaignDetails.jsx:178
+                                    ))}
+                                </div>
+>>>                             <button style={{ ...styles.donateBtnHero, width: isMobile ? '100%' : 'fit-content', justifyContent: 'center' }} onClick={() => setIsDonationModalOpen(true)}>
+                                    Donate Now <ArrowRight size={24} />
+                                </button>
+----------------------------------------
+src\pages\CampaignDetails.jsx:185
+                    </div>
+    
+>>>                 <div style={{ ...styles.mainGrid, gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr' }}>
+                        <div style={styles.leftCol}>
+                            {/* About Section */}
+----------------------------------------
+src\pages\Campaigns.jsx:101
+        const itemsPerPage = 6;
+    
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        React.useEffect(() => {
+----------------------------------------
+src\pages\Campaigns.jsx:186
+                <div className="container" style={styles.container}>
+                    <div style={styles.headerBox}>
+>>>                     <div style={{ ...styles.headerContent, flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : 'left' }}>
+                            <img src={logo} alt="KindCents Header Logo" style={styles.headerLogo} />
+                            <div>
+----------------------------------------
+src\pages\Campaigns.jsx:373
+                    <div style={styles.verifiedSection}>
+                        <h2 style={styles.verifiedTitle}>Be a part of Verified organizations</h2>
+>>>                     <div style={{ ...styles.orgLogos, gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}>
+                            <div
+                                style={{ ...styles.orgLogoWrapper, cursor: 'pointer' }}
+----------------------------------------
+src\pages\DonorDashboard.jsx:75
+        const { user, updateUserProfile } = useAuth();
+        const navigate = useNavigate();
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        React.useEffect(() => {
+----------------------------------------
+src\pages\DonorDashboard.jsx:252
+            switch (activeTab) {
+                case 'Overview':
+>>>                 return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
+                case 'My Campaigns':
+                    return <MyCampaignsView isMobile={isMobile} />;
+----------------------------------------
+src\pages\DonorDashboard.jsx:254
+                    return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
+                case 'My Campaigns':
+>>>                 return <MyCampaignsView isMobile={isMobile} />;
+                case 'Achievements':
+                    return <AchievementsView isMobile={isMobile} />;
+----------------------------------------
+src\pages\DonorDashboard.jsx:256
+                    return <MyCampaignsView isMobile={isMobile} />;
+                case 'Achievements':
+>>>                 return <AchievementsView isMobile={isMobile} />;
+                case 'Recent Donations':
+                    return <RecentDonationsView />;
+----------------------------------------
+src\pages\DonorDashboard.jsx:260
+                    return <RecentDonationsView />;
+                default:
+>>>                 return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
+            }
+        };
+----------------------------------------
+src\pages\DonorDashboard.jsx:268
+                <Navbar />
+                <div className="container" style={styles.container}>
+>>>                 <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                        {/* Sidebar */}
+                        <div style={{ ...styles.sidebar, width: isMobile ? '100%' : '280px', padding: isMobile ? '1.5rem' : '2rem 1.5rem' }}>
+----------------------------------------
+src\pages\DonorDashboard.jsx:270
+                    <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                        {/* Sidebar */}
+>>>                     <div style={{ ...styles.sidebar, width: isMobile ? '100%' : '280px', padding: isMobile ? '1.5rem' : '2rem 1.5rem' }}>
+                            <div style={styles.profileSection}>
+                                <div style={styles.logoContainer}>
+----------------------------------------
+src\pages\DonorDashboard.jsx:394
+                            </div>
+    
+>>>                         <nav style={{ ...styles.sidebarNav, flexDirection: isMobile ? 'row' : 'column', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: isMobile ? '0.5rem' : '0' }}>
+                                {sidebarItems.map(item => (
+                                    <button
+----------------------------------------
+src\pages\DonorDashboard.jsx:401
+                                            ...styles.navItem,
+                                            ...(activeTab === item.id ? styles.activeNavItem : {}),
+>>>                                         whiteSpace: isMobile ? 'nowrap' : 'normal'
+                                        }}
+                                        onClick={() => {
+----------------------------------------
+src\pages\DonorDashboard.jsx:419
+    
+                        {/* Main Content Area */}
+>>>                     <div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
+                            {renderTabContent()}
+                        </div>
+----------------------------------------
+src\pages\DonorDashboard.jsx:431
+    // --- Sub-Views ---
+    
+>>> const OverviewView = ({ name, stats, isMobile }) => (
+        <div style={styles.tabView}>
+            <div style={styles.welcomeHeader}>
+----------------------------------------
+src\pages\DonorDashboard.jsx:438
+            </div>
+    
+>>>         <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+                {stats.map((stat, index) => (
+                    <div key={index} style={styles.statsCard}>
+----------------------------------------
+src\pages\DonorDashboard.jsx:459
+    );
+    
+>>> const MyCampaignsView = ({ isMobile }) => {
+        const { user } = useAuth();
+        const [userDonations, setUserDonations] = React.useState([]);
+----------------------------------------
+src\pages\DonorDashboard.jsx:580
+                </div>
+    
+>>>             <div style={{ ...styles.campaignListGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+                    {userDonations.map(c => (
+                        <div key={c.id} style={styles.compactCampaignCard}>
+----------------------------------------
+src\pages\DonorDashboard.jsx:621
+    
+    
+>>> const AchievementsView = ({ isMobile }) => {
+        const { user } = useAuth();
+        const [badges, setBadges] = React.useState([
+----------------------------------------
+src\pages\DonorDashboard.jsx:727
+                </div>
+    
+>>>             <div style={{ ...styles.badgeGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)' }}>
+                    {badges.map((badge, i) => (
+                        <div key={i} style={{
+----------------------------------------
+src\pages\IndividualDashboard.jsx:60
+        const [activeTab, setActiveTab] = useState('Overview');
+        const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        // Expense Modal State
+----------------------------------------
+src\pages\IndividualDashboard.jsx:80
+        React.useEffect(() => {
+            const handleClickOutside = (event) => {
+>>>             if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar-ind') && !event.target.closest('.sidebar-toggle')) {
+                    setIsSidebarOpen(false);
+                }
+----------------------------------------
+src\pages\IndividualDashboard.jsx:86
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+>>>     }, [isSidebarOpen, isMobile]);
+    
+        const [isEditing, setIsEditing] = useState(false);
+----------------------------------------
+src\pages\IndividualDashboard.jsx:272
+                <Navbar />
+    
+>>>             <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+                    <div style={styles.dashboardCard}>
+                        {/* Mobile Sidebar Toggle */}
+----------------------------------------
+src\pages\IndividualDashboard.jsx:275
+                    <div style={styles.dashboardCard}>
+                        {/* Mobile Sidebar Toggle */}
+>>>                     {isMobile && (
+                            <button
+                                className="sidebar-toggle"
+----------------------------------------
+src\pages\IndividualDashboard.jsx:291
+                            style={{
+                                ...styles.sidebar,
+>>>                             ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                            }}
+                        >
+----------------------------------------
+src\pages\IndividualDashboard.jsx:418
+    
+                        {/* Main Content */}
+>>>                     <main style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
+                            {activeTab === 'Overview' ? (
+                                <div style={styles.tabContent}>
+----------------------------------------
+src\pages\IndividualDashboard.jsx:422
+                                <div style={styles.tabContent}>
+                                    <div style={styles.welcomeSection}>
+>>>                                     <h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>Welcome back, {user?.name || 'User'}!</h1>
+                                        <p style={styles.welcomeSub}>Track your personal fundraising impact.</p>
+                                    </div>
+----------------------------------------
+src\pages\IndividualDashboard.jsx:426
+                                    </div>
+    
+>>>                                 <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+                                        {stats.map((stat, index) => (
+                                            <div key={index} style={{ ...styles.statCard, ...(index === 2 ? styles.activeStatCard : {}) }}>
+----------------------------------------
+src\pages\IndividualDashboard.jsx:444
+                                <div style={styles.tabContent}>
+                                    <div style={styles.welcomeSection}>
+>>>                                     <h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>My Active Campaigns</h1>
+                                        <p style={styles.welcomeSub}>Real-time tracking of donations coming in</p>
+                                    </div>
+----------------------------------------
+src\pages\IndividualDashboard.jsx:448
+                                    </div>
+    
+>>>                                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+                                        {userCampaigns.length > 0 ? userCampaigns.map((campaign) => {
+                                            const progress = Math.min(100, Math.floor(((campaign.raised || 0) / (campaign.goal || 1)) * 100));
+----------------------------------------
+src\pages\IndividualDashboard.jsx:452
+                                            const progress = Math.min(100, Math.floor(((campaign.raised || 0) / (campaign.goal || 1)) * 100));
+                                            return (
+>>>                                             <div key={campaign.id} style={{ ...styles.activeCampaignCard, maxWidth: isMobile ? '100%' : '350px' }}>
+                                                    <div style={styles.campaignImageWrapper}>
+                                                        <img src={imageMap[campaign.image] || projectEmma} alt={campaign.imageAlt || campaign.title} style={styles.campaignImage} />
+----------------------------------------
+src\pages\NgoDashboard.jsx:52
+        const [activeTab, setActiveTab] = useState('Overview');
+        const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+>>>     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+        // Expense Modal State
+----------------------------------------
+src\pages\NgoDashboard.jsx:72
+        React.useEffect(() => {
+            const handleClickOutside = (event) => {
+>>>             if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar-ngo') && !event.target.closest('.sidebar-toggle')) {
+                    setIsSidebarOpen(false);
+                }
+----------------------------------------
+src\pages\NgoDashboard.jsx:78
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+>>>     }, [isSidebarOpen, isMobile]);
+    
+        // Profile Editing State
+----------------------------------------
+src\pages\NgoDashboard.jsx:165
+            switch (activeTab) {
+                case 'Overview':
+>>>                 return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} onNavigate={setActiveTab} />;
+                case 'My Active Campaigns':
+                    return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} onUploadProof={openExpenseModal} />;
+----------------------------------------
+src\pages\NgoDashboard.jsx:167
+                    return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} onNavigate={setActiveTab} />;
+                case 'My Active Campaigns':
+>>>                 return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} onUploadProof={openExpenseModal} />;
+                default:
+                    return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
+----------------------------------------
+src\pages\NgoDashboard.jsx:169
+                    return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} onUploadProof={openExpenseModal} />;
+                default:
+>>>                 return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
+            }
+        };
+----------------------------------------
+src\pages\NgoDashboard.jsx:176
+            <div style={styles.page}>
+                <Navbar />
+>>>             <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+                    <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                        {/* Mobile Sidebar Toggle */}
+----------------------------------------
+src\pages\NgoDashboard.jsx:177
+                <Navbar />
+                <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+>>>                 <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                        {/* Mobile Sidebar Toggle */}
+                        {isMobile && (
+----------------------------------------
+src\pages\NgoDashboard.jsx:179
+                    <div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+                        {/* Mobile Sidebar Toggle */}
+>>>                     {isMobile && (
+                            <button
+                                className="sidebar-toggle"
+----------------------------------------
+src\pages\NgoDashboard.jsx:195
+                            style={{
+                                ...styles.sidebar,
+>>>                             ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+                            }}>
+                            <div style={styles.profileSection}>
+----------------------------------------
+src\pages\NgoDashboard.jsx:332
+    
+                        {/* Main Content Area (Now inside dashboardCard) */}
+>>>                     <div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
+                            {renderTabContent()}
+                        </div>
+----------------------------------------
+src\pages\NgoDashboard.jsx:352
+    // --- Sub-Views ---
+    
+>>> const OverviewView = ({ name, campaigns, isMobile, onNavigate }) => {
+        const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
+        const totalContributors = campaigns.reduce((sum, c) => sum + (c.contributors || 0), 0);
+----------------------------------------
+src\pages\NgoDashboard.jsx:361
+            <div style={styles.tabView}>
+                <div style={styles.header}>
+>>>                 <h2 style={{ ...styles.title, fontSize: isMobile ? '1.4rem' : '1.75rem' }}>Welcome back, {name}!</h2>
+                    <p style={styles.subTitle}>Track your fundraising progress and manage your campaigns.</p>
+                </div>
+----------------------------------------
+src\pages\NgoDashboard.jsx:365
+                </div>
+    
+>>>             <div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+                    <div style={styles.statsCard}>
+                        <div style={styles.statsHeader}>
+----------------------------------------
+src\pages\NgoDashboard.jsx:424
+    };
+    
+>>> const MyCampaignsView = ({ campaigns, isMobile, onUploadProof }) => {
+        return (
+            <div style={styles.tabView}>
+----------------------------------------
+src\pages\NgoDashboard.jsx:428
+            <div style={styles.tabView}>
+                <div style={styles.header}>
+>>>                 <h2 style={{ ...styles.title, fontSize: isMobile ? '1.4rem' : '1.75rem' }}>My Active Campaigns</h2>
+                    <p style={styles.subTitle}>Real-time tracking of donations coming in</p>
+                </div>
+----------------------------------------
+src\pages\NgoDashboard.jsx:440
+                    ) : (
+                        campaigns.map(campaign => (
+>>>                         <div key={campaign.id} style={{ ...styles.campaignCard, width: isMobile ? '100%' : '320px' }}>
+                                <div style={styles.campaignImageWrapper}>
+                                    <img
+----------------------------------------

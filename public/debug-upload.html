@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Debugger</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #log { background: #f0f0f0; padding: 10px; border: 1px solid #ccc; height: 300px; overflow-y: scroll; white-space: pre-wrap; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Campaign Upload Debugger</h2>
+    <input type="file" id="fileInput">
+    <button onclick="startTest()">Test Upload</button>
+    <div id="log"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // CONFIG (Copied from firebase.js - DO NOT SHARE PUBLICLY)
+        // I will need to ask the user to verify these or just use the existing ones if I can read them.
+        // For now, I'll assume the user is logged in to the main app, checking auth state.
+        
+        // Wait for user to paste config or I'll try to use the one from the project if I can read it?
+        // Actually, since this is a local file, I can't easily import the project's firebase.js without a bundler.
+        // I will print instructions to the log.
+    </script>
+    <script>
+        function log(msg, type = '') {
+            const el = document.getElementById('log');
+            el.innerHTML += `<div class="${type}">${new Date().toISOString().split('T')[1].split('.')[0]}: ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        log("Please open the browser console (F12) to see detailed logs if this doesn't work.");
+        log("Select a file and click 'Test Upload'.");
+
+        window.startTest = async () => {
+             log("Starting test...", 'info');
+             const file = document.getElementById('fileInput').files[0];
+             if (!file) { log("No file selected!", 'error'); return; }
+
+             const reader = new FileReader();
+             reader.onload = async (e) => {
+                 const dataUrl = e.target.result;
+                 log(`File read successfully. Size: ${dataUrl.length} chars`);
+                 
+                 // Simulating the exact logic from AuthContext
+                 try {
+                     log("Attempting simulated upload...");
+                     // Note: We can't actually upload without the Firebase Config and Auth state here.
+                     // A better approach is to add logging directly to the React Component.
+                     log("NOTE: This standalone file cannot run without Firebase Config. I will instead inject logging into the main app.", 'error');
+                 } catch (err) {
+                    log("Error: " + err.message, 'error');
+                 }
+             };
+             reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

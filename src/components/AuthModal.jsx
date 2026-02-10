@@ -22,6 +22,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [resetEmail, setResetEmail] = useState('');
     const [resetStatus, setResetStatus] = useState({ type: '', message: '' });
+    const [isLoading, setIsLoading] = useState(false);
     const { login, signup, loginEmail, saveUserRole, updateUserDocuments, resetPassword } = useAuth();
     const navigate = useNavigate();
 
@@ -884,19 +885,33 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signup' }) => {
                                 </button>
                                 <button
                                     type="button"
+                                    disabled={isLoading}
                                     onClick={async () => {
-                                        if (Object.keys(uploadedFiles).length > 0) {
-                                            await updateUserDocuments(uploadedFiles);
+                                        setIsLoading(true);
+                                        try {
+                                            // Await the save operations ensuring they complete
+                                            if (Object.keys(uploadedFiles).length > 0) {
+                                                await updateUserDocuments(uploadedFiles);
+                                            }
+                                            await saveUserRole(userType);
+                                        } catch (error) {
+                                            console.error("Save failed:", error);
+                                        } finally {
+                                            setIsLoading(false);
+                                            // Close and navigate immediately after save
+                                            onClose();
+                                            const role = (userType || 'donor').toLowerCase();
+
+                                            if (role === 'admin') {
+                                                navigate('/dashboard/admin');
+                                            } else {
+                                                navigate('/');
+                                            }
                                         }
-                                        await saveUserRole(userType);
-                                        onClose();
-                                        const role = (userType || 'donor').toLowerCase();
-                                        if (role === 'admin') navigate('/dashboard/admin');
-                                        else navigate('/');
                                     }}
-                                    style={{ ...styles.nextBtn, minWidth: '100px' }}
+                                    style={{ ...styles.nextBtn, minWidth: '100px', opacity: isLoading ? 0.7 : 1 }}
                                 >
-                                    Home
+                                    {isLoading ? 'Saving...' : 'Home'}
                                 </button>
                             </div>
                         </div>

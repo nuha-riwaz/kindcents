@@ -1,0 +1,168 @@
+﻿C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:9:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:12:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:32:gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1.2fr',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:33:display: isMobile ? 'flex' : 'grid',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:34:flexDirection: isMobile ? 'column' : 'row',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:35:textAlign: isMobile ? 'center' : 'left',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:36:alignItems: isMobile ? 'center' : 'start',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:38:gap: isMobile ? '2rem' : '3rem'
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:41:<div style={{ ...styles.logoColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:44:marginLeft: isMobile ? '0' : '50px',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:45:height: isMobile ? '80px' : '100px'
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:48:<p style={{ ...styles.description, textAlign: isMobile ? 'center' : 'left' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:49:{isMobile ?
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:54:<div style={{ ...styles.socials, justifyContent: isMobile ? 'center' : 'flex-start' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:80:<div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:82:<ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:83:<li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/#about" style={styles.footerLink}>About Us</Link></li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:84:{user && <li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to={getUserDashboardPath()} style={styles.footerLink}>Dashboard</Link></li>}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:89:<div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:91:<ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:92:<li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/privacy-policy" style={styles.footerLink}>Privacy Policy</Link></li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:93:<li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/terms-and-conditions" style={styles.footerLink}>Terms & Conditions</Link></li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:94:<li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/verification-process" style={styles.footerLink}>Verification Process</Link></li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:95:<li style={{ textAlign: isMobile ? 'center' : 'left' }}><Link to="/cookie-policy" style={styles.footerLink}>Cookies</Link></li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:100:<div style={{ ...styles.linkColumn, alignItems: isMobile ? 'center' : 'flex-start', width: '100%' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:102:<ul style={{ ...styles.list, alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:103:<li style={{ textAlign: isMobile ? 'center' : 'left' }}>support@kindcents.org</li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:104:<li style={{ textAlign: isMobile ? 'center' : 'left' }}>3rd Floor, Orion</li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:105:<li style={{ textAlign: isMobile ? 'center' : 'left' }}>Business Centre,</li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:106:<li style={{ textAlign: isMobile ? 'center' : 'left' }}>Alexandra Place,</li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:107:<li style={{ textAlign: isMobile ? 'center' : 'left' }}>Colombo 04,</li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Footer.jsx:108:<li style={{ textAlign: isMobile ? 'center' : 'left' }}>Sri Lanka.</li>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:20:const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:51:setIsMobileMenuOpen(false);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:69:{user && (user.role || 'donor').toLowerCase() === 'donor' && <NavLink to="/campaigns" style={styles.link} onClick={() => setIsMobileMenuOpen(false)}>Campaigns</NavLink>}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:70:<button onClick={() => { scrollToSection('about'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>About Us</button>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:71:<button onClick={() => { scrollToSection('contact'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Contact</button>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:78:onMouseEnter={() => !isMobileMenuOpen && setIsDropdownOpen(true)}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:79:onMouseLeave={() => !isMobileMenuOpen && setIsDropdownOpen(false)}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:80:onClick={() => isMobileMenuOpen && setIsDropdownOpen(!isDropdownOpen)}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:87:{(isDropdownOpen || (isMobileMenuOpen && isDropdownOpen)) && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:88:<div style={isMobileMenuOpen ? styles.mobileDropdown : styles.dropdown}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:90:onClick={() => { navigate(getUserDashboardPath()); setIsMobileMenuOpen(false); }}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:106:<button onClick={() => { openAuthModal('login'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Log in</button>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:108:<button onClick={() => { openAuthModal('signup'); setIsMobileMenuOpen(false); }} style={styles.linkBtn}>Sign Up</button>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:128:<button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={styles.mobileMenuBtn}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:129:{isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\Navbar.jsx:134:{isMobileMenuOpen && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:36:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:39:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:82:const cardsToShow = isMobile ? 1.2 : 3;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:94:if (allCompletedProjects.length <= (isMobile ? 1 : 3)) return;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:100:}, [allCompletedProjects.length, isMobile]);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:107:<h2 style={{ ...styles.heading, fontSize: isMobile ? '1.8rem' : '2.5rem' }}>Together, We Achieved</h2>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:108:<p style={{ ...styles.subHeading, fontSize: isMobile ? '0.95rem' : '1.1rem' }}>Real projects. Real impact. See the difference your generosity makes.</p>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:110:<div style={{ ...styles.carouselContainer, gap: isMobile ? '0' : '2rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:111:{!isMobile && allCompletedProjects.length > 3 && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:122:overflowX: isMobile ? 'auto' : 'hidden',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:123:padding: isMobile ? '1rem' : '1rem 0',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:124:scrollSnapType: isMobile ? 'x mandatory' : 'none',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:132:justifyContent: allCompletedProjects.length <= (isMobile ? 1 : 3) ? 'center' : 'flex-start',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:133:transition: isMobile ? 'none' : 'transform 0.5s ease-in-out',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:134:transform: isMobile ? 'none' : `translateX(-${currentIndex * (100 / Math.min(allCompletedProjects.length, 3))}%)`,
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:135:width: isMobile ? 'max-content' : '100%'
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:142:minWidth: isMobile
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:155:<h3 style={{ ...styles.cardTitle, fontSize: isMobile ? '1rem' : '1.1rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:175:{!isMobile && allCompletedProjects.length > 3 && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\ProjectsSection.jsx:185:{!isMobile && allCompletedProjects.length > 3 && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:11:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:14:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:57:gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:58:gap: isMobile ? '0.75rem' : '2rem'
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:63:flexDirection: isMobile ? 'row' : 'column',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:65:justifyContent: isMobile ? 'flex-start' : 'center', // Align left on mobile
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:66:padding: isMobile ? '0.75rem' : '0',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:67:backgroundColor: isMobile ? '#f8fafc' : 'transparent', // Add subtle background on mobile for "card" feel
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:68:borderRadius: isMobile ? '12px' : '0',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:69:border: isMobile ? '1px solid #e2e8f0' : 'none'
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:73:width: isMobile ? '60px' : '100px', // Smaller icon on mobile
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:74:height: isMobile ? '60px' : '100px',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:75:marginBottom: isMobile ? '0' : '1.5rem', // Remove bottom margin on mobile
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:76:marginRight: isMobile ? '1.5rem' : '0' // Add right margin on mobile
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:80:<div style={{ textAlign: isMobile ? 'left' : 'center' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:81:<h3 style={{ ...styles.value, fontSize: isMobile ? '1.5rem' : '1.8rem', marginBottom: '0' }}>{stat.value}</h3>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\components\StatsSection.jsx:82:<p style={{ ...styles.label, fontSize: isMobile ? '0.9rem' : '1rem', margin: 0 }}>{stat.label}</p>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:57:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:60:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:85:if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:91:}, [isSidebarOpen, isMobile]);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:197:<div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:198:<div style={{ ...styles.dashboardLayout, flexDirection: isMobile ? 'column' : 'row' }} className="dashboard-layout">
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:202:style={{ ...styles.sidebarToggle, display: isMobile ? 'block' : 'none' }}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:213:...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:266:<header style={{ ...styles.areaHeader, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:268:<div style={{ ...styles.headerActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:269:<div style={{ ...styles.searchBox, width: isMobile ? '100%' : '300px' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:280:<button onClick={handleAddCampaign} style={{ ...styles.addBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }} className="hover-btn-blue">
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:288:<div style={{ ...styles.statsRow, gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:301:<div style={{ ...styles.contentCard, overflowX: isMobile ? 'auto' : 'hidden' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:303:<table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:418:<div style={{ ...styles.vActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:421:style={{ ...styles.approveBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:428:style={{ ...styles.rejectBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:444:<div style={{ ...styles.overviewGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:498:<div style={{ ...styles.paymentApprovalList, overflowX: isMobile ? 'auto' : 'hidden' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:502:<table style={{ ...styles.table, minWidth: isMobile ? '700px' : 'auto' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:560:<div style={{ overflowX: isMobile ? 'auto' : 'hidden' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\AdminDashboard.jsx:561:<table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:63:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:66:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:118:padding: isMobile ? '2rem' : '3rem',
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:120:<div style={{ ...styles.heroLayout, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'flex-end' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:127:<h1 style={{ ...styles.titleCompact, fontSize: isMobile ? '2rem' : '2.5rem' }}>{campaign.title}</h1>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:166:<div style={{ ...styles.heroActions, width: isMobile ? '100%' : 'auto', alignItems: isMobile ? 'flex-start' : 'center' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:178:<button style={{ ...styles.donateBtnHero, width: isMobile ? '100%' : 'fit-content', justifyContent: 'center' }} onClick={() => setIsDonationModalOpen(true)}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\CampaignDetails.jsx:185:<div style={{ ...styles.mainGrid, gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\Campaigns.jsx:101:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\Campaigns.jsx:104:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\Campaigns.jsx:186:<div style={{ ...styles.headerContent, flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : 'left' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\Campaigns.jsx:373:<div style={{ ...styles.orgLogos, gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:75:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:78:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:252:return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:254:return <MyCampaignsView isMobile={isMobile} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:256:return <AchievementsView isMobile={isMobile} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:260:return <OverviewView name={currentName} stats={stats} isMobile={isMobile} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:268:<div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:270:<div style={{ ...styles.sidebar, width: isMobile ? '100%' : '280px', padding: isMobile ? '1.5rem' : '2rem 1.5rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:394:<nav style={{ ...styles.sidebarNav, flexDirection: isMobile ? 'row' : 'column', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: isMobile ? '0.5rem' : '0' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:401:whiteSpace: isMobile ? 'nowrap' : 'normal'
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:419:<div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:431:const OverviewView = ({ name, stats, isMobile }) => (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:438:<div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:459:const MyCampaignsView = ({ isMobile }) => {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:580:<div style={{ ...styles.campaignListGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:621:const AchievementsView = ({ isMobile }) => {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\DonorDashboard.jsx:727:<div style={{ ...styles.badgeGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:60:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:72:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:80:if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar-ind') && !event.target.closest('.sidebar-toggle')) {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:86:}, [isSidebarOpen, isMobile]);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:272:<div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:275:{isMobile && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:291:...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:418:<main style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:422:<h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>Welcome back, {user?.name || 'User'}!</h1>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:426:<div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:444:<h1 style={{ ...styles.welcomeTitle, fontSize: isMobile ? '1.5rem' : '2rem' }}>My Active Campaigns</h1>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:448:<div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\IndividualDashboard.jsx:452:<div key={campaign.id} style={{ ...styles.activeCampaignCard, maxWidth: isMobile ? '100%' : '350px' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:52:const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:64:const handleResize = () => setIsMobile(window.innerWidth <= 768);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:72:if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar-ngo') && !event.target.closest('.sidebar-toggle')) {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:78:}, [isSidebarOpen, isMobile]);
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:165:return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} onNavigate={setActiveTab} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:167:return <MyCampaignsView campaigns={myCampaigns} isMobile={isMobile} onUploadProof={openExpenseModal} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:169:return <OverviewView name={user?.name || "NGO"} campaigns={myCampaigns} isMobile={isMobile} />;
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:176:<div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:177:<div style={{ ...styles.dashboardCard, flexDirection: isMobile ? 'column' : 'row' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:179:{isMobile && (
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:195:...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:332:<div style={{ ...styles.mainContent, padding: isMobile ? '1.5rem' : '3rem' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:352:const OverviewView = ({ name, campaigns, isMobile, onNavigate }) => {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:361:<h2 style={{ ...styles.title, fontSize: isMobile ? '1.4rem' : '1.75rem' }}>Welcome back, {name}!</h2>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:365:<div style={{ ...styles.statsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:424:const MyCampaignsView = ({ campaigns, isMobile, onUploadProof }) => {
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:428:<h2 style={{ ...styles.title, fontSize: isMobile ? '1.4rem' : '1.75rem' }}>My Active Campaigns</h2>
+C:\Users\Nuha\OneDrive\Desktop\Projects\kindcents-1\src\pages\NgoDashboard.jsx:440:<div key={campaign.id} style={{ ...styles.campaignCard, width: isMobile ? '100%' : '320px' }}>

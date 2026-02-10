@@ -1,0 +1,23 @@
+7: const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+59: const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+87: if (isSidebarOpen && isMobile && !event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
+93: }, [isSidebarOpen, isMobile]);
+199: <div className="container" style={{ ...styles.container, paddingTop: isMobile ? '80px' : '100px' }}>
+200: <div style={{ ...styles.dashboardLayout, flexDirection: isMobile ? 'column' : 'row' }} className="dashboard-layout">
+204: style={{ ...styles.sidebarToggle, display: isMobile ? 'block' : 'none' }}
+215: ...(isMobile ? (isSidebarOpen ? styles.mobileSidebarOpen : styles.mobileSidebarClosed) : {})
+268: <header style={{ ...styles.areaHeader, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem' }}>
+270: <div style={{ ...styles.headerActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+271: <div style={{ ...styles.searchBox, width: isMobile ? '100%' : '300px' }}>
+282: <button onClick={handleAddCampaign} style={{ ...styles.addBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }} className="hover-btn-blue">
+290: <div style={{ ...styles.statsRow, gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)' }}>
+303: <div style={{ ...styles.contentCard, overflowX: isMobile ? 'auto' : 'hidden' }}>
+305: <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>
+420: <div style={{ ...styles.vActions, flexDirection: isMobile ? 'column' : 'row', width: isMobile ? '100%' : 'auto' }}>
+423: style={{ ...styles.approveBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+430: style={{ ...styles.rejectBtn, width: isMobile ? '100%' : 'auto', justifyContent: 'center' }}
+446: <div style={{ ...styles.overviewGrid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+500: <div style={{ ...styles.paymentApprovalList, overflowX: isMobile ? 'auto' : 'hidden' }}>
+504: <table style={{ ...styles.table, minWidth: isMobile ? '700px' : 'auto' }}>
+562: <div style={{ overflowX: isMobile ? 'auto' : 'hidden' }}>
+563: <table style={{ ...styles.table, minWidth: isMobile ? '600px' : 'auto' }}>

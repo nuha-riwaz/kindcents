@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AdminCampaignForm from '../components/AdminCampaignForm';
 import ExpensesViewModal from '../components/ExpensesViewModal';
+
+const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
 import { useAuth } from '../context/AuthContext';
 import { useCampaigns } from '../context/CampaignContext';
 import {
@@ -23,6 +25,7 @@ import {
     User,
     Menu // Add Menu icon
 } from 'lucide-react';
+import ErrorBoundary from '../components/ErrorBoundary';
 import logo from '../assets/logo.png';
 import projectEmma from '../assets/project-emma.jpg';
 import projectArklow from '../assets/project-arklow.png';
@@ -91,9 +94,6 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const campaignsData = useCampaigns();
 
-    // ... REST OF THE DATA FETCHING LOGIC ...
-    // (keeping original logic)
-
     const {
         campaigns = [],
         users = [],
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
         { label: 'Total Users', value: nonAdminUsers.length, icon: <Users size={20} />, color: '#4F96FF' },
         { label: 'Active Campaigns', value: activeCampaignsCount, icon: <TrendingUp size={20} />, color: '#64748b' },
         { label: 'Pending Verifications', value: pendingVerifications, icon: <FileCheck size={20} />, color: '#94a3b8' },
-        { label: 'Total Raised', value: `Rs. ${totalRaised.toLocaleString()}`, icon: <Shield size={20} />, color: '#3b82f6' },
+        { label: 'Total Raised', value: `Rs. ${(totalRaised || 0).toLocaleString()}`, icon: <Shield size={20} />, color: '#3b82f6' },
     ];
 
     const filteredCampaigns = campaigns.filter(c =>
@@ -171,6 +171,24 @@ const AdminDashboard = () => {
                 ...data,
                 image: data.image || campaigns[0]?.image // Use uploaded image or placeholder for new campaigns
             });
+        }
+    };
+
+    const handleStatusUpdate = async (campaignId, status) => {
+        try {
+            await updateCampaign(campaignId, { status });
+        } catch (error) {
+            console.error("Error updating campaign status:", error);
+        }
+    };
+
+    const handleDeleteCampaign = async (campaignId) => {
+        if (window.confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
+            try {
+                await deleteCampaign(campaignId);
+            } catch (error) {
+                console.error("Error deleting campaign:", error);
+            }
         }
     };
 
@@ -306,12 +324,12 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td style={styles.td}>Rs. {c.goal.toLocaleString()}</td>
+                                                <td style={styles.td}>Rs. {(c.goal || 0).toLocaleString()}</td>
                                                 <td style={styles.td}>
                                                     <div style={styles.progressCell}>
-                                                        <span>Rs. {c.raised.toLocaleString()}</span>
+                                                        <span>Rs. {(c.raised || 0).toLocaleString()}</span>
                                                         <div style={styles.miniProgressTrack}>
-                                                            <div style={{ ...styles.miniProgressFill, width: `${c.goal > 0 ? (c.raised / c.goal) * 100 : 0}%` }} />
+                                                            <div style={{ ...styles.miniProgressFill, width: `${(c.goal || 0) > 0 ? ((c.raised || 0) / (c.goal || 1)) * 100 : 0}%` }} />
                                                         </div>
                                                     </div>
                                                 </td>
@@ -362,15 +380,15 @@ const AdminDashboard = () => {
                                         filteredUsers.filter(u => u.status === 'Pending').map(u => (
                                             <div key={u.id} style={styles.verificationCard}>
                                                 <div style={styles.userMain}>
-                                                    <div style={styles.userAvatar}>{u.name.charAt(0)}</div>
+                                                    <div style={styles.userAvatar}>{(u.name || '?').charAt(0)}</div>
                                                     <div>
-                                                        <h4 style={styles.vUserName}>{u.name}</h4>
-                                                        <p style={styles.vUserEmail}>{u.email} • {u.role}</p>
+                                                        <h4 style={styles.vUserName}>{u.name || 'Unknown User'}</h4>
+                                                        <p style={styles.vUserEmail}>{u.email} • {u.role || 'User'}</p>
                                                     </div>
                                                 </div>
                                                 <div style={styles.docsList}>
                                                     {u.uploadedFiles && Object.entries(u.uploadedFiles).map(([key, fileData]) => {
-                                                        const filename = typeof fileData === 'object' ? fileData.name : fileData;
+                                                        const filename = typeof fileData === 'object' ? (fileData.name || 'File') : (fileData || 'File');
                                                         const fileUrl = typeof fileData === 'object' ? fileData.url : null;
                                                         return (
                                                             <a
@@ -824,8 +842,6 @@ const styles = {
     quickStatLabel: { fontSize: '0.9rem', color: '#64748b', fontWeight: '500' },
     quickStatValue: { fontSize: '1.25rem', fontWeight: '700', color: '#2563eb' }
 };
-
-import ErrorBoundary from '../components/ErrorBoundary';
 
 const AdminDashboardWithBoundary = () => (
     <ErrorBoundary>
