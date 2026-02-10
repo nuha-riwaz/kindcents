@@ -46,7 +46,7 @@ export const faqData = {
     individual: [
         {
             q: "Who can start a campaign?",
-            a: "Any individual with a genuine medical, educational, or emergency need can start a campaign after passing our verification process."
+            a: "Any individual with a genuine medical emergency can start a campaign after passing our verification process."
         },
         {
             q: "How long does verification take?",
