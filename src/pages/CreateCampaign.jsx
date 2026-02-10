@@ -99,7 +99,12 @@ const CreateCampaign = () => {
     };
 
     const handleClose = () => {
-        const path = userRole === 'ngo' || userRole === 'nonprofit' ? '/dashboard/ngo' : '/dashboard/individual';
+        // After submitting documents:
+        // - NGOs/nonprofits: go to their main NGO home route
+        // - Individuals: go to the public home page
+        const path = (userRole === 'ngo' || userRole === 'nonprofit')
+            ? '/dashboard/nonprofit'
+            : '/';
         navigate(path);
     };
 

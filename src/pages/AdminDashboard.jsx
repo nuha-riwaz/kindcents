@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AdminCampaignForm from '../components/AdminCampaignForm';
 import ExpensesViewModal from '../components/ExpensesViewModal';
-
-const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
 import { useAuth } from '../context/AuthContext';
 import { useCampaigns } from '../context/CampaignContext';
 import {
@@ -56,9 +54,13 @@ const imageMap = {
 const AdminDashboard = () => {
     const { user } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [isMobile, setIsMobile] = useState(
+        () => (typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
+    );
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
